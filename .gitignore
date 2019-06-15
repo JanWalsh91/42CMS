@@ -63,3 +63,7 @@ typings/
 db/
 
 package-lock.json
+
+Coverage
+
+dist

@@ -16,6 +16,8 @@ class App {
 
     private config(): void{
 		console.log('setting up config')
+		// set up static folder
+		this.app.use(express.static('public'))
         // support application/json type post data
         this.app.use(bodyParser.json());
         //support application/x-www-form-urlencoded post data
