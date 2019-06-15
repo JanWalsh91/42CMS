@@ -6,7 +6,7 @@
 	"scripts": {
 		"build": "tsc --config ./server/tsconfig.json",
 		"start": "nodemon ./dist/server.ts --config ./server/tsconfig.json",
-		"dev:client": "webpack-dev-server --mode development --open --hot --config ./client/webpack.config.js",
+		"dev:client": "webpack-dev-server --mode development --hot --config ./client/webpack.config.js",
 		"dev:server": "NODE_ENV=development ts-node ./server/src/server.ts --config ./server/tsconfig.json",
 		"dev": "npm run dev:server && npm run dev:client",
 		"prod": "npm run build && npm run start",

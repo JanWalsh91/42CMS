@@ -16,13 +16,11 @@ module.exports = {
 	},
 
     resolve: {
-        // Add '.ts' and '.tsx' as resolvable extensions.
-        extensions: ['.ts', '.tsx', '.js', '.json']
+		extensions: ['.ts', '.tsx', '.js', '.json', '.scss']
     },
 
     module: {
         rules: [
-            // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
 			{
 				test: /\.tsx?$/,
 				loader: 'awesome-typescript-loader',
@@ -31,15 +29,12 @@ module.exports = {
 				},
 			},
 
-            // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-			{ enforce: 'pre', test: /\.js$/, loader: 'source-map-loader' },
-			
-			// css, scss
 			{
-				// look for .css or .scss files
+				enforce: 'pre', test: /\.js$/, loader: 'source-map-loader'
+			},
+			
+			{
 				test: /\.(css|scss)$/,
-				// // in the `src` directory
-				// include: '/src',
 				use: [
 					{ loader: 'style-loader' },
 					{ loader: 'css-loader' },
@@ -56,6 +51,7 @@ module.exports = {
 	plugins: [
 		new HtmlWebpackPlugin({
 			template: path.join(__dirname, './src/index.html')
-		})
+		}),
+		
 	]
 };
