@@ -1,12 +1,14 @@
 import * as React from 'react';
 
+import { CreateUserForm } from './CreateUserForm';
+
 import '../styles/MainModal.scss';
 
 type Mode = 'Create' | 'Login';
 
 export interface Props { };
 export interface State {
-	mode: Mode
+	mode: Mode,
 };
 
 export class MainModal extends React.Component<Props, State> {
@@ -46,9 +48,7 @@ export class MainModal extends React.Component<Props, State> {
 		return (
 			<div className="MainModal">
 				<h2>{panelTitle[this.state.mode]}</h2>
-				<button onClick={this.toggleMode}>
-					{buttonTitle[this.state.mode]}
-				</button>
+				<CreateUserForm />
 			</div>
 		);
 	}
