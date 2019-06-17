@@ -58,6 +58,8 @@ export class CreateUserForm extends React.Component<Props, State> {
 					console.log('[CreateUserForm]', formData);
 					let res: any = await api.post('/users', formData);
 					console.log('res', res)
+					res = await api.get('/users/5d077422f6497b09da55c047');
+					console.log('res2', res)
 				},
 				onInputChange: (id: any, value: any) => {
 					this.setState(prevState => {
@@ -73,7 +75,6 @@ export class CreateUserForm extends React.Component<Props, State> {
 							} 
 						})
 					});
-					console.log('[CreateUserForm]', id, value);
 					return null
 				}
 			}

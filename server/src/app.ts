@@ -5,20 +5,24 @@ import * as bcrypt from "bcrypt";
 import * as bodyParser from "body-parser";
 import * as cors from 'cors';
 import * as session from 'express-session';
+// import * as redis from 'redis';
+// import * as connectRedis from 'connect-redis'
+// const redisStore: connectRedis.RedisStore = connectRedis(session);
+// const client: redis.RedisClient = redis.createClient()
 
-import { Routes } from "./routes/routes";
 import ResponseStatusTypes from "./utils/ResponseStatusTypes";
+
+import routes from './routes';
 
 class App {
 
 	public app: express.Application;
-	public routes: Routes = new Routes();
 	private static salt: string = "$2b$05$PD21LwJzPhCGI8XjSPcHzO";
 
     constructor() {
         this.app = express();
 		this.config();
-		this.routes.routes(this.app); 
+		this.app.use('/', routes);
     }
 
     private config(): void{
@@ -28,7 +32,8 @@ class App {
 		this.app.use(bodyParser.urlencoded({ extended: false }));
 		this.app.use(cors({
 			origin: '*',
-			credentials: true
+			credentials: true,
+			allowedHeaders: ['Content-Type', 'Authorization']
 		}));
 
 		mongoose.connect('mongodb://127.0.0.1:27017/MYDB', { useNewUrlParser: true })
@@ -42,8 +47,13 @@ class App {
 		const sessionParams = {
 			name: 'session',
 			secret: 'supersecret',
-			resave: true,
-			saveUninitialized: true
+			saveUninitialized: true,
+			// store: new redisStore({ host: 'localhost', port: 6379, client, ttl: 260 }),
+			// resave: true
+			cookie: {
+				maxAge: 6000000,
+				httpOnly: false
+			}
 		}
 		this.app.use(session(sessionParams));
 		console.log('setting up config DONE')

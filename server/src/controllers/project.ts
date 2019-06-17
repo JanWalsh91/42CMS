@@ -17,3 +17,7 @@ export class ProjectController {
         });
 	}
 }
+
+export const projectController: ProjectController = new ProjectController();
+
+

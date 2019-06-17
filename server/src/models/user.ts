@@ -8,10 +8,12 @@ class UserClass {
 }
 
 export interface IUser extends Document {
+	_id: string,
+	apiKey: string
 	name: string,
 	password: string,
 	create_date: Date,
-	projects: IProject['_id']
+	projects: IProject['_id'],
 }
 
 const UserSchema = new Schema({

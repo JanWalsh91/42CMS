@@ -45,7 +45,7 @@ export class Form extends React.Component<Props, State> {
 	}
 
 	validateInput = (id: string, value: string): boolean => {
-		console.log('[Form] validateInput');
+		// console.log('[Form] validateInput');
 		let input = this.props.inputs[id]
 		value = value || input.value
 		if (input.validation) {
@@ -76,7 +76,7 @@ export class Form extends React.Component<Props, State> {
 
 	onSubmit = (event: React.FormEvent<HTMLFormElement>): any => {
 		event.preventDefault();
-		console.log('[Form] onSubmit', event);
+		// console.log('[Form] onSubmit', event);
 		
 		let valid = Object.keys(this.props.inputs).every(id => this.state.inputs[id].valid);
 		if (valid) {
@@ -90,13 +90,13 @@ export class Form extends React.Component<Props, State> {
 	};
 
 	onInputChange = (e: React.FormEvent<HTMLInputElement>, id: string): void => {
-		console.log('[Form] onInputChange')
+		// console.log('[Form] onInputChange')
 		this.props.onInputChange(id, e.currentTarget.value);
 		this.state.inputs[id].valid = this.validateInput(id, e.currentTarget.value);
 	}
 
 	onInputBlur = (e: React.FormEvent<HTMLInputElement>, id: string): void => {
-		console.log('[Form] onInputBlur')
+		// console.log('[Form] onInputBlur')
 		this.setState(prevState => update(prevState, {
 			inputs: {
 				[id]: {

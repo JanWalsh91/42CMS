@@ -20,6 +20,8 @@ export class UserController {
 		});
 		newUser.projects = [newProject._id];
 		await Promise.all([newUser.save(), newProject.save()]);
+		req.session.apiKey = newUser.apiKey;
+		console.log('set session', req.session);
 		res.send({user: newUser, project: newProject})
 	}
 
@@ -32,13 +34,15 @@ export class UserController {
 		});
 	}
 
-	public get(req: Request, res: Response) {				
-		User.findById(req.params.userid, (err, user) => {
-			if (err){
-				res.send(err);
-			}
-			res.json(user);
-		});
+	public get(req: Request, res: Response) {
+		console.log('[User] get')
+		res.send({user: req.params.user});				
+		// User.findById(req.params.userid, (err, user) => {
+		// 	if (err){
+		// 		res.send(err);
+		// 	}
+		// 	res.json(user);
+		// });
 	}
 
 	public update(req: Request, res: Response) {				
@@ -59,3 +63,5 @@ export class UserController {
 		});
 	}
 }
+
+export const userController: UserController = new UserController();
