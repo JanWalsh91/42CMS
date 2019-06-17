@@ -1,8 +1,14 @@
-import * as mongoose from 'mongoose';
-const Schema = mongoose.Schema;
+import { Schema, Document, Model, model } from 'mongoose';
 
-class Project {
+import { IUser } from './user';
 
+class ProjectClass {
+
+}
+
+export interface IProject extends Document {
+	name: string,
+	owner: IUser['_id']
 }
 
 const ProjectSchema = new Schema({
@@ -15,6 +21,6 @@ const ProjectSchema = new Schema({
 		ref: 'User',
 		required: true
 	}
-}).loadClass(Project)	
+}).loadClass(ProjectClass)	
 
-export default mongoose.model('Project', ProjectSchema);
+export const Project: Model<IProject> = model('Project', ProjectSchema);

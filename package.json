@@ -7,13 +7,24 @@
 		"build": "tsc --config ./server/tsconfig.json",
 		"start": "nodemon ./dist/server.ts --config ./server/tsconfig.json",
 		"dev:client": "webpack-dev-server --mode development --hot --config ./client/webpack.config.js",
-		"dev:server": "NODE_ENV=development ts-node ./server/src/server.ts --config ./server/tsconfig.json",
+		"dev:server": "NODE_ENV=development nodemon ./server/src/server.ts",
 		"dev": "npm run dev:server && npm run dev:client",
 		"prod": "npm run build && npm run start",
 		"test": "NODE_ENV=test nyc --reporter=html --reporter=text mocha -r ts-node/register ./**/tests/*.test.ts --exit --timeout 2000",
 		"db-start": "mkdir -p ./db && mongod --dbpath ./db"
 	},
 	"proxy": "http://localhost:3001",
+	"nodemonConfig": {
+		"watch": [
+			"./server/src/*"
+		],
+		"ext": "ts",
+		"ignore": [
+			"node_modules/**/*",
+			"./server/src/**/*.spec.ts"
+		],
+		"exec": "ts-node"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/JanWalsh91/42CMS.git"
@@ -25,18 +36,26 @@
 	},
 	"homepage": "https://github.com/JanWalsh91/42CMS#readme",
 	"dependencies": {
+		"axios": "^0.19.0",
+		"bcrypt": "^3.0.6",
 		"body-parser": "^1.19.0",
+		"cors": "^2.8.5",
 		"express": "^4.17.1",
+		"express-session": "^1.16.2",
 		"immutability-helper": "^3.0.1",
 		"mongoose": "^5.5.12",
 		"react": "^16.8.6",
 		"react-dom": "^16.8.6"
 	},
 	"devDependencies": {
+		"@types/axios": "^0.14.0",
 		"@types/chai": "^4.1.7",
 		"@types/chai-http": "^4.2.0",
 		"@types/chalk": "^2.2.0",
+		"@types/classnames": "^2.2.8",
+		"@types/cors": "^2.8.5",
 		"@types/express": "^4.16.1",
+		"@types/express-session": "^1.15.12",
 		"@types/mocha": "^5.2.7",
 		"@types/mongoose": "^5.5.3",
 		"@types/node-sass": "^4.11.0",

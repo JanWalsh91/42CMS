@@ -1,26 +1,32 @@
-import * as mongoose from 'mongoose';
-const Schema = mongoose.Schema;
+import { Schema, Document, Model, model}  from 'mongoose';
+
+import { IProject } from './project';
 
 // https://mongoosejs.com/docs/advanced_schemas.html
-class User {
+class UserClass {
 
 }
 
+export interface IUser extends Document {
+	name: string,
+	password: string,
+	create_date: Date,
+	projects: IProject['_id']
+}
+
 const UserSchema = new Schema({
-	firstName: {
+	apiKey: {
+		type: String,
+		required: 'Need an apiKey'
+	},
+	name: {
         type: String,
-        required: 'Enter a first name'
+        required: 'Enter a name'
     },
-    lastName: {
-        type: String,
-        required: 'Enter a last name'
-    },
-    email: {
-        type: String            
-    },
-    company: {
-        type: String            
-    },
+	password: {
+		type: String,
+		required: 'Enter a password'
+	},
     created_date: {
         type: Date,
         default: Date.now
@@ -29,6 +35,7 @@ const UserSchema = new Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Project'
 	}]
-}).loadClass(User)	
+}).loadClass(UserClass)	
 
-export default mongoose.model('User', UserSchema);
+export const User: Model<IUser> = model('User', UserSchema);
+

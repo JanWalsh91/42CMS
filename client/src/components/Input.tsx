@@ -1,5 +1,5 @@
 import * as React from 'react';
-// import classNames from 'classnames';
+import classNames from 'classnames';
 
 import '../styles/Input.scss';
 
@@ -11,9 +11,12 @@ export interface Props {
 	element: Element,
 	config: any,
 	value?: string,
-	isValid?: boolean,
-	onchange?: Function,
-	onClick?: Function
+	onChange?: (e: React.FormEvent<HTMLInputElement>) => void,
+	onClick?: (e: React.FormEvent<HTMLInputElement>) => void,
+	onBlur?: (e: React.FormEvent<HTMLInputElement>) => void,
+	touched?: boolean,
+	dirty?: boolean,
+	valid?: boolean
 };
 
 
@@ -25,20 +28,22 @@ export const Input = (props: Props) => {
 		case 'input':
 			inputElement = (
 				<input
-					className="Input"
+					className={classNames('Input', {touched: props.touched, dirty: props.dirty, invalid: !props.valid})}
 					{...props.config}
 					value={props.value}
-					onChange={props.onchange}
+					onChange={props.onChange}
+					onBlur={props.onBlur}
 				/>
 			)
 			break;
 		case 'submit':
 			inputElement = (
-			<input
-				className="Input"
-				{...props.config}
-				onClick={props.onClick}
-			/>
+				<input
+					className="Input"
+					{...props.config}
+					onClick={props.onClick}
+					onBlur={props.onBlur}
+				/>
 			)
 			break;
 		default:

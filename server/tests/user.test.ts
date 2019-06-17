@@ -3,20 +3,24 @@ chai.should();
 
 import { userData, getAllUsers, createPortalUser, printret } from './common'
 
-import User from '../src/models/user';
+import { User } from '../src/models/user';
+import { Project } from '../src/models/project';
 
 let ret: any;
 
-describe('User', function() {
+describe.only('User', function() {
 	beforeEach(async () => {
 		await User.remove({});
+		await Project.remove({});
 	});
 
-	describe('Create', function() {
-		it('Should create a user', async () => {
+	describe.only('Create', function() {
+		it('Should create a user and a project', async () => {
 			ret = await createPortalUser(userData)
 			printret(ret)
 			ret.should.have.status(200)
+			// check if user exists
+			// check if project exists
 		});
 	});
 

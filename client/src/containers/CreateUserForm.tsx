@@ -1,8 +1,8 @@
 import * as React from 'react';
-
 import update from 'immutability-helper';
 
 import { Form, Props as FormProps } from '../components/Form';
+import api from '../utils/api';
 
 export interface Props { };
 
@@ -16,14 +16,18 @@ export class CreateUserForm extends React.Component<Props, State> {
 		this.state = {
 			createUserForm: {
 				inputs: {
-					username: {
+					name: {
 						element: 'input',
 						config: {
 							type: 'text',
 							placeholder: 'Username'
 						},
 						value: '',
-						isValid: false
+						validation: {
+							required: true,
+							minLength: 3,
+							maxLength: 24
+						}
 					},
 					password: {
 						element: 'input',
@@ -32,13 +36,30 @@ export class CreateUserForm extends React.Component<Props, State> {
 							placeholder: 'Password'
 						},
 						value: '',
-						isValid: false
+						validation: {
+							required: true,
+							minLength: 6,
+							maxLength: 24
+						}
 					},
+					projectName: {
+						element: 'input',
+						config: {
+							type: 'text',
+							placeholder: 'Project Name'
+						},
+						value: '',
+						validation: {
+							required: true
+						}
+					}
 				},
-				handleSubmit: (formData: any) => {
+				onSubmit: async (formData: any) => {
 					console.log('[CreateUserForm]', formData);
+					let res: any = await api.post('/users', formData);
+					console.log('res', res)
 				},
-				handleInputChange: (id: any, value: any) => {
+				onInputChange: (id: any, value: any) => {
 					this.setState(prevState => {
 						return update(prevState, {
 							createUserForm: {

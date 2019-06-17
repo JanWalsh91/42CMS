@@ -1,5 +1,5 @@
-import Project from '../models/project'
-import User from '../models/user'
+import { Project } from '../models/project'
+import { User } from '../models/user'
 import { Request, Response } from 'express';
 import chalk from 'chalk';
 

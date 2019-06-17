@@ -5,24 +5,25 @@ chai.use(chaiHttp);
 
 export const userData = 
 	{
-		firstName: 'John',
-		lastName: 'Smith'
+		name: 'John Smith',
+		password: 'password',
+		projectName: 'my project'
 	}
 
 // ===== USERS =====
 
 export const getAllUsers = () => {
-	return chai.request(app).get('/user');
+	return chai.request(app).get('/users');
 };
 
-export const createPortalUser = (params: {firstName: String, lastName: String}) => {
-	return chai.request(app).post('/user').send(params)
+export const createPortalUser = (params: {name: String, password: String, projectName: String}) => {
+	return chai.request(app).post('/users').send(params)
 };
 
 // ===== PROJECTS =====
 
 export const createProject = (params: {name: String, owner: String}) => {
-	return chai.request(app).post('/project').send(params)
+	return chai.request(app).post('/projects').send(params)
 };
 
 

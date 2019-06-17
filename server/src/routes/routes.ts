@@ -14,15 +14,14 @@ export class Routes {
 			})
 		});
 
-		app.route('/user')
-			.get(this.userController.getAll)
-			.post(this.userController.create)
-		app.route('/user/:userid')
+		app.route('/users')
+			.post(this.userController.create);
+		app.route('/users/:userid')
 			.get(this.userController.get)
 			.post(this.userController.update)
-			.delete(this.userController.delete)
+			.delete(this.userController.delete);
 		
-		app.route('/project')
-			.post(this.projectController.create)
+		app.route('/projects')
+			.post(this.projectController.create);
 	}
 }
