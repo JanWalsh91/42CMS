@@ -1,6 +1,8 @@
 import * as React from 'react';
 
-export interface Props { text: string, handleClick: () => any }
+import '../styles/Button.scss';
+
+export interface Props { text: string, handleClick: (e: any) => any };
 
 export class Button extends React.Component<Props, {}> {
 	constructor(props: Props) {
@@ -9,9 +11,9 @@ export class Button extends React.Component<Props, {}> {
 
 	render() {
 		return (
-			<button onClick={() => this.props.handleClick}>
+			<button className='Button' onClick={(e) => this.props.handleClick(e)}>
 				{this.props.text}
 			</button>
 		)
 	}
-}
+};

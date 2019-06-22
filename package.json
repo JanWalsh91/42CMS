@@ -47,6 +47,7 @@
 		"mongoose": "^5.5.12",
 		"react": "^16.8.6",
 		"react-dom": "^16.8.6",
+		"react-router-dom": "^5.0.1",
 		"redis": "^2.8.0"
 	},
 	"devDependencies": {
@@ -64,6 +65,7 @@
 		"@types/node-sass": "^4.11.0",
 		"@types/react": "^16.8.19",
 		"@types/react-dom": "^16.8.4",
+		"@types/react-router-dom": "^4.3.4",
 		"@types/redis": "^2.8.13",
 		"@types/webpack": "^4.4.32",
 		"awesome-typescript-loader": "^5.2.1",

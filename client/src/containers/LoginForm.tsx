@@ -7,14 +7,14 @@ import api from '../utils/api';
 export interface Props { onSubmit?: (res: Response) => any};
 
 export interface State {
-	createUserForm: FormProps
+	loginForm: FormProps
 };
 
-export class CreateUserForm extends React.Component<Props, State> {
+export class LoginForm extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
 		this.state = {
-			createUserForm: {
+			loginForm: {
 				inputs: {
 					name: {
 						element: 'input',
@@ -42,22 +42,11 @@ export class CreateUserForm extends React.Component<Props, State> {
 							maxLength: 24,
 						}
 					},
-					projectName: {
-						element: 'input',
-						config: {
-							type: 'text',
-							placeholder: 'Project Name'
-						},
-						value: 'projectName',
-						validation: {
-							required: true
-						}
-					}
 				},
 				onSubmit: async (formData: any) => {
-					console.log('[CreateUserForm]', formData);
-					let res: any = await api.post('/users', formData);
-					console.log('res', res.data);
+					console.log('[LoginForm]', formData);
+					let res: any = await api.post('/login', formData);
+					console.log('res', res.data)
 					if (this.props.onSubmit) {
 						this.props.onSubmit(res);
 					}
@@ -65,7 +54,7 @@ export class CreateUserForm extends React.Component<Props, State> {
 				onInputChange: (id: any, value: any) => {
 					this.setState(prevState => {
 						return update(prevState, {
-							createUserForm: {
+							loginForm: {
 								inputs: {
 									[id]: {
 										value: {
@@ -84,7 +73,7 @@ export class CreateUserForm extends React.Component<Props, State> {
 
 	render() {
 		return (
-			<Form {...this.state.createUserForm}/>
+			<Form {...this.state.loginForm}/>
 		)
 	}
 }

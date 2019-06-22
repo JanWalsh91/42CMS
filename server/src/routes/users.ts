@@ -14,7 +14,6 @@ router
 	.delete('/:userid', authorize, userController.delete)
 
 	.param('userid', (req: Request, res: Response, next: NextFunction, id) => {
-		console.log('params: ', id);
 		User.findById(id, (err, user) => {
 			if (err) {
 				next(err);

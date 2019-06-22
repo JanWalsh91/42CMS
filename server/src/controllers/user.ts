@@ -22,10 +22,8 @@ export class UserController {
 		await Promise.all([newUser.save(), newProject.save()]);
 		if (req.session) {
 			req.session.apiKey = newUser.apiKey;
-			console.log('set session', req.session);
-			console.log('headers', res.getHeaders())
 		}
-		res.json({user: newUser, project: newProject})
+		res.send({user: newUser, project: newProject})
 	}
 
 	public getAll(req: Request, res: Response) {				
@@ -33,8 +31,44 @@ export class UserController {
 			if (err){
 				res.send(err);
 			}
-			res.json(user);
+			res.send(user);
 		});
+	}
+
+	public async authorize(req: Request, res: Response) {
+		console.log('[authorize]', req.session)
+		if (req.session && req.session.apiKey) {
+			User.findOne({apiKey: req.session.apiKey}, (err: any, user: IUser) => {
+				if (err) {
+					console.log('[authorize]', chalk.red('forbidden'));
+					res.statusCode = ResponseStatusTypes.FORBIDDEN
+					res.send();
+					return ;
+				} else {
+					console.log('[authorize]', chalk.green('ok'));
+					res.end();
+				}
+			});
+		} else {
+			res.statusCode = ResponseStatusTypes.FORBIDDEN
+			res.send();
+		}
+		
+	}
+
+	public async login(req: Request, res: Response) {
+		console.log('[User.login]')
+		let user: IUser = await User.findOne({
+			name: req.body.name,
+			password: req.body.password
+		});
+		if (!user) {
+			res.statusCode = ResponseStatusTypes.FORBIDDEN
+			res.send()
+		} else {
+			req.session.apiKey = user.apiKey
+			res.send({message: 'login success'})
+		}
 	}
 
 	public get(req: Request, res: Response) {
@@ -49,7 +83,7 @@ export class UserController {
 	}
 
 	public update(req: Request, res: Response) {				
-		User.find({}, (err, user) => {
+		User.findOne({}, (err, user) => {
 			if (err){
 				res.send(err);
 			}	

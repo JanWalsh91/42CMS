@@ -6,6 +6,7 @@ import { Input, Props as InputProps } from './Input';
 import '../styles/Form'
 
 export interface Props {
+	title?: string,
 	inputs: {[id: string]: {
 		element: 'input',
 		config: any,
@@ -111,6 +112,7 @@ export class Form extends React.Component<Props, State> {
 	render() {
 		return (
 			<form className="Form" onSubmit={this.onSubmit}>
+			<h4>{this.props.title}</h4>
 				{Object.keys(this.props.inputs).map(id => (
 					<Input
 						key={id}
