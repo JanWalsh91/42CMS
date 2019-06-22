@@ -22,7 +22,7 @@ export class CreateUserForm extends React.Component<Props, State> {
 							type: 'text',
 							placeholder: 'Username'
 						},
-						value: '',
+						value: 'myname',
 						validation: {
 							required: true,
 							minLength: 3,
@@ -35,11 +35,11 @@ export class CreateUserForm extends React.Component<Props, State> {
 							type: 'password',
 							placeholder: 'Password'
 						},
-						value: '',
+						value: 'poipoipoi',
 						validation: {
 							required: true,
 							minLength: 6,
-							maxLength: 24
+							maxLength: 24,
 						}
 					},
 					projectName: {
@@ -48,7 +48,7 @@ export class CreateUserForm extends React.Component<Props, State> {
 							type: 'text',
 							placeholder: 'Project Name'
 						},
-						value: '',
+						value: 'projectName',
 						validation: {
 							required: true
 						}
@@ -57,9 +57,9 @@ export class CreateUserForm extends React.Component<Props, State> {
 				onSubmit: async (formData: any) => {
 					console.log('[CreateUserForm]', formData);
 					let res: any = await api.post('/users', formData);
-					console.log('res', res)
+					console.log('res headers', res.headers)
 					res = await api.get('/users/5d077422f6497b09da55c047');
-					console.log('res2', res)
+					console.log('res2 headers', res.headers)
 				},
 				onInputChange: (id: any, value: any) => {
 					this.setState(prevState => {

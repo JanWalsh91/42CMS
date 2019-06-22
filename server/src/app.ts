@@ -13,6 +13,7 @@ import * as session from 'express-session';
 import ResponseStatusTypes from "./utils/ResponseStatusTypes";
 
 import routes from './routes';
+import { uuid } from './utils/uuid';
 
 class App {
 
@@ -26,14 +27,14 @@ class App {
     }
 
     private config(): void{
-		console.log('setting up config')
+		this.app.disable('x-powered-by');
 		this.app.use(express.static('public'))
         this.app.use(bodyParser.json());
-		this.app.use(bodyParser.urlencoded({ extended: false }));
+		this.app.use(bodyParser.urlencoded({ extended: true }));
+		// allow client delivered by webpack server to access this server
 		this.app.use(cors({
-			origin: '*',
-			credentials: true,
-			allowedHeaders: ['Content-Type', 'Authorization']
+			origin: ['http://localhost:8080'], // TODO: centralize configs
+			credentials: true
 		}));
 
 		mongoose.connect('mongodb://127.0.0.1:27017/MYDB', { useNewUrlParser: true })
@@ -41,22 +42,24 @@ class App {
 		db.on('error', err => {
 			console.log('err: ', err)
 		});
-		// hash passwords
-		this.app.use(this.hashPassword);
 		// set up session
 		const sessionParams = {
-			name: 'session',
+			name: 'sessionname',
 			secret: 'supersecret',
-			saveUninitialized: true,
+			saveUninitialized: false,
+			rolling: false,
 			// store: new redisStore({ host: 'localhost', port: 6379, client, ttl: 260 }),
-			// resave: true
+			resave: false,
 			cookie: {
-				maxAge: 6000000,
-				httpOnly: false
+				sameSite: true,
+				maxAge: 30 * 60 * 1000,
+				// httpOnly: true,
+				secure: false
 			}
 		}
 		this.app.use(session(sessionParams));
-		console.log('setting up config DONE')
+		// hash passwords
+		this.app.use(this.hashPassword);
 	}
 	
 	private async hashPassword(req: Request, res: Response, next:Function): Promise<any> {

@@ -38,7 +38,7 @@ export class Form extends React.Component<Props, State> {
 			this.state.inputs[id] = {
 				touched: false,
 				dirty: false,
-				valid: false,
+				valid: this.validateInput(id, this.props.inputs[id].value),
 				error: null
 			}
 		});

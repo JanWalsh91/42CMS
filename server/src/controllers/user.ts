@@ -20,9 +20,12 @@ export class UserController {
 		});
 		newUser.projects = [newProject._id];
 		await Promise.all([newUser.save(), newProject.save()]);
-		req.session.apiKey = newUser.apiKey;
-		console.log('set session', req.session);
-		res.send({user: newUser, project: newProject})
+		if (req.session) {
+			req.session.apiKey = newUser.apiKey;
+			console.log('set session', req.session);
+			console.log('headers', res.getHeaders())
+		}
+		res.json({user: newUser, project: newProject})
 	}
 
 	public getAll(req: Request, res: Response) {				
