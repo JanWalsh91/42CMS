@@ -34,13 +34,13 @@ export class Layout extends React.Component<Props, State> {
 
     render() {
 		const loader = this.state.isLoading ? (<div>loading ...</div>) : null
-		const redirect = this.state.isAuthorized ? null : <Redirect to='./Login'/>
+		const redirect = this.state.isAuthorized ? null : <Redirect to='./signin'/>
 		const router = 
 		<>
 			{redirect}
 			<Switch>
-				<Route path='/login' component={Login} />
-				<Route path='/' component={Home} />
+				<Route path={['/signup', '/signin']} render={(props) => <Login {...props}/>} />
+				<Route path='/' render={(props) => <Home {...props}/>} />
 			</Switch>
 		</>
 
