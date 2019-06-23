@@ -18,6 +18,7 @@ export interface Props {
 			regex?: RegExp
 		}
 	}},
+	submitText: string,
 	onSubmit: (formData: any) => any,
 	onInputChange: (id: string, value: string) => any,
 };
@@ -128,6 +129,7 @@ export class Form extends React.Component<Props, State> {
 					id='submit'
 					element='input'
 					config={{type: 'submit'}}
+					value={this.props.submitText}
 				/>
 			</form>
 		)

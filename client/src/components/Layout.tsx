@@ -1,11 +1,12 @@
 import * as React from 'react';
+import { useContext } from 'react';
 import { Route, Switch, Redirect } from 'react-router-dom';
 
 import '../styles/Layout.scss';
 import { Login } from '../containers/Login';
 import { Home } from '../containers/Home';
-import { isAuth } from '../utils/auth'
-import { isMainThread } from 'worker_threads';
+
+import UserContext from '../context/user';
 
 export interface Props { };
 export interface State {
@@ -14,6 +15,9 @@ export interface State {
 }
 
 export class Layout extends React.Component<Props, State> {
+	
+	static contextType = UserContext
+	
 	constructor(props: Props) {
 		super(props)
 		this.state = {
@@ -23,19 +27,16 @@ export class Layout extends React.Component<Props, State> {
 	}
 
 	componentDidMount() {
-		isAuth().then(res => {
-			console.log('is auth');
-			this.setState({isAuthorized: res, isLoading: false});
-		}).catch(res => {
-			console.log('is NOT auth');
-			this.setState({isAuthorized: false, isLoading: false});
-		});
+		console.log('[Layout.componentDidMount]', this.context)
+
+		// this.setState({isAuthorized: this.context.isLoggedIn, isLoading: false});
 	}
+
 
     render() {
 		const loader = this.state.isLoading ? (<div>loading ...</div>) : null
 		const redirect = this.state.isAuthorized ? null : <Redirect to='./signin'/>
-		const router = 
+		const router =
 		<>
 			{redirect}
 			<Switch>
@@ -44,11 +45,11 @@ export class Layout extends React.Component<Props, State> {
 			</Switch>
 		</>
 
+
 		return (
 			<div className="Layout">
 				{loader || router}
 				is auth: {this.state.isAuthorized ? 'y': 'n'}
-
 			</div>
 		)
     }

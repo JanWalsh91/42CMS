@@ -1,0 +1,19 @@
+.TabBar {
+	display: flex;
+	.Tab {
+		list-style-type: none;
+		flex-grow: 1;
+		padding: 2px;
+		text-align: center;
+		cursor: pointer;
+		span {
+			text-decoration: none;
+			color: lightgrey;
+		}
+		&:hover, &.active {
+			span {
+				color: black
+			}
+		}
+	}
+}

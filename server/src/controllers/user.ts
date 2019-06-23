@@ -6,9 +6,15 @@ import { Project, IProject } from '../models/project';
 import { uuid } from '../utils/uuid';
 import ResponseStatusTypes from "../utils/ResponseStatusTypes";
 
-export class UserController {
-	public async create(req: Request, res: Response) {
+export const userController = {
+	async create(req: Request, res: Response) {
 		console.log(chalk.green('[UserContoller] create'), req.body);
+		if (await userController.exists({name: req.body.name})) {
+			console.log(chalk.red('user already exists'))
+			res.statusCode = ResponseStatusTypes.BAD_REQUEST;
+			res.send({err: 'User already exists'});
+			return ;
+		}
 		let newUser: IUser = new User({
 			name: req.body.name,
 			password: req.body.password,
@@ -24,18 +30,18 @@ export class UserController {
 			req.session.apiKey = newUser.apiKey;
 		}
 		res.send({user: newUser, project: newProject})
-	}
+	},
 
-	public getAll(req: Request, res: Response) {				
+	async getAll(req: Request, res: Response) {				
 		User.find({}, (err, user) => {
 			if (err){
 				res.send(err);
 			}
 			res.send(user);
 		});
-	}
+	},
 
-	public async authorize(req: Request, res: Response) {
+	async authorize(req: Request, res: Response) {
 		console.log('[authorize]', req.session)
 		if (req.session && req.session.apiKey) {
 			User.findOne({apiKey: req.session.apiKey}, (err: any, user: IUser) => {
@@ -53,10 +59,9 @@ export class UserController {
 			res.statusCode = ResponseStatusTypes.FORBIDDEN
 			res.send();
 		}
-		
-	}
+	},
 
-	public async login(req: Request, res: Response) {
+	async login(req: Request, res: Response) {
 		console.log('[User.login]')
 		let user: IUser = await User.findOne({
 			name: req.body.name,
@@ -69,9 +74,9 @@ export class UserController {
 			req.session.apiKey = user.apiKey
 			res.send({message: 'login success'})
 		}
-	}
+	},
 
-	public get(req: Request, res: Response) {
+	get(req: Request, res: Response) {
 		console.log('[User] get')
 		res.send({user: req.params.user});				
 		// User.findById(req.params.userid, (err, user) => {
@@ -80,25 +85,27 @@ export class UserController {
 		// 	}
 		// 	res.json(user);
 		// });
-	}
+	},
 
-	public update(req: Request, res: Response) {				
+	update(req: Request, res: Response) {				
 		User.findOne({}, (err, user) => {
 			if (err){
 				res.send(err);
 			}	
 			res.json(user);
 		});
-	}
+	},
 
-	public delete(req: Request, res: Response) {				
+	delete(req: Request, res: Response) {				
 		User.remove({}, (err) => {
 			if (err){
 				res.send(err);
 			}
 			res.end()
 		});
+	},
+
+	async exists(params: any) {
+		return new Promise(resolve => User.findOne((params), (err, user) => resolve(err || !user)));
 	}
 }
-
-export const userController: UserController = new UserController();

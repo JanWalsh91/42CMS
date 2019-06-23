@@ -43,6 +43,7 @@ export class LoginForm extends React.Component<Props, State> {
 						}
 					},
 				},
+				submitText: 'Sign In',
 				onSubmit: async (formData: any) => {
 					console.log('[LoginForm]', formData);
 					let res: any = await api.post('/login', formData);

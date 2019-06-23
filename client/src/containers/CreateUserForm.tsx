@@ -54,13 +54,15 @@ export class CreateUserForm extends React.Component<Props, State> {
 						}
 					}
 				},
+				submitText: 'Sign Up',
 				onSubmit: async (formData: any) => {
 					console.log('[CreateUserForm]', formData);
-					let res: any = await api.post('/users', formData);
-					console.log('res', res.data);
-					if (this.props.onSubmit) {
-						this.props.onSubmit(res);
-					}
+					api.post('/users', formData).then(res => {
+						console.log('res', res.data);
+						if (this.props.onSubmit) {
+							this.props.onSubmit(res as any);
+						}
+					});
 				},
 				onInputChange: (id: any, value: any) => {
 					this.setState(prevState => {

@@ -3,85 +3,58 @@ import { BrowserRouter as Router, Route, RouteComponentProps, Switch, Redirect }
 
 import { CreateUserForm } from './CreateUserForm';
 import { LoginForm } from './LoginForm';
-import { Button } from '../components/Button';
-import { Tabs } from '../components/Tabs/Tabs';
-import { Tab } from '../components/Tabs/Tab';
+import { TabBar } from '../components/TabBar/TabBar';
+import UserContext from '../context/user';
 
 import '../styles/Login.scss';
 
-type Mode = 'SignUp' | 'SignIn';
+export interface Props extends RouteComponentProps<{}>{};
 
-export interface Props extends RouteComponentProps<{
-
-}>{};
 export interface State {
-	mode: Mode,
+	activeTabKey: string
 };
 
 export class Login extends React.Component<Props, State> {
+	
+	static contextType = UserContext
+
 	constructor(props: Props) {
 		super(props);
 		this.state = {
-			mode: 'SignIn'
-		};
-	}
-
-	toggleMode = (mode: Mode) => {
-		console.log('Toggle mode');
-		this.setState({mode: mode});
-	}
-
-	panelTitle: { [key in Mode] : JSX.Element } = {
-		SignUp: (<h2>Create an Account</h2>),
-		SignIn: (<h2>Login</h2>)
-	}
-
-	toggleButtonText: { [key in Mode] : string } = {
-		SignUp: 'Sign in',
-		SignIn: 'Sign up'
-	}
-	
-	onLogin = (res: Response) => {
-		console.log('[onLogin]');
-		if (res.status == 200) {
-			console.log('ok!')
-		} else {
-			console.log(res.status);
+			activeTabKey: 'signin'
 		}
+		console.log('[Login.constructor]', this.context)
 	}
 
-	onCreate = (res: Response) => {
-		console.log('[onCreate]');
-		if (res.status == 200) {
-			console.log('ok!')
-		} else {
-			console.log(res.status);
-		}
+	componentDidMount() {
+		console.log('[Login.componentDidMount]', this.context)
 	}
 
 	render() {
-		
-		const toggleButton = (<Button text={this.toggleButtonText[this.state.mode]} handleClick={() => this.toggleMode(this.state.mode == 'SignUp' ? 'SignUp' : 'SignIn')}/>)
+
+		let loginForm = null;
+		let createUserForm = null;
+		if (this.state.activeTabKey == 'signin') {
+			loginForm = <LoginForm />
+		} else {
+			createUserForm = <CreateUserForm />
+		}
 
 		return (
-			<Router>
-				<div className="Login">
-					<Tabs activeTabId={this.state.mode}>
-						<Tab id='SignIn' to='signin'>Sign in</Tab>
-						<Tab id='SignUp' to='signup'>Sign up</Tab>
-					</Tabs>
-					<Switch>
-						<Route path='/signin' component={() => 
-							<LoginForm onSubmit={(res) => this.onLogin(res)}/>
-						}/>
-						<Route path='/signup' render={() =>
-							<CreateUserForm onSubmit={(res) => this.onCreate(res)}/>
-						}/>
-						<Redirect to='signin' />
-					</Switch>
-					{toggleButton}
-				</div>
-			</Router>
+			<div className="Login">
+				<TabBar
+					activeTabKey={this.state.activeTabKey}
+					onTabClick={(key: string)=> this.setState({activeTabKey: key})}
+					tabs={[{
+						tabKey: 'signin',
+						title: 'Sign In'
+					}, {
+						tabKey: 'signup',
+						title: 'Sign Up'
+					}]}/>
+				{loginForm}
+				{createUserForm}
+			</div>
 		);
 	}
 }

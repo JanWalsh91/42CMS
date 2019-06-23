@@ -2,8 +2,13 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	flex-grow: 1;
 
 	> * {
 		margin: 10px 0;
+	}
+
+	.Input[type=submit] {
+		margin-top: auto;
 	}
 }

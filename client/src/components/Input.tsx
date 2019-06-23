@@ -36,16 +36,6 @@ export const Input = (props: Props) => {
 				/>
 			)
 			break;
-		case 'submit':
-			inputElement = (
-				<input
-					className="Input"
-					{...props.config}
-					onClick={props.onClick}
-					onBlur={props.onBlur}
-				/>
-			)
-			break;
 		default:
 			break;
 	}
