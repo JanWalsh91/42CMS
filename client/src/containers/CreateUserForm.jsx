@@ -1,20 +1,14 @@
-import * as React from 'react';
+import React, { Component } from 'react';
 import update from 'immutability-helper';
 
 import { Form, Props as FormProps } from '../components/Form';
 import api from '../utils/api';
 
-export interface Props { onSubmit?: (res: Response) => any};
-
-export interface State {
-	loginForm: FormProps
-};
-
-export class LoginForm extends React.Component<Props, State> {
-	constructor(props: Props) {
+export class CreateUserForm extends Component {
+	constructor(props) {
 		super(props);
 		this.state = {
-			loginForm: {
+			createUserForm: {
 				inputs: {
 					name: {
 						element: 'input',
@@ -42,20 +36,32 @@ export class LoginForm extends React.Component<Props, State> {
 							maxLength: 24,
 						}
 					},
-				},
-				submitText: 'Sign In',
-				onSubmit: async (formData: any) => {
-					console.log('[LoginForm]', formData);
-					let res: any = await api.post('/login', formData);
-					console.log('res', res.data)
-					if (this.props.onSubmit) {
-						this.props.onSubmit(res);
+					projectName: {
+						element: 'input',
+						config: {
+							type: 'text',
+							placeholder: 'Project Name'
+						},
+						value: 'projectName',
+						validation: {
+							required: true
+						}
 					}
 				},
-				onInputChange: (id: any, value: any) => {
+				submitText: 'Sign Up',
+				onSubmit: async (formData) => {
+					console.log('[CreateUserForm]', formData);
+					api.post('/users', formData).then(res => {
+						console.log('res', res.data);
+						if (this.props.onSubmit) {
+							this.props.onSubmit(res);
+						}
+					});
+				},
+				onInputChange: (id, value) => {
 					this.setState(prevState => {
 						return update(prevState, {
-							loginForm: {
+							createUserForm: {
 								inputs: {
 									[id]: {
 										value: {
@@ -74,7 +80,7 @@ export class LoginForm extends React.Component<Props, State> {
 
 	render() {
 		return (
-			<Form {...this.state.loginForm}/>
+			<Form {...this.state.createUserForm}/>
 		)
 	}
 }

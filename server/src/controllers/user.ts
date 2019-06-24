@@ -48,11 +48,11 @@ export const userController = {
 				if (err) {
 					console.log('[authorize]', chalk.red('forbidden'));
 					res.statusCode = ResponseStatusTypes.FORBIDDEN
-					res.send();
+					res.end();
 					return ;
 				} else {
 					console.log('[authorize]', chalk.green('ok'));
-					res.end();
+					res.send({name: user.name, id: user._id});
 				}
 			});
 		} else {

@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
 	context: __dirname,
-	entry: path.join(__dirname, './src/index.tsx'),
+	entry: path.join(__dirname, './src/index'),
     output: {
         filename: 'bundle.js',
         path: path.join(__dirname, './dist')
@@ -17,7 +17,7 @@ module.exports = {
 	},
 
     resolve: {
-		extensions: ['.ts', '.tsx', '.js', '.json', '.scss']
+		extensions: ['.jsx', '.ts', '.tsx', '.js', '.json', '.scss']
     },
 
     module: {
@@ -28,6 +28,14 @@ module.exports = {
 				options: {
 					configFileName: path.join(__dirname, 'tsconfig.json')
 				},
+			},
+
+			{
+				test: /\.(js|jsx)$/,
+				exclude: /node_modules/,
+				use: {
+				  loader: "babel-loader"
+				}
 			},
 
 			{

@@ -4,7 +4,9 @@ import { IProject } from './project';
 
 // https://mongoosejs.com/docs/advanced_schemas.html
 class UserClass {
-
+	authenticate = (name, password, callback) => {
+		// User.findOne({name}, )
+	}
 }
 
 export interface IUser extends Document {

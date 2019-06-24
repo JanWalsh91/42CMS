@@ -1,0 +1,50 @@
+import React, { useState, useContext, useEffect } from 'react';
+import { Route, Switch, Redirect } from 'react-router-dom';
+
+import Login from '../pages/Login';
+import Home from '../pages/Home';
+import Loader from '../components/Loader';
+
+import useApi from '../hooks/useApi';
+
+import { UserContext } from '../context/user'; 
+
+// font awesome
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faCircleNotch } from '@fortawesome/free-solid-svg-icons';
+
+library.add(faCircleNotch);
+
+import '../styles/App';
+
+// import UserContext from '../context/user';
+
+export const App = props => {
+
+	const userContext = useContext(UserContext);
+
+	useEffect(() => {
+		console.log('[App.onEffect]', userContext)
+		// userContext.auth();
+	}, [])
+
+	const loader = userContext.loading ? <Loader /> : null
+	const redirect = (!userContext.loading && !userContext.user) ? <Redirect to='./login'/> : null;
+	const router =
+	<>
+		{redirect}
+		<Switch>
+			<Route path='/login' component={Login} />
+			<Route path='/' render={Home}/>} />
+		</Switch>
+	</>
+
+
+	return (
+		<div className="App">
+			{loader}
+			{router}
+			is auth: {userContext.user ? 'yes': 'no'}
+		</div>
+	)
+}
