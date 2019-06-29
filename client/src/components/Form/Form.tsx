@@ -1,9 +1,9 @@
 import * as React from 'react';
 import update from 'immutability-helper';
 
-import { Input, Props as InputProps } from './Input';
+import { Input, Props as InputProps } from '../Input/Input';
 
-import '../styles/Form'
+import './FormStyle'
 
 export interface Props {
 	title?: string,

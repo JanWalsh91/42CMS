@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import update from 'immutability-helper';
 
-import { Form, Props as FormProps } from '../components/Form';
+import { Form, Props as FormProps } from '../components/Form/Form';
 import api from '../utils/api';
 
 export class CreateUserForm extends Component {

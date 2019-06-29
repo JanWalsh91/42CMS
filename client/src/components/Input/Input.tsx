@@ -1,7 +1,7 @@
 import * as React from 'react';
 import classNames from 'classnames';
 
-import '../styles/Input.scss';
+import './InputStyle';
 
 type Element = 'input' | 'submit';
 type InputState = 'empty' | 'valid' | 'invalid';
