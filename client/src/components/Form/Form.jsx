@@ -1,39 +1,29 @@
-import * as React from 'react';
+import React, { Component } from 'react';
 import update from 'immutability-helper';
+import PropTypes from 'prop-types';
 
 import { Input, Props as InputProps } from '../Input/Input';
 
 import './FormStyle'
 
-export interface Props {
-	title?: string,
-	inputs: {[id: string]: {
-		element: 'input',
-		config: any,
-		value: string,
-		validation?: {
-			required?: boolean,
-			minLength?: number,
-			maxLength?: number,
-			regex?: RegExp
-		}
-	}},
-	submitText: string,
-	onSubmit: (formData: any) => any,
-	onInputChange: (id: string, value: string) => any,
-};
 
-export interface State {
-	inputs: {[id: string]: {
-		touched: boolean,
-		dirty: boolean,
-		valid: boolean,
-		error: string
-	}}
-}
 
-export class Form extends React.Component<Props, State> {
-	constructor(props: Props) {
+// export interface State {
+// 	inputs: {[id: string]: {
+// 		touched: boolean,
+// 		dirty: boolean,
+// 		valid: boolean,
+// 		error: string
+// 	}}
+// }
+
+/**
+ * Create an instance of Form
+ * 
+ */
+
+export class Form extends Component {
+	constructor(props) {
 		super(props);
 		this.state = { inputs: {} }
 		Object.keys(props.inputs).map(id => {
@@ -46,7 +36,7 @@ export class Form extends React.Component<Props, State> {
 		});
 	}
 
-	validateInput = (id: string, value: string): boolean => {
+	validateInput(id, value) {
 		// console.log('[Form] validateInput');
 		let input = this.props.inputs[id]
 		value = value || input.value
@@ -76,13 +66,13 @@ export class Form extends React.Component<Props, State> {
 		return true
 	}
 
-	onSubmit = (event: React.FormEvent<HTMLFormElement>): any => {
+	onSubmit(events) {
 		event.preventDefault();
 		// console.log('[Form] onSubmit', event);
 		
 		let valid = Object.keys(this.props.inputs).every(id => this.state.inputs[id].valid);
 		if (valid) {
-			let formData: { [id: string]: string } = {};
+			let formData = {};
 			Object.keys(this.props.inputs).map(key => {
 				formData[key] = this.props.inputs[key].value;
 			});
@@ -91,13 +81,13 @@ export class Form extends React.Component<Props, State> {
 		return null;
 	};
 
-	onInputChange = (e: React.FormEvent<HTMLInputElement>, id: string): void => {
+	onInputChange(e, id) {
 		// console.log('[Form] onInputChange')
 		this.props.onInputChange(id, e.currentTarget.value);
 		this.state.inputs[id].valid = this.validateInput(id, e.currentTarget.value);
 	}
 
-	onInputBlur = (e: React.FormEvent<HTMLInputElement>, id: string): void => {
+	onInputBlur(e, id) {
 		// console.log('[Form] onInputBlur')
 		this.setState(prevState => update(prevState, {
 			inputs: {
@@ -120,8 +110,8 @@ export class Form extends React.Component<Props, State> {
 						id={id}
 						{...this.props.inputs[id]}
 						{...this.state.inputs[id]}
-						onChange={(e: React.FormEvent<HTMLInputElement>) => this.onInputChange(e, id)}
-						onBlur={(e: React.FormEvent<HTMLInputElement>) => this.onInputBlur(e, id)}
+						onChange={e => this.onInputChange(e, id)}
+						onBlur={e => this.onInputBlur(e, id)}
 					/>
 				))}
 				<Input 
@@ -135,3 +125,29 @@ export class Form extends React.Component<Props, State> {
 		)
 	}
 }
+
+// export interface Props {
+// 	title?: string,
+// 	inputs: {[id: string]: {
+// 		element: 'input',
+// 		config: any,
+// 		value: string,
+// 		validation?: {
+// 			required?: boolean,
+// 			minLength?: number,
+// 			maxLength?: number,
+// 			regex?: RegExp
+// 		}
+// 	}},
+// 	submitText: string,
+// 	onSubmit: (formData: any) => any,
+// 	onInputChange: (id: string, value: string) => any,
+// };
+
+// Form.propTypes = {
+// 	title: PropTypes.string,
+// 	inputs: PropTypes.object.isRequired, // TODO
+// 	submitText: PropTypes.string.isRequired,
+// 	onSubmit: PropTypes.func.isRequired,
+// 	onInputChange: PropTypes.func.isRequired
+// }
