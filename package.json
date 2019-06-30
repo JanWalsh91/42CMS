@@ -60,8 +60,6 @@
   "@babel/preset-react": "^7.0.0",
   "@types/axios": "^0.14.0",
   "@types/chai": "^4.1.7",
-  "@types/chai-http": "^4.2.0",
-  "@types/chalk": "^2.2.0",
   "@types/classnames": "^2.2.8",
   "@types/connect-redis": "0.0.10",
   "@types/cors": "^2.8.5",

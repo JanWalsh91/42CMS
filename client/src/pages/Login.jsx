@@ -1,8 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Route, RouteComponentProps, Switch, Redirect } from 'react-router-dom';
 
-import { CreateUserForm } from '../containers/CreateUserForm';
-import { LoginForm } from '../containers/LoginForm';
+import CreateUserForm from '../containers/CreateUserForm';
+import LoginForm from '../containers/LoginForm';
 import { TabBar } from '../components/TabBar/TabBar';
 import UserContext from '../context/user';
 

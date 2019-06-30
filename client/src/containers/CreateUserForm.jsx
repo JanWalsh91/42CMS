@@ -1,86 +1,157 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import update from 'immutability-helper';
 
 import Form from '../components/Form/Form';
 import api from '../utils/api';
 
-export class CreateUserForm extends Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			createUserForm: {
-				inputs: {
-					name: {
-						element: 'input',
-						config: {
-							type: 'text',
-							placeholder: 'Username'
-						},
-						value: 'myname',
-						validation: {
-							required: true,
-							minLength: 3,
-							maxLength: 24
-						}
-					},
-					password: {
-						element: 'input',
-						config: {
-							type: 'password',
-							placeholder: 'Password'
-						},
-						value: 'poipoipoi',
-						validation: {
-							required: true,
-							minLength: 6,
-							maxLength: 24,
-						}
-					},
-					projectName: {
-						element: 'input',
-						config: {
-							type: 'text',
-							placeholder: 'Project Name'
-						},
-						value: 'projectName',
-						validation: {
-							required: true
-						}
-					}
+const CreateUserForm = props => {
+	const [createUserFormData, setCreateUserFormData] = useState({
+		inputs: {
+			name: {
+				element: 'input',
+				config: {
+					type: 'text',
+					placeholder: 'Username'
 				},
-				submitText: 'Sign Up',
-				onSubmit: async (formData) => {
-					console.log('[CreateUserForm]', formData);
-					api.post('/users', formData).then(res => {
-						console.log('res', res.data);
-						if (this.props.onSubmit) {
-							this.props.onSubmit(res);
-						}
-					});
+				value: 'myname',
+				validation: {
+					required: true,
+					minLength: 3,
+					maxLength: 24
+				}
+			},
+			password: {
+				element: 'input',
+				config: {
+					type: 'password',
+					placeholder: 'Password'
 				},
-				onInputChange: (id, value) => {
-					this.setState(prevState => {
-						return update(prevState, {
-							createUserForm: {
-								inputs: {
-									[id]: {
-										value: {
-											$set: value
-										}
-									}
-								}
-							} 
-						})
-					});
-					return null
+				value: 'poipoipoi',
+				validation: {
+					required: true,
+					minLength: 6,
+					maxLength: 24,
+				}
+			},
+			projectName: {
+				element: 'input',
+				config: {
+					type: 'text',
+					placeholder: 'Project Name'
+				},
+				value: 'projectName',
+				validation: {
+					required: true
 				}
 			}
+		},
+		submitText: 'Sign Up',
+		onSubmit: async (formData) => {
+			console.log('[CreateUserForm]', formData);
+			api.post('/users', formData).then(res => {
+				console.log('res', res.data);
+				if (props.onSubmit) {
+					props.onSubmit(res);
+				}
+			});
+		},
+		onInputChange: (id, value) => {
+			console.log(`on input change id: ${id} value: ${value}`)
+			console.log(`old data:`, createUserFormData.inputs)
+			let x = update(createUserFormData, {
+					inputs: {
+						[id]: {
+							value: {
+								$set: value
+							}
+						}
+					}
+				})
+			console.log('new data: ', x.inputs);
+			setCreateUserFormData(x)
 		}
-	}
-
-	render() {
-		return (
-			<Form {...this.state.createUserForm}/>
-		)
-	}
+	});
+	console.log(`render with input username value: ${createUserFormData.inputs.name.value}`);
+	return (
+		<Form {...createUserFormData}/>
+	)
 }
+
+// class CreateUserForm extends React.Component {
+// 	constructor(props){
+// 		super(props);
+// 		this.state = {
+// 			inputs: {
+// 				name: {
+// 					element: 'input',
+// 					config: {
+// 						type: 'text',
+// 						placeholder: 'Username'
+// 					},
+// 					value: 'myname',
+// 					validation: {
+// 						required: true,
+// 						minLength: 3,
+// 						maxLength: 24
+// 					}
+// 				},
+// 				password: {
+// 					element: 'input',
+// 					config: {
+// 						type: 'password',
+// 						placeholder: 'Password'
+// 					},
+// 					value: 'poipoipoi',
+// 					validation: {
+// 						required: true,
+// 						minLength: 6,
+// 						maxLength: 24,
+// 					}
+// 				},
+// 				projectName: {
+// 					element: 'input',
+// 					config: {
+// 						type: 'text',
+// 						placeholder: 'Project Name'
+// 					},
+// 					value: 'projectName',
+// 					validation: {
+// 						required: true
+// 					}
+// 				}
+// 			},
+// 			submitText: 'Sign Up',
+// 			onSubmit: async (formData) => {
+// 				console.log('[CreateUserForm]', formData);
+// 				api.post('/users', formData).then(res => {
+// 					console.log('res', res.data);
+// 					if (props.onSubmit) {
+// 						props.onSubmit(res);
+// 					}
+// 				});
+// 			},
+// 			onInputChange: (id, value) => {
+// 				console.log(`on input change id: ${id} value: ${value}`)
+// 				this.setState(update(this.state, {
+// 						inputs: {
+// 							[id]: {
+// 								value: {
+// 									$set: value
+// 								}
+// 							}
+// 						}
+// 					})
+// 				);
+// 			}
+// 		};
+// 	}
+// 	render() {
+// 		console.log(`render with input username value: ${this.state.inputs.name.value}`);
+// 		return (
+// 			<Form {...this.state}/>
+// 		)
+// 	}
+// }
+
+
+export default CreateUserForm;

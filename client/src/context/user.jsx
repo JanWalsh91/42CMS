@@ -1,13 +1,24 @@
+const WITH_SERVER = false;
+
 import React, { useState, createContext } from 'react';
 
 export const UserContext = createContext({
-	user: 'initial',
+	user: null,
 	loading: false,
 	auth: () => {
 		console.log('[init.auth]');
+		if (WITH_SERVER) {
+			UserContext.user = true;
+		}
 	},
-	login: () => {},
-	logout: () => {}
+	login: () => {
+		if (WITH_SEVRER) {
+			UserContext.user = true;
+		}
+	},
+	logout: () => {
+		UserContext.user = null;
+	}
 });
 
 export const UserContextProvider = props => {

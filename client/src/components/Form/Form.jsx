@@ -1,12 +1,9 @@
 import React, { Component } from 'react';
 import update from 'immutability-helper';
-import PropTypes from 'prop-types';
 
-import { Input, Props as InputProps } from '../Input/Input';
+import { Input } from '../Input/Input';
 
 import './FormStyle'
-
-
 
 // export interface State {
 // 	inputs: {[id: string]: {
@@ -22,8 +19,9 @@ import './FormStyle'
  * 
  */
 
-export class Form extends Component {
+export default class Form extends Component {
 	constructor(props) {
+		console.log('props: ', {props})
 		super(props);
 		this.state = { inputs: {} }
 		Object.keys(props.inputs).map(id => {
@@ -143,11 +141,3 @@ export class Form extends Component {
 // 	onSubmit: (formData: any) => any,
 // 	onInputChange: (id: string, value: string) => any,
 // };
-
-// Form.propTypes = {
-// 	title: PropTypes.string,
-// 	inputs: PropTypes.object.isRequired, // TODO
-// 	submitText: PropTypes.string.isRequired,
-// 	onSubmit: PropTypes.func.isRequired,
-// 	onInputChange: PropTypes.func.isRequired
-// }

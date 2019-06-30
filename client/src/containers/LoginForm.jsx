@@ -1,12 +1,12 @@
 import React, { useState, useContext } from 'react';
 import update from 'immutability-helper';
 
-import { Form, Props as FormProps } from '../components/Form/Form';
+import Form from '../components/Form/Form';
 import api from '../utils/api';
 import { UserContext } from '../context/user';
 import useApi from '../hooks/useApi';
 
-export const LoginForm = () => {
+const LoginForm = () => {
 	const userContext = useContext(UserContext);
 
 	const { loading, data, fetch } = useApi('post', 'login');
@@ -47,18 +47,15 @@ export const LoginForm = () => {
 		},
 		onInputChange: (id, value) => {
 			setLoginFormData(update(loginFormData, {
-					loginForm: {
-						inputs: {
-							[id]: {
-								value: {
-									$set: value
-								}
+					inputs: {
+						[id]: {
+							value: {
+								$set: value
 							}
 						}
-					} 
+					}
 				})
 			);
-			return null
 		}
 	});
 
@@ -66,3 +63,5 @@ export const LoginForm = () => {
 		<Form {...loginFormData}/>
 	)
 }
+
+export default LoginForm;
