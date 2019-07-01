@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import update from 'immutability-helper';
 
 import { Input } from '../Input/Input';
@@ -19,33 +19,32 @@ import './FormStyle'
  * 
  */
 
-export default class Form extends Component {
-	constructor(props) {
-		console.log('props: ', {props})
-		super(props);
-		this.state = { inputs: {} }
-		Object.keys(props.inputs).map(id => {
-			this.state.inputs[id] = {
+const Form = (props) => {
+	const [inputs, setInputs] = useState(() => {
+		console.log('%cINIT <Form /> state', 'color: orange', props);
+		const inputs = { }
+		Object.keys(props.inputs).forEach(id => {
+			inputs[id] = {
 				touched: false,
 				dirty: false,
-				valid: this.validateInput(id, this.props.inputs[id].value),
+				value: props.inputs[id].value,
+				valid: validateInput(id, props.inputs[id].value),
 				error: null
 			}
 		});
-	}
+		return inputs;
+	})
 
-	validateInput(id, value) {
+	function validateInput (id, value) {
 		// console.log('[Form] validateInput');
-		let input = this.props.inputs[id]
+		let input = props.inputs[id]
 		value = value || input.value
 		if (input.validation) {
 			if (input.validation.hasOwnProperty('required') && value.trim().length == 0) {
-				this.setState(prevState => update(prevState, {
-					inputs: {
-						[id]: {
-							error: {
-								$set: 'Required'
-							}
+				setInputs(update(inputs, {
+					[id]: {
+						error: {
+							$set: 'Required'
 						}
 					}
 				}));
@@ -64,64 +63,61 @@ export default class Form extends Component {
 		return true
 	}
 
-	onSubmit(events) {
+	function onSubmit (event) {
 		event.preventDefault();
-		// console.log('[Form] onSubmit', event);
+		console.log('<Form /> onSubmit', event);
 		
-		let valid = Object.keys(this.props.inputs).every(id => this.state.inputs[id].valid);
+		let valid = Object.keys(inputs).every(id => inputs[id].valid);
 		if (valid) {
 			let formData = {};
-			Object.keys(this.props.inputs).map(key => {
-				formData[key] = this.props.inputs[key].value;
+			Object.keys(inputs).map(key => {
+				formData[key] = inputs[key].value;
 			});
-			this.props.onSubmit(formData);
+			props.onSubmit(formData);
 		}
 		return null;
 	};
 
-	onInputChange(e, id) {
-		// console.log('[Form] onInputChange')
-		this.props.onInputChange(id, e.currentTarget.value);
-		this.state.inputs[id].valid = this.validateInput(id, e.currentTarget.value);
+	function onInputChange (e, id) {
+		console.log('%c <Form /> onInputChange', 'color: blue');
+		
+		setInputs(update(inputs, {
+			[id]: {
+				value: { $set: e.currentTarget.value },
+				valid: { $set: validateInput(id, e.currentTarget.value) }
+			}
+		}))
 	}
 
-	onInputBlur(e, id) {
+	function onInputBlur (e, id) {
 		// console.log('[Form] onInputBlur')
-		this.setState(prevState => update(prevState, {
-			inputs: {
-				[id]: {
-					touched: {
-						$set: true
-					}
-				}
-			}
+		setInputs(update(inputs, {
+			[id]: { touched: { $set: true } }
 		}));
 	}
 
-	render() {
-		return (
-			<form className="Form" onSubmit={this.onSubmit}>
-			<h4>{this.props.title}</h4>
-				{Object.keys(this.props.inputs).map(id => (
-					<Input
-						key={id}
-						id={id}
-						{...this.props.inputs[id]}
-						{...this.state.inputs[id]}
-						onChange={e => this.onInputChange(e, id)}
-						onBlur={e => this.onInputBlur(e, id)}
-					/>
-				))}
-				<Input 
-					key='submit'
-					id='submit'
-					element='input'
-					config={{type: 'submit'}}
-					value={this.props.submitText}
+	return (
+		<form className="Form" onSubmit={onSubmit}>
+		<h4>{props.title}</h4>
+			{Object.keys(props.inputs).map(id => (
+				<Input
+					key={id}
+					id={id}
+					{...props.inputs[id]}
+					{...inputs[id]}
+					onChange={e => onInputChange(e, id)}
+					onBlur={e => onInputBlur(e, id)}
 				/>
-			</form>
-		)
-	}
+			))}
+			<Input 
+				key='submit'
+				id='submit'
+				element='input'
+				config={{type: 'submit'}}
+				value={props.submitText}
+			/>
+		</form>
+	)
 }
 
 // export interface Props {
@@ -141,3 +137,6 @@ export default class Form extends Component {
 // 	onSubmit: (formData: any) => any,
 // 	onInputChange: (id: string, value: string) => any,
 // };
+
+
+export default Form;

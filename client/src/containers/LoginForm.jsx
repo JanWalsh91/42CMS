@@ -10,7 +10,7 @@ const LoginForm = () => {
 	const userContext = useContext(UserContext);
 
 	const { loading, data, fetch } = useApi('post', 'login');
-	const [loginFormData, setLoginFormData] = useState({
+	const formConfig = {
 		inputs: {
 			name: {
 				element: 'input',
@@ -41,26 +41,13 @@ const LoginForm = () => {
 		},
 		submitText: 'Sign In',
 		onSubmit: async (formData) => {
-			console.log('[LoginForm]', formData);
+			console.log('%c <LoginForm /> onSubmit', 'color: green', formData);
 			fetch('post', '/login', formData);
-			// userContext.
-		},
-		onInputChange: (id, value) => {
-			setLoginFormData(update(loginFormData, {
-					inputs: {
-						[id]: {
-							value: {
-								$set: value
-							}
-						}
-					}
-				})
-			);
 		}
-	});
+	}
 
 	return (
-		<Form {...loginFormData}/>
+		<Form {...formConfig}/>
 	)
 }
 

@@ -51,7 +51,8 @@
   "react": "^16.8.6",
   "react-dom": "^16.8.6",
   "react-router-dom": "^5.0.1",
-  "redis": "^2.8.0"
+  "redis": "^2.8.0",
+  "@bit/bit.envs.compilers.babel": "file:./components/compilers/babel"
  },
  "devDependencies": {
   "@babel/core": "^7.4.5",
@@ -95,7 +96,9 @@
   "webpack-dev-server": "^3.7.1"
  },
  "bit": {
-  "env": {},
+  "env": {
+   "compiler": "bit.envs/compilers/react@1.0.2"
+  },
   "componentsDefaultDirectory": "components/{name}",
   "packageManager": "npm"
  }
