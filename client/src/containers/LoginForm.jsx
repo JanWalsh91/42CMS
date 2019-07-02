@@ -1,15 +1,11 @@
-import React, { useState, useContext } from 'react';
-import update from 'immutability-helper';
+import React, {useContext } from 'react';
 
 import Form from '../components/Form/Form';
-import api from '../utils/api';
 import { UserContext } from '../context/user';
-import useApi from '../hooks/useApi';
 
 const LoginForm = () => {
 	const userContext = useContext(UserContext);
 
-	const { loading, data, fetch } = useApi('post', 'login');
 	const formConfig = {
 		inputs: {
 			name: {
@@ -42,13 +38,11 @@ const LoginForm = () => {
 		submitText: 'Sign In',
 		onSubmit: async (formData) => {
 			console.log('%c <LoginForm /> onSubmit', 'color: green', formData);
-			fetch('post', '/login', formData);
+			await userContext.login(formData);
 		}
 	}
 
-	return (
-		<Form {...formConfig}/>
-	)
+	return <Form {...formConfig}/>;
 }
 
 export default LoginForm;

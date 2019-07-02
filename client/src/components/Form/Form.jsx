@@ -21,7 +21,6 @@ import './FormStyle'
 
 const Form = (props) => {
 	const [inputs, setInputs] = useState(() => {
-		console.log('%cINIT <Form /> state', 'color: orange', props);
 		const inputs = { }
 		Object.keys(props.inputs).forEach(id => {
 			inputs[id] = {
@@ -36,7 +35,6 @@ const Form = (props) => {
 	})
 
 	function validateInput (id, value) {
-		// console.log('[Form] validateInput');
 		let input = props.inputs[id]
 		value = value || input.value
 		if (input.validation) {
@@ -65,8 +63,6 @@ const Form = (props) => {
 
 	function onSubmit (event) {
 		event.preventDefault();
-		console.log('<Form /> onSubmit', event);
-		
 		let valid = Object.keys(inputs).every(id => inputs[id].valid);
 		if (valid) {
 			let formData = {};
@@ -79,8 +75,6 @@ const Form = (props) => {
 	};
 
 	function onInputChange (e, id) {
-		console.log('%c <Form /> onInputChange', 'color: blue');
-		
 		setInputs(update(inputs, {
 			[id]: {
 				value: { $set: e.currentTarget.value },
@@ -90,7 +84,6 @@ const Form = (props) => {
 	}
 
 	function onInputBlur (e, id) {
-		// console.log('[Form] onInputBlur')
 		setInputs(update(inputs, {
 			[id]: { touched: { $set: true } }
 		}));

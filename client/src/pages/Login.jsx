@@ -3,13 +3,12 @@ import { BrowserRouter as Router, Route, RouteComponentProps, Switch, Redirect }
 
 import CreateUserForm from '../containers/CreateUserForm';
 import LoginForm from '../containers/LoginForm';
-import { TabBar } from '../components/TabBar/TabBar';
-import UserContext from '../context/user';
+import TabBar from '../components/TabBar/TabBar';
 
 import '../styles/Login.scss';
 
 
-export default (props) =>  {
+export default () =>  {
 	
 	// const userContext = useContext('user');
 	const [activeTabKey, setActivetabKey] = useState('signin');

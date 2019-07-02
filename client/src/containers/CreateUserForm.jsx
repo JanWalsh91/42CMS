@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import update from 'immutability-helper';
+import React, { useContext } from 'react';
 
 import Form from '../components/Form/Form';
-import api from '../utils/api';
+import { UserContext } from '../context/user';
 
-const CreateUserForm = props => {
+const CreateUserForm = () => {
+
+	const userContext = useContext(UserContext);
 
 	const formConfig = {
 		inputs: {
@@ -48,19 +49,12 @@ const CreateUserForm = props => {
 		},
 		submitText: 'Sign Up',
 		onSubmit: async (formData) => {
-			console.log('<CreateUserForm />', formData);
-			api.post('/users', formData).then(res => {
-				console.log('res', res.data);
-				if (props.onSubmit) {
-					props.onSubmit(res);
-				}
-			});
+			console.log('%c <CreateUserForm /> onSubmit', 'color: green', formData);
+			await userContext.create(formData);
 		},
 	}
 
-	return (
-		<Form {...formConfig}/>
-	)
+	return <Form {...formConfig}/>;
 }
 
 export default CreateUserForm;

@@ -5,21 +5,19 @@ import Login from '../pages/Login';
 import Home from '../pages/Home';
 import Loader from '../components/Loader/Loader';
 
-import useApi from '../hooks/useApi';
-
 import { UserContext } from '../context/user'; 
 
 // font awesome
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faCircleNotch } from '@fortawesome/free-solid-svg-icons';
-
 library.add(faCircleNotch);
+// font awesome END
 
 import '../styles/App';
 
 // import UserContext from '../context/user';
 
-export const App = props => {
+const App = () => {
 
 	const userContext = useContext(UserContext);
 
@@ -48,3 +46,5 @@ export const App = props => {
 		</div>
 	)
 }
+
+export default App;

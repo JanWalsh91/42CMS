@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
+
+// debug without server
+const WITH_SERVER = false;
 
 export default (method, path, dependencies) => {
 
-	const [loading, setLoading] = useState(true);
-	const [data, setData] = useState(null);
-
 	const fetch = async() => {
-		console.log('[useApi] useEffect', {method, path});
-		setLoading(true)
-		console.log('[useApi] fetching data ...')
-		api[method](path)
-			.then(response => {
-				console.log('[useApi] SUCCESS', response);
-			})
-			.catch(error => {
-				console.log('[useApi] ERROR', error);
-			})
-			.finally(() => {
-				console.log('[useApi] DONE fetching data')
-				setLoading(false);
-			})
+		console.log('[useApi] fetch', {method, path});
+
+		if (WITH_SERVER) {
+			return await api[method](path)
+				.then(response => {
+					console.log('[useApi] SUCCESS', response);
+					return response;
+				})
+				.catch(error => {
+					console.log('[useApi] ERROR', error);
+				})
+		} else {
+			await (new Promise(resolve => setTimeout(resolve, 500)));
+			return 0;
+		}
 	};
 
-	return { loading, data, fetch }
+	return { fetch }
 }

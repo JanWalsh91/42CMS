@@ -72,7 +72,7 @@ export const userController = {
 			res.send()
 		} else {
 			req.session.apiKey = user.apiKey
-			res.send({message: 'login success'})
+			res.send({message: 'login success', user: { name: user.name}})
 		}
 	},
 
