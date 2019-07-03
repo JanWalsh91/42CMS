@@ -3,6 +3,7 @@ import { Route, Switch, Redirect } from 'react-router-dom';
 
 import Login from '../pages/Login';
 import Home from '../pages/Home';
+import Projects from '../pages/Projects/Projects';
 import Loader from '../components/Loader/Loader';
 
 import { UserContext } from '../context/user'; 
@@ -27,12 +28,13 @@ const App = () => {
 	}, [])
 
 	const loader = userContext.loading ? <Loader /> : null
-	const redirect = (!userContext.loading && !userContext.user) ? <Redirect to='./login'/> : null;
+	// const redirect = (!userContext.loading && !userContext.user) ? <Redirect to='./login'/> : null;
 	const router =
 	<>
-		{redirect}
+		{/* {redirect} */}
 		<Switch>
 			<Route path='/login' component={Login} />
+			<Route path='/projects' component={Projects} />
 			<Route path='/' render={Home}/>} />
 		</Switch>
 	</>

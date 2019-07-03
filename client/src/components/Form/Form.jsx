@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import update from 'immutability-helper';
 
-import { Input } from '../Input/Input';
+import Input from '../Input/Input';
 
-import './FormStyle'
+import './Form.scss'
 
 // export interface State {
 // 	inputs: {[id: string]: {
