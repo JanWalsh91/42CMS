@@ -1,13 +1,21 @@
 import React from 'react';
+import styled from 'styled-components';
+import BaseButton from '../Base/BaseButton';
 
-import './Button.scss';
+
+const ThemedButton = styled(BaseButton)`
+	border-color: ${props => props.theme.primaryColor}
+`;
 
 const Button = props => {
+	console.log(props)
 	return (
-		<button className='Button' onClick={(e) => props.handleClick(e)}>
+		<ThemedButton onClick={e => props.onClick(e)}>
 			{props.children}
-		</button>
+		</ThemedButton>
 	)
 }
 
 export default Button;
+
+// TODO; ThemeProvider in App.jsx
