@@ -2,5 +2,10 @@ import styled from 'styled-components';
 
 export default styled.button`
 	outline: none;
-	border: 1px black solid;
+	border-style: solid;
+	border-radius: 0px;
+	&:active {
+		outline: none;
+	}
+	cursor: pointer;
 `;
