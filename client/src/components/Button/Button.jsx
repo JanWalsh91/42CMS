@@ -2,7 +2,7 @@ import React from 'react';
 import styled, { css } from 'styled-components';
 import BaseButton from '../Base/BaseButton';
 
-const ThemedButton = styled(BaseButton)`
+const StyledButton = styled(BaseButton)`
 	${props => !props.disabled ?
 		css`
 			border-color: ${props.theme.primaryColor};
@@ -26,6 +26,6 @@ const ThemedButton = styled(BaseButton)`
 	font-size: ${props => props.theme.fontSize};
 `;
 
-const Button = props => <ThemedButton {...props} />
+const Button = props => <StyledButton {...props} />
 
 export default Button;
