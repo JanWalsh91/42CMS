@@ -51,3 +51,6 @@ storiesOf('Themed/Checkbox', module)
 	.add('Active', () => (
 		<Checkbox active/>
 	))
+	.add('With label', () => (
+		<Checkbox active label='Use this State'/>
+	))

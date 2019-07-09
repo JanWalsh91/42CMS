@@ -1,21 +1,24 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled, { css } from 'styled-components';
 
 const InputLabel = styled.label`
-	display: block;
-	height: 1rem;
-	width: 1rem;
-	padding: 0;
-	border-width: ${props => props.theme.thick};
-	border-style: solid;
+	padding: ${props => props.theme.thick};
+	display: inline-flex;
+	position: relative;
+	align-items: center;
+	font-family: ${props => props.theme.fontFamily}
 	${props => !props.disabled ?
 		css`
+			cursor: pointer;
 			border-color: ${props.theme.primaryColor};
+			color: ${props.theme.primaryColor};
 			&:hover {
 				border-color: ${props.theme.hoverColor};			
+				color: ${props.theme.hoverColor};			
 			}
 			&:active {
 				border-color: ${props.theme.activeColor};			
+				color: ${props.theme.activeColor};			
 			}
 		` :
 		css`
@@ -25,24 +28,39 @@ const InputLabel = styled.label`
 	}
 `;
 
+const InputButton = styled.div`
+	display: inline-block;
+	position: relative;
+	height: 1rem;
+	width: 1rem;
+	border-width: ${props => props.theme.thin};
+	border-style: solid;
+	border-color: inherit;
+
+	&:after {
+		content: "";
+		position: absolute;
+		top: ${props => props.theme.thin};
+		left: ${props => props.theme.thin};
+		right: ${props => props.theme.thin};
+		bottom: ${props => props.theme.thin};
+		background-color: ${props => props.active ? props.theme.primaryColor : 'transparent'};
+	}
+`;
+
 const Input = styled.input`
 	display: none;
 `;
 
-const InnerInput = styled.span`
-	display: block;
-	height: 90%;
-	width: 90%;
-	position: relative;
-	top: 5%;
-	left: 5%;
-	background-color: ${props => props.active ? props.theme.primaryColor : 'transparent'};
+const InputText = styled.span`
+	margin-left: 10px;
 `;
 
 const Checkbox = props => (
-	<InputLabel type='checkbox' {...props}>
+	<InputLabel>
 		<Input type="checkbox"/>
-		<InnerInput active={props.active} />
+		<InputButton {...props} />
+		{props.label ? <InputText>{props.label}</InputText> : null}
 	</InputLabel>
 );
 
