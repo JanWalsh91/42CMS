@@ -13,7 +13,7 @@ router.get('/', (req: Request, res: Response) => {
 	})
 });
 
-router.use('/auth', auth);
+// router.use('/auth', auth);
 router.use('/login', login);
 router.use('/users', users);
 router.use('/projects', projects);

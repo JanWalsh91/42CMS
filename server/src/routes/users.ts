@@ -3,7 +3,6 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { userController } from '../controllers/user';
 import { User } from '../models/user';
 import authorize from '../middleware/authorize';
-import { connection } from 'mongoose';
 
 const router: Router = Router();
 
@@ -13,6 +12,7 @@ router
 	.post('/:userid', authorize, userController.update)
 	.delete('/:userid', authorize, userController.delete)
 
+	// TODO: is this userful?
 	.param('userid', (req: Request, res: Response, next: NextFunction, id) => {
 		User.findById(id, (err, user) => {
 			if (err) {

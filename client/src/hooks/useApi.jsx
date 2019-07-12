@@ -1,7 +1,7 @@
 import api from '../utils/api';
 
 // debug without server
-const WITH_SERVER = false;
+const WITH_SERVER = true;
 
 export default (method, path, dependencies) => {
 

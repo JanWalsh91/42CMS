@@ -2,6 +2,10 @@ import app from '../src/app'
 import * as chai from 'chai';
 import chaiHttp = require('chai-http');
 chai.use(chaiHttp);
+const agent = chai.request.agent(app)
+
+import { User } from '../src/models/user';
+import { Project } from '../src/models/project';
 
 export const userData = 
 	{
@@ -10,22 +14,35 @@ export const userData =
 		projectName: 'my project'
 	}
 
+export const clearDataBase = async (models?: any[]) => {
+	if (!models) {
+		models = [
+			User,
+			Project
+		];
+	}
+	await Promise.all(models.map(model => model.deleteMany({})));
+};
+
 // ===== USERS =====
 
-export const getAllUsers = () => {
-	return chai.request(app).get('/users');
-};
+export const getAllUsers = () =>
+	agent.get('/users');
 
-export const createPortalUser = (params: {name: String, password: String, projectName: String}) => {
-	return chai.request(app).post('/users').send(params)
-};
+// Logs in user (sets cookie)
+export const createPortalUser = (params: {name: String, password: String, projectName: String}) => 
+	agent.post('/users').send(params);
 
 // ===== PROJECTS =====
 
-export const createProject = (params: {name: String, owner: String}) => {
-	return chai.request(app).post('/projects').send(params)
-};
+export const createProject = (params: {name: String}) =>
+	agent.post('/projects').send(params);
 
+export const getProjects = () => 
+	agent.get('/projects');
+
+export const getProject = (params: {id: String}) =>
+	agent.get(`/projects/${params.id}`);
 
 // ===== UTILITY =====
 

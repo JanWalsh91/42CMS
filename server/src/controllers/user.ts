@@ -7,25 +7,35 @@ import { uuid } from '../utils/uuid';
 import ResponseStatusTypes from "../utils/ResponseStatusTypes";
 
 export const userController = {
+	/**
+	 * Creates a new user and project
+	 */
 	async create(req: Request, res: Response) {
-		console.log(chalk.green('[UserContoller] create'), req.body);
-		if (await userController.exists({name: req.body.name})) {
+		console.log(chalk.magenta('[UserContoller] create'), req.body);
+		// save params
+		const { name, password, projectName } = req.body;
+		
+		// Check if user exists
+		if (await userController.exists({name})) {
 			console.log(chalk.red('user already exists'))
 			res.statusCode = ResponseStatusTypes.BAD_REQUEST;
 			res.send({err: 'User already exists'});
 			return ;
 		}
+		// Create new user
 		let newUser: IUser = new User({
-			name: req.body.name,
-			password: req.body.password,
+			name,
+			password,
 			apiKey: uuid('apiKey')
 		});
+		// Create new project (TODO: use Project API ?)
 		let newProject: IProject = new Project({
-			name: req.body.projectName,
+			name: projectName,
 			owner: newUser._id
 		});
 		newUser.projects = [newProject._id];
 		await Promise.all([newUser.save(), newProject.save()]);
+		// Save session TODO: refactor ?
 		if (req.session) {
 			req.session.apiKey = newUser.apiKey;
 		}
@@ -41,8 +51,9 @@ export const userController = {
 		});
 	},
 
-	async authorize(req: Request, res: Response) {
-		console.log('[authorize]', req.session)
+	// set session
+	async setSession(req: Request, res: Response) {
+		console.log(chalk.magenta('[userController] setSession'));
 		if (req.session && req.session.apiKey) {
 			User.findOne({apiKey: req.session.apiKey}, (err: any, user: IUser) => {
 				if (err) {
@@ -62,7 +73,7 @@ export const userController = {
 	},
 
 	async login(req: Request, res: Response) {
-		console.log('[User.login]')
+		console.log(chalk.magenta('[User.login]'));
 		let user: IUser = await User.findOne({
 			name: req.body.name,
 			password: req.body.password
@@ -77,7 +88,7 @@ export const userController = {
 	},
 
 	get(req: Request, res: Response) {
-		console.log('[User] get')
+		console.log(chalk.magenta('[User] get'));
 		res.send({user: req.params.user});				
 		// User.findById(req.params.userid, (err, user) => {
 		// 	if (err){
@@ -106,6 +117,10 @@ export const userController = {
 	},
 
 	async exists(params: any) {
-		return new Promise(resolve => User.findOne((params), (err, user) => resolve(err || !user)));
+		return new Promise(resolve =>
+			User.findOne((params), (err, user) => 
+				resolve(err || user)
+			)
+		);
 	}
 }

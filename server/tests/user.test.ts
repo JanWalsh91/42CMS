@@ -1,26 +1,30 @@
 import * as chai from 'chai';
 chai.should();
 
-import { userData, getAllUsers, createPortalUser, printret } from './common'
+import { clearDataBase, userData, getAllUsers, createPortalUser, printret } from './common'
 
 import { User } from '../src/models/user';
 import { Project } from '../src/models/project';
 
 let ret: any;
 
-describe.only('User', function() {
+describe('User', function() {
 	beforeEach(async () => {
-		await User.remove({});
-		await Project.remove({});
+		console.log('[User] beforeEach')
+		await clearDataBase();
 	});
 
-	describe.only('Create', function() {
+	describe('Create', function() {
 		it('Should create a user and a project', async () => {
-			ret = await createPortalUser(userData)
-			printret(ret)
-			ret.should.have.status(200)
+			ret = await createPortalUser(userData);
+			// printret(ret);
+			ret.should.have.status(200);
 			// check if user exists
+			const user = await User.find({apiKey: ret.body.user.apiKey});
+			user.should.exist;
 			// check if project exists
+			const project = await Project.find({_id: ret.body.project._id});
+			project.should.exist;
 		});
 	});
 

@@ -10,8 +10,8 @@ import { UserContext } from '../context/user';
 
 // font awesome
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faCircleNotch } from '@fortawesome/free-solid-svg-icons';
-library.add(faCircleNotch);
+import { faCircleNotch, coffee } from '@fortawesome/free-solid-svg-icons';
+library.add(faCircleNotch, coffee);
 // font awesome END
 
 import '../styles/App';
