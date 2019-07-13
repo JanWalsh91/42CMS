@@ -11,7 +11,8 @@ class UserClass {
 
 export interface IUser extends Document {
 	_id: string,
-	apiKey: string
+	apiKey: string,
+	username: string,
 	name: string,
 	password: string,
 	create_date: Date,
@@ -23,10 +24,14 @@ const UserSchema = new Schema({
 		type: String,
 		required: 'Need an apiKey'
 	},
+	username: {
+		type: String,
+		required: 'Enter a username',
+		unique: true
+	},
 	name: {
         type: String,
-		required: 'Enter a name',
-		unique: true
+		required: 'Enter a name'
     },
 	password: {
 		type: String,

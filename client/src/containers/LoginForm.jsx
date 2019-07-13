@@ -8,13 +8,13 @@ const LoginForm = () => {
 
 	const formConfig = {
 		inputs: {
-			name: {
+			username: {
 				element: 'input',
 				config: {
 					type: 'text',
 					placeholder: 'Username'
 				},
-				value: 'myname',
+				value: 'jsmith',
 				validation: {
 					required: true,
 					minLength: 3,
@@ -27,7 +27,7 @@ const LoginForm = () => {
 					type: 'password',
 					placeholder: 'Password'
 				},
-				value: 'poipoipoi',
+				value: 'password',
 				validation: {
 					required: true,
 					minLength: 6,

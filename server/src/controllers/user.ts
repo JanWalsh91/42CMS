@@ -5,6 +5,9 @@ import { User, IUser } from '../models/user';
 import { Project, IProject } from '../models/project';
 import { uuid } from '../utils/uuid';
 import ResponseStatusTypes from "../utils/ResponseStatusTypes";
+import { ServerError, ErrorType } from '../utils/ServerError';
+
+const { BAD_REQUEST } = ResponseStatusTypes;
 
 export const userController = {
 	/**
@@ -13,19 +16,22 @@ export const userController = {
 	async create(req: Request, res: Response) {
 		console.log(chalk.magenta('[UserContoller] create'), req.body);
 		// save params
-		const { name, password, projectName } = req.body;
+		const { username, password, projectName, name } = req.body;
 		
 		// Check if user exists
-		if (await userController.exists({name})) {
+		let existingUsers: IUser[] = await User.find({username});
+		console.log(existingUsers);
+		if (existingUsers.length > 0) {
 			console.log(chalk.red('user already exists'))
-			res.statusCode = ResponseStatusTypes.BAD_REQUEST;
-			res.send({err: 'User already exists'});
+			res.statusCode = BAD_REQUEST;
+			res.send(new ServerError(ErrorType.USER_EXISTS, username));
 			return ;
 		}
 		// Create new user
 		let newUser: IUser = new User({
-			name,
-			password,
+			username: username,
+			name: name,
+			password: password,
 			apiKey: uuid('apiKey')
 		});
 		// Create new project (TODO: use Project API ?)
@@ -34,8 +40,15 @@ export const userController = {
 			owner: newUser._id
 		});
 		newUser.projects = [newProject._id];
-		await Promise.all([newUser.save(), newProject.save()]);
-		// Save session TODO: refactor ?
+		// TODO: handle errors
+		try {
+			await Promise.all([newUser.save(), newProject.save()]);
+		} catch (e) {
+			console.log(e);
+			res.statusCode = BAD_REQUEST;
+			res.send({error: e});
+			return ;
+		}
 		if (req.session) {
 			req.session.apiKey = newUser.apiKey;
 		}
@@ -73,17 +86,16 @@ export const userController = {
 	},
 
 	async login(req: Request, res: Response) {
-		console.log(chalk.magenta('[User.login]'));
-		let user: IUser = await User.findOne({
-			name: req.body.name,
-			password: req.body.password
-		});
+		console.log(chalk.magenta('[User.login]'), req.body);
+		const { username, password } = req.body;
+
+		let user: IUser = await User.findOne({username, password});
 		if (!user) {
-			res.statusCode = ResponseStatusTypes.FORBIDDEN
-			res.send()
+			res.statusCode = ResponseStatusTypes.UNAUTHORIZED;
+			res.send(new ServerError(ErrorType.BAD_LOGIN));
 		} else {
 			req.session.apiKey = user.apiKey
-			res.send({message: 'login success', user: { name: user.name}})
+			res.send({message: 'login success', user: { username: user.username}})
 		}
 	},
 

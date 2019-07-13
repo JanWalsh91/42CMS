@@ -1,8 +1,9 @@
-import React, { userState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 import Projects from './Projects/Projects';
 import useApi from '../../hooks/useApi';
+import chalk from 'chalk';
 
 const dummyProjects = [
 	{name: 'Givenchy', owner: 'Me', id: '0'},
@@ -11,10 +12,20 @@ const dummyProjects = [
 
 const ProjectsPage = props => {
 
-	const { fetch } = useApi('get', 'projects');
+	const [ projects, setProjects ] = useState([]); 
+	const getProjects = useApi('get', 'projects');
+
+	// useEffect(async () => {
+	// 	console.log(chalk.red('Fetching data'));
+	// 	const ret = await getProjects();
+	// 	console.log({ret});
+	// }, []);
 
 	return (
-		<Projects projects={dummyProjects}/>
+		<>
+			<div>Projects</div>
+			<Projects projects={projects}/>	
+		</>
 	);
 };
 

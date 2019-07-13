@@ -21,7 +21,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 				return notAuthorized('User not found. Error:' + err)
 			} else if (user) {
 				
-				console.log(chalk.green('Found user! =>', user.name));
+				console.log(chalk.green('Found user! =>', user.username));
 				req.body.user = user;											// Save user in req.body
 				next();
 				return ;

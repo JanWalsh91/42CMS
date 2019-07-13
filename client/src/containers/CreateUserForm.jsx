@@ -9,18 +9,26 @@ const CreateUserForm = () => {
 
 	const formConfig = {
 		inputs: {
-			name: {
+			username: {
 				element: 'input',
 				config: {
 					type: 'text',
 					placeholder: 'Username'
 				},
-				value: 'myname',
+				value: 'jsmith',
 				validation: {
 					required: true,
 					minLength: 3,
 					maxLength: 24
 				}
+			},
+			name: {
+				element: 'input',
+				config: {
+					type: 'text',
+					placeholder: 'My Name'
+				},
+				value: 'John Smith',
 			},
 			password: {
 				element: 'input',
@@ -28,7 +36,7 @@ const CreateUserForm = () => {
 					type: 'password',
 					placeholder: 'Password'
 				},
-				value: 'poipoipoi',
+				value: 'password',
 				validation: {
 					required: true,
 					minLength: 6,
@@ -41,14 +49,14 @@ const CreateUserForm = () => {
 					type: 'text',
 					placeholder: 'Project Name'
 				},
-				value: 'projectName',
+				value: 'Default Project',
 				validation: {
 					required: true
 				}
 			}
 		},
 		submitText: 'Sign Up',
-		onSubmit: async (formData) => {
+		onSubmit: async formData => {
 			console.log('%c <CreateUserForm /> onSubmit', 'color: green', formData);
 			await userContext.create(formData);
 		},

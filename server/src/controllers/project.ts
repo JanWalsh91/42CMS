@@ -1,8 +1,9 @@
-import { Project } from '../models/project'
+import { Project, IProject } from '../models/project'
 import { User, IUser } from '../models/user'
 import { Request, Response } from 'express';
 import chalk from 'chalk';
 import ResponseStatusTypes from '../utils/ResponseStatusTypes';
+const { BAD_REQUEST } = ResponseStatusTypes; 
 
 export class ProjectController {
 	public async create(req: Request, res: Response) {
@@ -12,7 +13,7 @@ export class ProjectController {
 		const existingProject = await Project.findOne({name});
 		if (existingProject) {
 			console.log(chalk.red(`Project with name ${name} already exists`));
-			res.statusCode = ResponseStatusTypes.BAD_REQUEST;
+			res.statusCode = BAD_REQUEST;
 			res.send({err: `Project with name ${name} already exists`});
 			return ;
 		}
@@ -29,14 +30,8 @@ export class ProjectController {
 
 	public async get(req: Request, res: Response) {
 		console.log(chalk.magenta('[ProjectContoller] get'), req.body);
-		let user = await User.findById(req.body.owner);
-
-		// get all projects of user
-		// let project = Project.find
-	
-		
-		// return all projects
-		res.end();
+		const projects: IProject[] = await Project.find({owner: req.body.user._id});
+		res.send({projects});
 	}
 }
 

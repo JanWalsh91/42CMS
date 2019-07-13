@@ -10,9 +10,10 @@ import { Project } from '../src/models/project';
 export const userData = 
 	{
 		name: 'John Smith',
+		username: 'jsmith',
 		password: 'password',
-		projectName: 'my project'
-	}
+		projectName: 'Default project'
+	};
 
 export const clearDataBase = async (models?: any[]) => {
 	if (!models) {
@@ -30,7 +31,7 @@ export const getAllUsers = () =>
 	agent.get('/users');
 
 // Logs in user (sets cookie)
-export const createPortalUser = (params: {name: String, password: String, projectName: String}) => 
+export const createPortalUser = (params: {username: String, password: String, projectName: String, name?: String}) => 
 	agent.post('/users').send(params);
 
 // ===== PROJECTS =====
@@ -38,9 +39,11 @@ export const createPortalUser = (params: {name: String, password: String, projec
 export const createProject = (params: {name: String}) =>
 	agent.post('/projects').send(params);
 
+// Gets all projects of user (set by session)
 export const getProjects = () => 
 	agent.get('/projects');
 
+// Gets project id of user (set by session)
 export const getProject = (params: {id: String}) =>
 	agent.get(`/projects/${params.id}`);
 

@@ -7,6 +7,7 @@ const WITH_SERVER = true;
 export const UserContext = createContext({
 	user: null,
 	loading: false,
+	error: null,
 	auth: () => {},
 	login: () => {},
 	logout: () => {},
@@ -15,44 +16,58 @@ export const UserContext = createContext({
 
 export const UserContextProvider = props => {
 	
-	const { fetch } = useApi('post', 'login');
+	const login = useApi('post', 'login');
+	const create = useApi('post', 'users');
 
 	const [state, setState] = useState({
 		user: null,
 		loading: false,
+		error: null,
 
 		auth: async () => {
 			setState({...state, loading: true})
-			console.log('[UserContextProvider.auth]')
+			console.log('%c[UserContextProvider.auth]', 'color: magenta')
 			// TODO: authenticate with server
 
 			setState({...state, loading: false})
 		},
 
-		login: async ({name, password}) => {
+		login: async ({username, password}) => {
 			setState({...state, loading: true})
-			console.log('[UserContextProvider.login]')
+			console.log('%c[UserContextProvider.login]', 'color: magenta')
 			if (!WITH_SERVER) {
 				UserContext.user = true;
 			} else {
-				await fetch('post', '/login', {name, password});
-				setState({...state, user: {name: 'test'}})
+				try {
+					await login({body: {username, password}});
+					setState({...state, user: {username}, loading: false})
+					console.log('%c[UserContextProvider.login] SUCCESS', 'color: green')
+				} catch (e) {
+					setState({...state, error: 'FAIL', loading: false});
+					console.log('%c[UserContextProvider.login] FAIL', 'color: red')
+				}
 			}
-			setState({...state, loading: false})
 		},
 
 		logout: async () => {
 			setState({...state, loading: true})
-			console.log('[UserContextProvider.logout]')
+			console.log('%c[UserContextProvider.logout]', 'color: magenta')
 			// TODO: test with server to remove cookies
 
 			setState({...state, loading: false})
 		},
 
-		create: async ({name, password, projectName}) => {
+		create: async ({username, password, projectName, name}) => {
+			console.log('%c[UserContextProvider.create]', 'color: magenta')
 			setState({...state, loading: true})
-			await fetch('post', '/login', {name, password, projectName});
-			setState({...state, loading: false})
+			try {
+				const ret = await create({body: {username, password, projectName, name}});
+				console.log('%c[UserContextProvider.create] SUCCESS', 'color: green')
+				setState({...state, user: ret.user, loading: false});
+			} catch (e) {
+				console.log('%c[UserContextProvider.create] FAIL', 'color: red')
+				setState({...state, error: e.message, loading: false});
+			}
 		}
 
 	})
