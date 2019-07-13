@@ -3,7 +3,7 @@ export default {
 	secondaryColor: 'white',
 	disabledColor: 'grey',
 	hoverColor: 'black',
-	activeColor: 'red',
+	activeColor: 'green',
 
 	thick: '5px',
 	thin: '2px',

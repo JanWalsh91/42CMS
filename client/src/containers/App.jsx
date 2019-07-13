@@ -24,7 +24,7 @@ const App = () => {
 
 	useEffect(() => {
 		console.log('[App.onEffect]', userContext)
-		// userContext.auth();
+		userContext.auth({});
 	}, [])
 
 	const loader = userContext.loading ? <Loader /> : null

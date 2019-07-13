@@ -43,21 +43,21 @@ import ProjectsPage from '../client/src/pages/Projects/ProjectsPage';
 // 	<Tile>This is the tile contents</Tile>
 // ));
 
-// storiesOf('Components/Checkbox', module)
-// .addDecorator(storyFn => (
-// 	<ThemeProvider theme={theme}>
-// 		{storyFn()}
-// 	</ThemeProvider>
-// ))
-// .add('Inactive', () => (
-// 	<Checkbox />
-// ))
-// .add('Active', () => (
-// 	<Checkbox active/>
-// ))
-// .add('With label', () => (
-// 	<Checkbox active label='Use this State'/>
-// ))
+storiesOf('Components/Checkbox', module)
+.addDecorator(storyFn => (
+	<ThemeProvider theme={theme}>
+		{storyFn()}
+	</ThemeProvider>
+))
+.add('Inactive', () => (
+	<Checkbox />
+))
+.add('Active', () => (
+	<Checkbox active/>
+))
+.add('With label', () => (
+	<Checkbox active label='Use this State'/>
+))
 
 // const SelectWrapper = props => {
 // 	const [value, setValue] = useState(props.defaultValue);

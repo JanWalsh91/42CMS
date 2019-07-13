@@ -77,6 +77,7 @@ export const userController = {
 				} else {
 					console.log('[authorize]', chalk.green('ok'));
 					res.send({name: user.name, id: user._id});
+					return ;
 				}
 			});
 		} else {
@@ -128,11 +129,4 @@ export const userController = {
 		});
 	},
 
-	async exists(params: any) {
-		return new Promise(resolve =>
-			User.findOne((params), (err, user) => 
-				resolve(err || user)
-			)
-		);
-	}
 }

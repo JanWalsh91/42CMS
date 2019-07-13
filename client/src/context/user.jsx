@@ -18,6 +18,7 @@ export const UserContextProvider = props => {
 	
 	const login = useApi('post', 'login');
 	const create = useApi('post', 'users');
+	const auth = useApi('get', 'auth');
 
 	const [state, setState] = useState({
 		user: null,
@@ -28,6 +29,17 @@ export const UserContextProvider = props => {
 			setState({...state, loading: true})
 			console.log('%c[UserContextProvider.auth]', 'color: magenta')
 			// TODO: authenticate with server
+			if (!WITH_SERVER) {
+				UserContext.user = true;
+			} else {
+				try {
+					await auth({});
+					setState({...state, user: {username}, loading: false})
+					console.log('%c[UserContextProvider.auth] SUCCESS', 'color: green')
+				} catch (e) {
+					console.log('%c[UserContextProvider.auth] FAIL', 'color: red')
+				}
+			} 
 
 			setState({...state, loading: false})
 		},
