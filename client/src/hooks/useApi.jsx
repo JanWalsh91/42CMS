@@ -11,7 +11,7 @@ export default (method, path, dependencies) => {
 	 */
 	return async({body, params}) => {
 		// TODO: implement params if necessary
-		console.log('%c[useApi] fetch', 'color: magenta; font-size: 200%;', {method, path, body, params});
+		console.log('%c[useApi] fetch', 'color: magenta; font-size: 200%;');
 
 		if (WITH_SERVER) {
 			return api[method](path, body)

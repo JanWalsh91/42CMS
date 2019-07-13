@@ -15,11 +15,18 @@ const ProjectsPage = props => {
 	const [ projects, setProjects ] = useState([]); 
 	const getProjects = useApi('get', 'projects');
 
-	// useEffect(async () => {
-	// 	console.log(chalk.red('Fetching data'));
-	// 	const ret = await getProjects();
-	// 	console.log({ret});
-	// }, []);
+	useEffect(() => {
+		const fetchData = async () => {
+			console.log(chalk.red('Fetching data'));
+			try {
+				const ret = await getProjects({});
+				setProjects(ret.projects);
+			} catch (e) {
+				console.log('ERROR');
+			}
+		}
+		fetchData()
+	}, []);
 
 	return (
 		<>
