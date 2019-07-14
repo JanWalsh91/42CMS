@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import styled from 'styled-components'
-
-import Projects from './Projects/Projects'
-import useApi from '../../hooks/useApi'
 import chalk from 'chalk'
 
-const dummyProjects = [
-	{name: 'Givenchy', owner: 'Me', id: '0'},
-	{name: 'Dior', owner: 'Tom', id: '1'}
-]
+import useApi from '../../hooks/useApi'
+import { UserContext } from '../../context/userContext'
+import Projects from './Projects/Projects'
+import NavBar from '../../components/NavBar/NavBar'
+import Button from '../../components/Button/Button'
+
 
 const ProjectsPage = props => {
 
 	const [ projects, setProjects ] = useState([])
 	const getProjects = useApi('get', 'projects')
+	const userContext = useContext(UserContext)
 
 	useEffect(() => {
 		let isSubscribed = true
@@ -35,6 +35,9 @@ const ProjectsPage = props => {
 	return (
 		<>
 			<div>Projects</div>
+			<NavBar>
+				<Button onClick={userContext.logout}>Logout</Button>
+			</NavBar>
 			<Projects projects={projects}/>	
 		</>
 	);

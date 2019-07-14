@@ -8,12 +8,6 @@ import Loader from '../components/Loader/Loader';
 
 import { UserContext } from '../context/userContext'; 
 
-// font awesome
-// import { library } from '@fortawesome/fontawesome-svg-core';
-// import { faCircleNotch, coffee } from '@fortawesome/free-solid-svg-icons';
-// library.add(faCircleNotch, coffee);
-// font awesome END
-
 import '../styles/App';
 
 const App = () => {
