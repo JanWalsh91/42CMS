@@ -1,20 +1,20 @@
 import { Router, Request, Response, NextFunction } from 'express';
 
 import { userController } from '../controllers/userController';
-import { User } from '../models/user';
+import { User } from '../models/userModel';
 import authorize from '../middleware/authorize';
 
 const router: Router = Router();
 
 router
 	.post('/', userController.create)
-	.get('/:userid', authorize, userController.get)
-	.post('/:userid', authorize, userController.update)
-	.delete('/:userid', authorize, userController.delete)
+	.get('/:username', authorize, userController.get)
+	.post('/:username', authorize, userController.update)
+	.delete('/:username', authorize, userController.delete)
 
 	// TODO: is this userful?
-	.param('userid', (req: Request, res: Response, next: NextFunction, id) => {
-		User.findById(id, (err, user) => {
+	.param('username', (req: Request, res: Response, next: NextFunction, username) => {
+		User.findOne({username}, (err, user) => {
 			if (err) {
 				next(err);
 			} else if (user) {

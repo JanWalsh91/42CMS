@@ -1,6 +1,6 @@
 import { Schema, Document, Model, model}  from 'mongoose';
 
-import { IProject } from './project';
+import { IProject } from './projectModel';
 
 // https://mongoosejs.com/docs/advanced_schemas.html
 class UserClass {

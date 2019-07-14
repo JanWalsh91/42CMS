@@ -3,8 +3,8 @@ chai.should()
 
 import { authUser, login, logout, clearDataBase, userData, getAllUsers, createUser, printret } from './common'
 
-import { User } from '../src/models/user'
-import { Project } from '../src/models/project'
+import { User } from '../src/models/userModel'
+import { Project } from '../src/models/projectModel'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 import chalk from 'chalk';
 const { OK, BAD_REQUEST, UNAUTHORIZED } = ResponseStatusTypes 

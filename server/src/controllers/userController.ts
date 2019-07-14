@@ -1,8 +1,8 @@
 import { Request, Response } from 'express'
 import chalk from 'chalk'
 
-import { User, IUser } from '../models/user'
-import { Project, IProject } from '../models/project'
+import { User, IUser } from '../models/userModel'
+import { Project, IProject } from '../models/projectModel'
 import { uuid } from '../utils/uuid'
 import ResponseStatusTypes from "../utils/ResponseStatusTypes"
 import { ServerError, ErrorType } from '../utils/ServerError'
@@ -16,7 +16,7 @@ export const userController = {
 	async create(req: Request, res: Response) {
 		console.log(chalk.magenta('[UserContoller] create'), req.body)
 		// save params
-		const { username, password, projectName, name } = req.body
+		const { username, password, projectName, projectId, name } = req.body
 		
 		// Check if user exists
 		let existingUsers: IUser[] = await User.find({username})
@@ -37,9 +37,11 @@ export const userController = {
 		// Create new project (TODO: use Project API ?)
 		let newProject: IProject = new Project({
 			name: projectName,
+			id: projectId,
 			owner: newUser._id
 		})
 		newUser.projects = [newProject._id]
+		
 		// TODO: handle errors
 		try {
 			await Promise.all([newUser.save(), newProject.save()])

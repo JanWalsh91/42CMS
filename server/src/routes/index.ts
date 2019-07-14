@@ -1,10 +1,10 @@
 import { Router, Request, Response } from 'express';
 
-import users from './users';
-import projects from './projects';
-import login from './login';
-import logout from './logout';
-import auth from './auth';
+import users from './usersRoute';
+import projects from './projectsRoute';
+import login from './loginRoute';
+import logout from './logoutRoute';
+import auth from './authRoute';
 
 const router: Router = Router();
 
