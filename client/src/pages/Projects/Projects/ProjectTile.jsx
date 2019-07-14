@@ -44,7 +44,7 @@ const Project = props => {
 			<ProjectDetails hidden={!open}>
 				DETAILS
 			</ProjectDetails>
-		</ProjectWrapper>	
+		</ProjectWrapper>
 	)
 }
 

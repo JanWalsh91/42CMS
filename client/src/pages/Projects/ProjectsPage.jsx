@@ -9,7 +9,7 @@ import NavBar from '../../components/NavBar/NavBar'
 import Button from '../../components/Button/Button'
 
 
-const ProjectsPage = props => {
+const ProjectsPage = () => {
 
 	const [ projects, setProjects ] = useState([])
 	const getProjects = useApi('get', 'projects')
@@ -32,13 +32,17 @@ const ProjectsPage = props => {
 		return () => isSubscribed = false
 	}, [])
 
+	const addProject = project => {
+		setProjects([...projects, project])
+	}
+
 	return (
 		<>
 			<div>Projects</div>
 			<NavBar>
 				<Button onClick={userContext.logout}>Logout</Button>
 			</NavBar>
-			<Projects projects={projects}/>
+			<Projects projects={projects} addProject={addProject}/>
 		</>
 	);
 };

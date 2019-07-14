@@ -2,7 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types'
 import styled from 'styled-components';
 
-import Project from './ProjectTile';
+import ProjectTile from './ProjectTile';
+import NewProjectTile from './NewProjectTile';
 
 const ProjectsWrapper = styled.div`
 	display: flex;
@@ -13,7 +14,9 @@ const ProjectsWrapper = styled.div`
 `;
 
 const Projects = props => {
-	const projects = props.projects.map(project => <Project key={project.id} {...project}/>);
+	const projects = props.projects.map(project => <ProjectTile key={project.id} {...project}/>)
+	projects.push(<NewProjectTile key='new' addProject={props.addProject}/>)
+	console.log(projects)
 	return (
 		<ProjectsWrapper>
 			{projects}
@@ -22,7 +25,8 @@ const Projects = props => {
 };
 
 Projects.propTypes = {
-	projects: PropTypes.arrayOf(PropTypes.shape(Project.propTypes)),
+	projects: PropTypes.arrayOf(PropTypes.shape(ProjectTile.propTypes)),
+	addProject: PropTypes.func.isRequired
 };
 
 export default Projects;
