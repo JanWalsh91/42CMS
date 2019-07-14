@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 
-import { userController } from '../controllers/user';
+import { userController } from '../controllers/userController';
 import { User } from '../models/user';
 import authorize from '../middleware/authorize';
 

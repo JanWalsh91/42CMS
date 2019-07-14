@@ -1,32 +1,36 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
+import React, { useEffect, useState } from 'react'
+import styled from 'styled-components'
 
-import Projects from './Projects/Projects';
-import useApi from '../../hooks/useApi';
-import chalk from 'chalk';
+import Projects from './Projects/Projects'
+import useApi from '../../hooks/useApi'
+import chalk from 'chalk'
 
 const dummyProjects = [
 	{name: 'Givenchy', owner: 'Me', id: '0'},
 	{name: 'Dior', owner: 'Tom', id: '1'}
-];
+]
 
 const ProjectsPage = props => {
 
-	const [ projects, setProjects ] = useState([]); 
-	const getProjects = useApi('get', 'projects');
+	const [ projects, setProjects ] = useState([])
+	const getProjects = useApi('get', 'projects')
 
 	useEffect(() => {
+		let isSubscribed = true
 		const fetchData = async () => {
-			console.log(chalk.red('Fetching data'));
+			console.log(chalk.red('Fetching data'))
 			try {
-				const ret = await getProjects({});
-				setProjects(ret.projects);
+				const ret = await getProjects({})
+				if (isSubscribed) {
+					setProjects(ret.projects)
+				}
 			} catch (e) {
-				console.log('ERROR');
+				console.log('ERROR')
 			}
 		}
 		fetchData()
-	}, []);
+		return () => isSubscribed = false
+	}, [])
 
 	return (
 		<>
@@ -36,4 +40,4 @@ const ProjectsPage = props => {
 	);
 };
 
-export default ProjectsPage;
+export default ProjectsPage

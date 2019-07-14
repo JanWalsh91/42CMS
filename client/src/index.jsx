@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import App from './containers/App';
 
-import { UserContextProvider } from './context/user'; 
+import { UserContextProvider } from './context/userContext'; 
 
 ReactDOM.render(
 	<BrowserRouter>

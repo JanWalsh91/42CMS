@@ -8,12 +8,7 @@ import TabBar from '../../components/TabBar/TabBar';
 
 export default () =>  {
 	
-	// const userContext = useContext('user');
 	const [activeTabKey, setActivetabKey] = useState('signin');
-
-	useEffect(() => {
-		console.log('[Login.userEffect]')
-	});
 
 	let loginForm = null;
 	let createUserForm = null;
@@ -40,7 +35,7 @@ export default () =>  {
 	`;
 
 	return (
-		<div className="Login">
+		<StyledLogin>
 			<div className="Modal">
 				<TabBar
 					activeTabKey={activeTabKey}
@@ -55,6 +50,6 @@ export default () =>  {
 				{loginForm}
 				{createUserForm}
 			</div>
-		</div>
+		</StyledLogin>
 	);
 }

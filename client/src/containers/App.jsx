@@ -6,7 +6,7 @@ import Home from '../pages/Home';
 import Projects from '../pages/Projects/ProjectsPage';
 import Loader from '../components/Loader/Loader';
 
-import { UserContext } from '../context/user'; 
+import { UserContext } from '../context/userContext'; 
 
 // font awesome
 // import { library } from '@fortawesome/fontawesome-svg-core';
@@ -16,19 +16,24 @@ import { UserContext } from '../context/user';
 
 import '../styles/App';
 
-// import UserContext from '../context/user';
-
 const App = () => {
 
 	const userContext = useContext(UserContext);
 
 	useEffect(() => {
-		console.log('[App.onEffect]', userContext)
 		userContext.auth({});
-	}, [])
+	}, []);
 
 	const loader = userContext.loading ? <Loader /> : null
-	const redirect = (!userContext.loading && !userContext.user) ? <Redirect to='/login'/> : <Redirect to='/projects'/>;
+	let redirect = null;
+	
+	if (!userContext.loading && !userContext.user) {
+		redirect = <Redirect to='/login'/>
+	}
+	if (userContext.user) {
+		redirect = <Redirect to='/projects'/>
+	}
+
 	const router =
 	<>
 		{redirect}

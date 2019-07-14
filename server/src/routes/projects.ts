@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { projectController } from '../controllers/project';
+import { projectController } from '../controllers/projectController';
 
 import authorize from '../middleware/authorize';
 

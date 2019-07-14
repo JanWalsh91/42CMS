@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 
 import Form from '../components/Form/Form';
-import { UserContext } from '../context/user';
+import { UserContext } from '../context/userContext';
 
 const CreateUserForm = () => {
 
