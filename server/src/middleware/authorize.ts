@@ -35,7 +35,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 
 	function notAuthorized(errMsg: string) {
 		console.log(chalk.red('Not authorized:', errMsg))
-		res.statusCode = ResponseStatusTypes.FORBIDDEN;
+		res.statusCode = ResponseStatusTypes.UNAUTHORIZED;
 		res.send({error: 'Unauthorized'});
 	}
 }

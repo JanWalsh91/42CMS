@@ -3,6 +3,7 @@ import { Router, Request, Response } from 'express';
 import users from './users';
 import projects from './projects';
 import login from './login';
+import logout from './logout';
 import auth from './auth';
 
 const router: Router = Router();
@@ -15,6 +16,7 @@ router.get('/', (req: Request, res: Response) => {
 
 router.use('/auth', auth);
 router.use('/login', login);
+router.use('/logout', logout);
 router.use('/users', users);
 router.use('/projects', projects);
 
