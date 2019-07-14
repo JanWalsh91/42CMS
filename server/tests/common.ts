@@ -25,41 +25,41 @@ export const clearDataBase = async (models?: any[]) => {
 	await Promise.all(models.map(model => model.deleteMany({})))
 }
 
-// ===== USERS =====
+// ===== USERS ===== //
 
-export const getAllUsers = () =>
-	agent.get('/users')
+	export const getAllUsers = () =>
+		agent.get('/users')
 
-// Creates and logs in user (Sets sessionID)
-export const createUser = (params: {username: string, password: string, projectName: string, name?: string}) => 
-	agent.post('/users').send(params)
+	// Creates and logs in user (Sets sessionID)
+	export const createUser = (params: {username: string, password: string, projectName: string, name?: string}) => 
+		agent.post('/users').send(params)
 
-// Authorize user (with sessionID)
-export const authUser = () => 
-	agent.get('/auth')
+	// Authorize user (with sessionID)
+	export const authUser = () => 
+		agent.get('/auth')
 
-// Login user
-export const login = (params: {username: string, password: string}) => 
-	agent.post('/login').send(params)
+	// Login user
+	export const login = (params: {username: string, password: string}) => 
+		agent.post('/login').send(params)
 
-// Logout user
-export const logout = () => 
-	agent.post('/logout')
+	// Logout user
+	export const logout = () => 
+		agent.post('/logout')
 
-// ===== PROJECTS =====
+// ===== PROJECTS ===== //
 
-export const createProject = (params: {name: string}) =>
-	agent.post('/projects').send(params)
+	export const createProject = (params: {name: string}) =>
+		agent.post('/projects').send(params)
 
-// Gets all projects of user (set by session)
-export const getProjects = () => 
-	agent.get('/projects')
+	// Gets all projects of user (set by session)
+	export const getProjects = () => 
+		agent.get('/projects')
 
-// Gets project id of user (set by session)
-export const getProject = (params: {id: string}) =>
-	agent.get(`/projects/${params.id}`)
+	// Gets project id of user (set by session)
+	export const getProject = (params: {id: string}) =>
+		agent.get(`/projects/${params.id}`)
 
-// ===== UTILITY =====
+// ===== UTILITY ===== //
 
 export const printret = ret => {
 	console.log({status: ret.status, body: ret.body})

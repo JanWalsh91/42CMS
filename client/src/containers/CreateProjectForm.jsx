@@ -2,8 +2,11 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 import Form from '../components/Form/Form'
+import useApi from '../hooks/useApi';
 
 const CreateProjectForm = props => {
+
+	const createProject = useApi('post', 'projects')
 
 	const formConfig = {
 		inputs: {
@@ -22,14 +25,15 @@ const CreateProjectForm = props => {
 			},
 		},
 		submitText: 'Create',
-		onSubmit: async (formData) => {
-			console.log('%c <CreateProject /> onSubmit', 'color: green', formData)
-			
-			props.onSubmit({
-				name: 'new project',
-				id: 'lala',
-				owner: 'Jan'
-			})
+		onSubmit: async(formData) => {
+			console.log('%c[CreateProjectForm.onSubmit]', 'color: magenta', formData)
+			try {
+				let ret = await createProject({body: formData});
+				console.log('%c[CreateProjectForm.onSubmit] SUCCESS', 'color: green', formData)
+				props.onSubmit(ret)
+			} catch (e) {
+				console.log('%c[CreateProjectForm.onSubmit] FAIL', 'color: red', formData)	
+			}
 		}
 	}
 

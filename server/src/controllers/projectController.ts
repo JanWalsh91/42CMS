@@ -1,5 +1,4 @@
 import { Project, IProject } from '../models/project'
-import { User, IUser } from '../models/user'
 import { Request, Response } from 'express';
 import chalk from 'chalk';
 import ResponseStatusTypes from '../utils/ResponseStatusTypes';
@@ -11,20 +10,24 @@ export class ProjectController {
 		console.log(chalk.magenta('[ProjectContoller] create'), req.body);
 		const { name, user } = req.body; // User acquired from authorization middleware
 	   
-		const existingProject = await Project.findOne({name});
+		const existingProject: IProject = await Project.findOne({name, owner: user._id});
 		if (existingProject) {
-			console.log(chalk.red(`Project with name ${name} already exists`));
+			console.log(chalk.red(`${user.username} already has a project with name ${name} already exists`));
 			res.statusCode = BAD_REQUEST;
-			res.send({err: `Project with name ${name} already exists`});
+			res.send({err: `${user.username} already has a p with name ${name} already exists`});
 			return ;
 		}
-		const newProject = new Project({name, owner: user._id});
+		const newProject: IProject = new Project({name, owner: user._id});
 
         newProject.save((err, project) => {
             if (err){
                 res.send(err);
             } else {
-				res.json(project);
+				res.json({					// TODO: factorize
+					name: project.name,
+					owner: project.owner,
+					id: project._id
+				});
 			}
         });
 	}
