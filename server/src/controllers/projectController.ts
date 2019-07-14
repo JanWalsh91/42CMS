@@ -3,6 +3,7 @@ import { User, IUser } from '../models/user'
 import { Request, Response } from 'express';
 import chalk from 'chalk';
 import ResponseStatusTypes from '../utils/ResponseStatusTypes';
+
 const { BAD_REQUEST } = ResponseStatusTypes; 
 
 export class ProjectController {
@@ -28,10 +29,15 @@ export class ProjectController {
         });
 	}
 
-	public async get(req: Request, res: Response) {
-		console.log(chalk.magenta('[ProjectContoller] get'), req.body);
-		const projects: IProject[] = await Project.find({owner: req.body.user._id});
-		res.send({projects});
+	public async getAll(req: Request, res: Response) {
+		console.log(chalk.magenta('[ProjectContoller] getAll'), req.body);
+		let projects: any[] = await Project.find({owner: req.body.user._id});
+		projects = projects.map(project => ({
+			name: project.name,
+			owner: project.owner,
+			id: project._id
+		}))
+		res.send({projects})
 	}
 }
 

@@ -7,6 +7,6 @@ const router: Router = Router();
 
 router
 	.post('/', authorize, projectController.create)
-	.get('/', authorize, projectController.get)
+	.get('/', authorize, projectController.getAll)
 
 export default router;

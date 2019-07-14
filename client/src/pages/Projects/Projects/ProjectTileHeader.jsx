@@ -39,9 +39,9 @@ const ProjectTileHeader = props => (
 );
 
 ProjectTileHeader.propTypes = {
-	name: PropTypes.string.required,
-	onClick: PropTypes.func.required,
-	onToggle: PropTypes.func.required
+	name: PropTypes.string.isRequired,
+	onClick: PropTypes.func.isRequired,
+	onToggle: PropTypes.func.isRequired
 };
 
 export default ProjectTileHeader;

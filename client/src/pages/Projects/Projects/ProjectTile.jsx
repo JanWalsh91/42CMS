@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import styled from 'styled-components';
+import styled from 'styled-components'
 
 
-import ProjectTileHeader from './ProjectTileHeader';
+import ProjectTileHeader from './ProjectTileHeader'
 
 const ProjectWrapper = styled.div`
 	display: flex;
@@ -14,29 +14,33 @@ const ProjectWrapper = styled.div`
 	min-width: 300px;
 
 	border: red 1px dashed;
-`;
+`
 
 
 const ProjectDetails = styled.div`
 	height: 200px;
-`;
+`
 
 const Project = props => {
 
-	const [open, setOpen] = useState(false); 
+	const [open, setOpen] = useState(false)
 
 	const toggleDetails = e => {
-		e.stopPropagation();
-		setOpen(!open);
+		e.stopPropagation()
+		setOpen(!open)
 	}
 
 	const goToProjectPage = () => {
-		console.log('goToProjectPage');
+		console.log('goToProjectPage')
 	}
 
 	return (
 		<ProjectWrapper>
-			<ProjectTileHeader {...{name} = props} onToggle={toggleDetails} onClick={goToProjectPage}/>
+			<ProjectTileHeader
+				name={props.name}
+				onToggle={toggleDetails}
+				onClick={goToProjectPage}
+			/>
 			<ProjectDetails hidden={!open}>
 				DETAILS
 			</ProjectDetails>
@@ -48,9 +52,8 @@ const propTypes = {
 	name: PropTypes.string,
 	owner: PropTypes.string,
 	id: PropTypes.string,
-};
+}
 
-Project.propTypes = propTypes;
+Project.propTypes = propTypes
 
-export default Project;
-// export { propTypes };
+export default Project

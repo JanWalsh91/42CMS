@@ -36,7 +36,7 @@ const IconButton = props => (
 );
 	
 IconButton.propTypes = {
-	icon: PropTypes.function
+	icon: PropTypes.any
 };
 
 export default IconButton;

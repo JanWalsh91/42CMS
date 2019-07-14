@@ -13,7 +13,7 @@ const ProjectsWrapper = styled.div`
 `;
 
 const Projects = props => {
-	const projects = props.projects.map(project => <Project key={project._id} {...project}/>);
+	const projects = props.projects.map(project => <Project key={project.id} {...project}/>);
 	return (
 		<ProjectsWrapper>
 			{projects}

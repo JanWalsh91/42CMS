@@ -38,7 +38,7 @@ const ProjectsPage = props => {
 			<NavBar>
 				<Button onClick={userContext.logout}>Logout</Button>
 			</NavBar>
-			<Projects projects={projects}/>	
+			<Projects projects={projects}/>
 		</>
 	);
 };
