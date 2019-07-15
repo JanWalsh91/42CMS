@@ -53,20 +53,22 @@ describe('Project', () => {
 
 		})
 		describe('Should fail if ...', () => {
-			it('Project of that name by a user already exists', async () => {
-				console.log(chalk.blue('Project of that name by a user already exists'))
-				const [name, id] = ['Dior', 'dior']
+			const [name, id] = ['Dior', 'dior']
+
+			it('User already created a project with that name', async () => {
+				console.log(chalk.blue('User already created a project with that name'))
 				ret = await createProject({name, id})
 				ret.should.have.status(OK)
-				ret = await createProject({name, id})
+				ret = await createProject({name, id: id + '2'})
+				console.log({status: ret.status})
 				ret.should.have.status(BAD_REQUEST)
 			})
-			it('Project with same id already exists', async() => {
-				console.log(chalk.blue('Project with same id already exists'))
-				const [name1, name2, id] = ['Dior', 'Dior2', 'dior'] 
-				ret = await createProject({name: name1, id})
+
+			it('Project with that id already exists', async() => {
+				console.log(chalk.blue('Project with that id already exists'))
+				ret = await createProject({name, id})
 				ret.should.have.status(OK)
-				ret = await createProject({name: name2, id})
+				ret = await createProject({name: name + '2', id})
 				ret.should.have.status(BAD_REQUEST)
 			})
 		})
@@ -78,7 +80,6 @@ describe('Project', () => {
 			await createProject({name: 'Dior', id: 'dior'})
 			await createProject({name: 'Guerlain', id: 'guerlain'})
 			ret = await getProjects()
-			printret(ret)
 			ret.should.have.status(OK)
 			ret.body.projects.should.exist
 			ret.body.projects.forEach(project => console.log(`name: ${project.name}`))

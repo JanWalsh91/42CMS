@@ -5,15 +5,10 @@ import * as bcrypt from "bcrypt";
 import * as bodyParser from "body-parser";
 import * as cors from 'cors';
 import * as session from 'express-session';
-// import * as redis from 'redis';
-// import * as connectRedis from 'connect-redis'
-// const redisStore: connectRedis.RedisStore = connectRedis(session);
-// const client: redis.RedisClient = redis.createClient()
 
 import ResponseStatusTypes from "./utils/ResponseStatusTypes";
 
 import routes from './routes';
-import { uuid } from './utils/uuid';
 
 class App {
 
@@ -37,6 +32,8 @@ class App {
 			credentials: true
 		}));
 
+		mongoose.set('useFindAndModify', false);
+		
 		mongoose.connect('mongodb://127.0.0.1:27017/MYDB', { useNewUrlParser: true })
 		let db = mongoose.connection;
 		db.on('error', err => {
@@ -48,7 +45,6 @@ class App {
 			secret: 'supersecret',
 			saveUninitialized: false,
 			rolling: false,
-			// store: new redisStore({ host: 'localhost', port: 6379, client, ttl: 260 }),
 			resave: false,
 			cookie: {
 				sameSite: true,

@@ -15,7 +15,7 @@ export class CategoryController {
 		const existingCategory: ICategory = await Category.findOne({project: project._id, id});
 		if (existingCategory) {
 			console.log(chalk.red(`${project.id} already has a category with id ${id}`));
-			res.statusCode = BAD_REQUEST;
+			res.status(BAD_REQUEST);
 			res.send({err: `${project.id} already has a category with id ${id}`});
 			return ;
 		}

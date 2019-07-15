@@ -10,14 +10,23 @@ export class ProjectController {
 		console.log(chalk.magenta('[ProjectContoller] create'), req.body);
 		const { name, user, id } = req.body; // User acquired from authorization middleware
 	   
-		// Submitted project id must be unique
-		const existingProject: IProject = await Project.findOne({id, owner: user._id});
+		// Project id must be unique
+		let existingProject: IProject = await Project.findOne({id});
 		if (existingProject) {
-			console.log(chalk.red(`${user.username} already has a project with id ${id} already exists`));
-			res.statusCode = BAD_REQUEST;
-			res.send({err: `${user.username} already has a p with id ${id} already exists`});
+			console.log(chalk.red(`Project with id ${id} already exists`));
+			res.status(BAD_REQUEST);
+			res.send({err: `Project with id ${id} already exists`});
 			return ;
 		}
+		// Project name must be unique per user
+		existingProject = await Project.findOne({name, owner: user._id});
+		if (existingProject) {
+			console.log(chalk.red(`${user.username} already has a project with name ${name}`));
+			res.status(BAD_REQUEST);
+			res.send({err: `${user.username} already has a project with name ${name}`});
+			return ;
+		}
+
 		const newProject: IProject = new Project({name, id, owner: user._id});
 
         newProject.save((err, project) => {

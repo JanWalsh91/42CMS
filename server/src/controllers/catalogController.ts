@@ -1,37 +1,56 @@
 import { Project, IProject } from '../models/projectModel'
-import { Catalog, ICatalog } from '../models/catalogModel'
+import { ICatalog } from '../models/catalogModel'
 import { Request, Response } from 'express';
 import chalk from 'chalk';
 import ResponseStatusTypes from '../utils/ResponseStatusTypes';
+import { ServerError, ErrorType } from '../utils/ServerError';
 
 const { BAD_REQUEST } = ResponseStatusTypes; 
 
 export class CatalogController {
 	public async create(req: Request, res: Response) {
 		console.log(chalk.magenta('[CatalogController] create'), req.body);
-		const { user, project, name, id } = req.body; // User acquired from authorization middleware
+		const { project, name, id } = req.body; // User acquired from authorization middleware
 	   
-		// Submitted catalog id must be unique
-		const existingCatalog: ICatalog = await Catalog.findOne({project: project._id, id});
-		if (existingCatalog) {
-			console.log(chalk.red(`${project.id} already has a catalog with id ${id}`));
-			res.statusCode = BAD_REQUEST;
-			res.send({err: `${project.id} already has a catalog with id ${id}`});
-			return ;
-		}
-		const newCatalog: ICatalog = new Catalog({name, id, project: project._id});
+		const newCatalog = { id, name };
 
-        newCatalog.save((err, catalog) => {
-            if (err){
-                res.send(err);
-            } else {
-				res.json({					// TODO: factorize
-					name: catalog.name,
-					id: catalog.id,
-					project: project.id,
-				});
+		Project.findOneAndUpdate(
+			// Get current project only if catalog does not have a catalog with id  
+			{id: project.id, catalogs: { $not: { $elemMatch: { id }}}},
+			// Add newCatalog to catalogs
+			{ $push: { catalogs : newCatalog }},
+			// Return updated Project in callback
+			{new: true},
+			(err, doc) => {
+				// console.log('findOneAndUpdate callback', err, doc)
+				if (err || !doc) {
+					res.status(BAD_REQUEST)
+					if (err) {
+						console.log(chalk.red(`[findOndAndUpdate] Error: ${err}`))
+						res.send({err})
+					} else {
+						console.log(chalk.red(`[findOndAndUpdate] Catalog with id already exists`))
+						res.send(new ServerError(ErrorType.CATALOG_EXISTS))
+					}
+				} else {
+					console.log(chalk.green(`[findOndAndUpdate] Success: ${doc}`))
+					res.send(doc.catalogs.find(catalog => catalog.id == id))
+				}
 			}
-        });
+		)
+	}
+
+	public async get(req: Request, res: Response) {
+		console.log(chalk.magenta('[CatalogController] get'), req.body);
+		res.send(req.body.catalog);
+	}
+
+	public async getAll(req: Request, res: Response) {
+		console.log(chalk.magenta('[CatalogController] getAll'), req.body);
+		const { project } : { project: IProject }  = req.body;
+		
+		const catalogs = project.catalogs;
+		res.send({catalogs});
 	}
 }
 

@@ -6,9 +6,9 @@ const agent = chai.request.agent(app)
 
 import { User } from '../src/models/userModel'
 import { Project } from '../src/models/projectModel'
-import { Catalog } from '../src/models/catalogModel'
+// import { Catalog } from '../src/models/catalogModel'
 import { Category } from '../src/models/categoryModel'
-import { Product } from '../src/models/productModel'
+// import { Product } from '../src/models/productModel'
 
 export const userData = 
 	{
@@ -23,10 +23,7 @@ export const clearDataBase = async (models?: any[]) => {
 	if (!models) {
 		models = [
 			User,
-			Project,
-			Catalog,
-			Category,
-			Product
+			Project
 		]
 	}
 	await Promise.all(models.map(model => model.deleteMany({})))
@@ -63,15 +60,30 @@ export const clearDataBase = async (models?: any[]) => {
 		agent.get('/projects')
 
 	// Gets project id of user (set by session)
-	export const getProject = (params: {id: string}) =>
-		agent.get(`/projects/${params.id}`)
+	export const getProject = (projectid: string) =>
+		agent.get(`/projects/${projectid}`)
 
 // ===== CATALOGS ====== //
 
-	export const createCatalog = (params: {projectId: string, id: string}) =>
-		agent.post(`/projects/${params.projectId}/catalogs/`).send({id: params.id})
+	export const createCatalog = (projectid: string, catalogid: string) =>
+		agent.post(`/projects/${projectid}/catalogs/`).send({id: catalogid})
+
+	export const getCatalog = (projectid: string, catalogid: string) =>
+		agent.get(`/projects/${projectid}/catalogs/${catalogid}`)
+	
+	export const getAllCatalogs = (projectid: string) =>
+		agent.get(`/projects/${projectid}/catalogs`)
 
 // ===== CATEGORIES ====== //
+
+	// export const createCategory = (params: {projectId: string, catalogId: string, id: string}) =>
+	// 	agent.post(`/projects/${params.projectId}/catalogs/${params.catalogId}`).send({id: params.id})
+
+	// export const getCategory = (params: {projectId: string, id: string}) =>
+	// 	agent.get(`/projects/${params.projectId}/catalogs/${params.id}`)
+
+	// export const getAllCategories = (params: {projectId: string}) =>
+	// 	agent.get(`/projects/${params.projectId}/catalogs`)
 
 // ===== UTILITY ===== //
 

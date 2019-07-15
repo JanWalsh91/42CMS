@@ -23,7 +23,7 @@ export const userController = {
 		console.log(existingUsers)
 		if (existingUsers.length > 0) {
 			console.log(chalk.red('user already exists'))
-			res.statusCode = BAD_REQUEST
+			res.status(BAD_REQUEST)
 			res.send(new ServerError(ErrorType.USER_EXISTS, username))
 			return 
 		}
@@ -47,7 +47,7 @@ export const userController = {
 			await Promise.all([newUser.save(), newProject.save()])
 		} catch (e) {
 			console.log(e)
-			res.statusCode = BAD_REQUEST
+			res.status(BAD_REQUEST)
 			res.send({error: e})
 			return 
 		}

@@ -1,20 +1,22 @@
 import { Schema, Document, Model, model, SchemaType } from 'mongoose';
 
 import { IUser } from './userModel';
-import { ICatalog } from './catalogModel';
-import { IProduct } from './productModel';
+import { ICatalog, CatalogSchema } from './catalogModel';
+import { IProduct, ProductSchema } from './productModel';
 
 class ProjectClass {
-
+	// define virtuals here
 }
 
 export interface IProject extends Document {
 	id: string,
 	name: string,
 	owner: IUser['_id'],
+	catalogs: ICatalog[],
+	// products: IProduct[],
 }
 
-const ProjectSchema = new Schema({
+export const ProjectSchema = new Schema({
 	id: {
 		type: String,
 		required: true,
@@ -29,10 +31,9 @@ const ProjectSchema = new Schema({
 		ref: 'User',
 		required: true
 	},
-	catalogs: {
-		type: [Schema.Types.ObjectId],
-		ref: 'Catalog',
-	}
+	catalogs: [CatalogSchema],
+	products: [ProductSchema],
+
 }).loadClass(ProjectClass)
 
 export const Project: Model<IProject> = model('Project', ProjectSchema);
