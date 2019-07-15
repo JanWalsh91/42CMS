@@ -4,10 +4,12 @@ import chalk from 'chalk'
 import { catalogController } from '../controllers/catalogController'
 import { IProject } from '../models/projectModel'
 import { ICatalog } from '../models/catalogModel'
+import categories from './categoryRoute'
 
 const router: Router = Router()
 
 router
+	.use('/:catalogid/categories/', getCatalogById, categories)
 	.get('/:catalogid', getCatalogById, catalogController.get)
 	.get('/', catalogController.getAll)
 	.post('/', catalogController.create)

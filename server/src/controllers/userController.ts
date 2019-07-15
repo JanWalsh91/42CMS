@@ -14,13 +14,12 @@ export const userController = {
 	 * Creates a new user and project
 	 */
 	async create(req: Request, res: Response) {
-		console.log(chalk.magenta('[UserContoller] create'), req.body)
+		console.log(chalk.magenta('[UserContoller] create'))
 		// save params
 		const { username, password, projectName, projectId, name } = req.body
 		
 		// Check if user exists
 		let existingUsers: IUser[] = await User.find({username})
-		console.log(existingUsers)
 		if (existingUsers.length > 0) {
 			console.log(chalk.red('user already exists'))
 			res.status(BAD_REQUEST)
@@ -89,7 +88,7 @@ export const userController = {
 	},
 
 	async login(req: Request, res: Response) {
-		console.log(chalk.magenta('[User.login]'), req.body)
+		console.log(chalk.magenta('[User.login]'))
 		const { username, password } = req.body
 
 		let user: IUser = await User.findOne({username, password})
@@ -103,7 +102,7 @@ export const userController = {
 	},
 
 	async logout(req: Request, res: Response) {
-		console.log(chalk.magenta('[User.logout]'), req.body)
+		console.log(chalk.magenta('[User.logout]'))
 		if (req.session) {
 			req.session.destroy(err => {
 				res.send({message: 'Logout Success'})

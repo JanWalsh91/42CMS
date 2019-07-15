@@ -7,7 +7,7 @@ const { BAD_REQUEST } = ResponseStatusTypes;
 
 export class ProjectController {
 	public async create(req: Request, res: Response) {
-		console.log(chalk.magenta('[ProjectContoller] create'), req.body);
+		console.log(chalk.magenta('[ProjectContoller] create'));
 		const { name, user, id } = req.body; // User acquired from authorization middleware
 	   
 		// Project id must be unique
@@ -49,7 +49,7 @@ export class ProjectController {
 	 * @param res 
 	 */
 	public async getAll(req: Request, res: Response) {
-		console.log(chalk.magenta('[ProjectContoller] getAll'), req.body);
+		console.log(chalk.magenta('[ProjectContoller] getAll'));
 		let projects: any[] = await Project.find({owner: req.body.user._id});
 		projects = projects.map(project => ({
 			name: project.name,
@@ -65,7 +65,7 @@ export class ProjectController {
 	 * @param res 
 	 */
 	public async get(req: Request, res: Response) {
-		console.log(chalk.magenta('[ProjectContoller] get'), req.body);
+		console.log(chalk.magenta('[ProjectContoller] get'));
 		let projects: any[] = await Project.find({owner: req.body.user._id});
 		projects = projects.map(project => ({
 			name: project.name,

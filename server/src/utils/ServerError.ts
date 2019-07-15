@@ -13,6 +13,7 @@ export enum ErrorType {
 	UNAUTHORIZED,
 	USER_EXISTS,
 	CATALOG_EXISTS,
+	CATEGORY_EXISTS,
 	BAD_LOGIN,
 }
 
@@ -21,5 +22,6 @@ export const ErrorMessages: {[code: string]: Function} = {
 	[ErrorType.UNAUTHORIZED]: () => `You are unauthorized to access this resource`,
 	[ErrorType.USER_EXISTS]: username => `User ${username ? username + ' ' : ''}already exists`,
 	[ErrorType.CATALOG_EXISTS]: catalogid => `Catalog ${catalogid ? catalogid + ' ' : ''}already exists`,
+	[ErrorType.CATEGORY_EXISTS]: categoryid => `Category ${categoryid ? categoryid + ' ' : ''}already exists`,
 	[ErrorType.BAD_LOGIN]: () => `Wrong username or password`,
 }

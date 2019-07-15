@@ -1,37 +1,122 @@
 import { Project, IProject } from '../models/projectModel'
-import { Category, ICategory } from '../models/categoryModel'
+import { ICategory } from '../models/categoryModel'
 import { Request, Response } from 'express';
 import chalk from 'chalk';
 import ResponseStatusTypes from '../utils/ResponseStatusTypes';
+import { ServerError, ErrorType } from '../utils/ServerError';
+import { ICatalog } from '../models/catalogModel';
+import { prependOnceListener } from 'cluster';
 
 const { BAD_REQUEST } = ResponseStatusTypes; 
 
 export class CategoryController {
 	public async create(req: Request, res: Response) {
 		console.log(chalk.magenta('[CategoryController] create'), req.body);
-		const { user, project, name, id } = req.body; // User acquired from authorization middleware
+		let catalog: ICatalog = req.body.catalog
+		let project: IProject = req.body.project
+		let { name, id, parentCategoryId } = req.body // User acquired from authorization middleware
 	   
-		// TODO: Submitted category id must be unique within Catalog
-		const existingCategory: ICategory = await Category.findOne({project: project._id, id});
-		if (existingCategory) {
-			console.log(chalk.red(`${project.id} already has a category with id ${id}`));
-			res.status(BAD_REQUEST);
-			res.send({err: `${project.id} already has a category with id ${id}`});
-			return ;
+		let parentCategory = null
+		if (parentCategoryId) {
+			parentCategory = catalog.categories.find(cat => cat.id == parentCategoryId)
 		}
-		const newCategory: ICategory = new Category({name, id, project: project._id});
 
-        newCategory.save((err, category) => {
-            if (err){
-                res.send(err);
-            } else {
-				res.json({					// TODO: factorize
-					name: category.name,
-					id: category.id,
-					project: project.id,
-				});
-			}
-        });
+		const newCategory = {
+			parentCategory: parentCategory ? parentCategory._id : null,
+			id,
+			name
+		};
+
+		let existingCategory: ICategory = catalog.getCategory({id})
+		if (existingCategory) {
+			res.status(BAD_REQUEST)
+			console.log(chalk.red(`[CategoryController.create] Catalog with id already exists`))
+			res.send(new ServerError(ErrorType.CATEGORY_EXISTS, id))
+			return
+		}
+
+		let promises = [addCategoryToCatalog()];
+		if (parentCategory) {
+			promises.push(linkCategories())
+		}
+		try {
+			await Promise.all(promises);
+		} catch (e) {
+			console.log(chalk.red('ERROR'))
+		}
+
+		res.send(newCategory)
+
+		function linkCategories() {
+			return new Promise(async (resolve, reject) => {
+				project = await Project.findOne({id: project.id})
+				let newCat: ICategory = project.getCatalog({id: catalog.id}).getCategory({id})
+				Project.findOneAndUpdate(
+					{ id: project.id },
+					{
+						catalogs: {
+							$elemMatch: {
+								id: catalog.id,
+								categories: {
+									id: parentCategoryId,
+									$push: {
+										subcategories: newCat._id
+									}
+								}
+							}
+						}
+					},
+					(err, project: IProject) => {
+						console.log({err, project})
+						resolve();
+					}
+				)
+			})
+		}
+
+		function addCategoryToCatalog() {
+			return new Promise((resolve, reject) => {
+				Project.findOneAndUpdate(
+					// Get current project only if category doesn't already exist in catalog
+					{
+						id: project.id,
+						catalogs: {
+							$elemMatch: {
+								id: catalog.id,
+								// Refactor ?
+								categories: {
+									$not: {
+										$elemMatch: { id }
+									}
+								}
+							}
+						}
+					},
+					{
+						// Add newCategory to catalog
+						$push: {
+							'catalogs.$.categories': newCategory
+						},
+					},
+					// Return updated Project in callback
+					{ new: true },
+					(err, project: IProject) => {
+						if (err) {
+							reject(err)
+							return 
+						}
+						if (!project) {
+							reject('No project found')
+							return 
+						}
+						resolve()
+					}
+				)
+			})
+		}
+		// TODO: create refrences between child and parent categories
+
+	
 	}
 }
 

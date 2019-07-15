@@ -9,7 +9,7 @@ const { BAD_REQUEST } = ResponseStatusTypes;
 
 export class CatalogController {
 	public async create(req: Request, res: Response) {
-		console.log(chalk.magenta('[CatalogController] create'), req.body);
+		console.log(chalk.magenta('[CatalogController] create'));
 		const { project, name, id } = req.body; // User acquired from authorization middleware
 	   
 		const newCatalog = { id, name };
@@ -30,10 +30,10 @@ export class CatalogController {
 						res.send({err})
 					} else {
 						console.log(chalk.red(`[findOndAndUpdate] Catalog with id already exists`))
-						res.send(new ServerError(ErrorType.CATALOG_EXISTS))
+						res.send(new ServerError(ErrorType.CATALOG_EXISTS, id))
 					}
 				} else {
-					console.log(chalk.green(`[findOndAndUpdate] Success: ${doc}`))
+					// console.log(chalk.green(`[findOndAndUpdate] Success: ${doc}`))
 					res.send(doc.catalogs.find(catalog => catalog.id == id))
 				}
 			}
@@ -41,12 +41,12 @@ export class CatalogController {
 	}
 
 	public async get(req: Request, res: Response) {
-		console.log(chalk.magenta('[CatalogController] get'), req.body);
+		console.log(chalk.magenta('[CatalogController] get'));
 		res.send(req.body.catalog);
 	}
 
 	public async getAll(req: Request, res: Response) {
-		console.log(chalk.magenta('[CatalogController] getAll'), req.body);
+		console.log(chalk.magenta('[CatalogController] getAll'));
 		const { project } : { project: IProject }  = req.body;
 		
 		const catalogs = project.catalogs;

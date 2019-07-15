@@ -6,6 +6,15 @@ import { IProduct, ProductSchema } from './productModel';
 
 class ProjectClass {
 	// define virtuals here
+	getCatalog(this: IProject, query): ICatalog {
+		for (let i = 0; i < this.catalogs.length; i++) {
+			let catalog = this.catalogs[i]
+			if (Object.keys(query).every(key => catalog[key] == query[key])) {
+				return catalog
+			}
+		}
+		return null;
+	}
 }
 
 export interface IProject extends Document {
@@ -13,7 +22,8 @@ export interface IProject extends Document {
 	name: string,
 	owner: IUser['_id'],
 	catalogs: ICatalog[],
-	// products: IProduct[],
+	products: IProduct[],
+	getCatalog: (query: object) => ICatalog,
 }
 
 export const ProjectSchema = new Schema({

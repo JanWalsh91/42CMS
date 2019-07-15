@@ -6,21 +6,33 @@ const agent = chai.request.agent(app)
 
 import { User } from '../src/models/userModel'
 import { Project } from '../src/models/projectModel'
-// import { Catalog } from '../src/models/catalogModel'
-import { Category } from '../src/models/categoryModel'
 // import { Product } from '../src/models/productModel'
 
-export const userData = 
-	{
-		name: 'John Smith',
-		username: 'jsmith',
-		password: 'password',
-		projectName: 'Default project',
-		projectId: 'defaultProject'
-	}
+export const userData = {
+	name: 'John Smith',
+	username: 'jsmith',
+	password: 'password',
+	projectName: 'Default project',
+	projectId: 'defaultProject'
+}
 
-export const clearDataBase = async (models?: any[]) => {
-	if (!models) {
+export const projectData = {
+	name: 'Dior',
+	id: 'dior'
+}
+
+export const catalogData = {
+	name: 'International',
+	id: 'int'
+}
+
+export const categoryData = {
+	name: 'Fragrance',
+	id: 'fragrance'
+}
+
+export const clearDataBase = async (...models: any) => {
+	if (!models.length) {
 		models = [
 			User,
 			Project
@@ -76,14 +88,14 @@ export const clearDataBase = async (models?: any[]) => {
 
 // ===== CATEGORIES ====== //
 
-	// export const createCategory = (params: {projectId: string, catalogId: string, id: string}) =>
-	// 	agent.post(`/projects/${params.projectId}/catalogs/${params.catalogId}`).send({id: params.id})
+	export const createCategory = (projectid: string, catalogid: string, categoryid: string, parentCategoryId?: string) =>
+		agent.post(`/projects/${projectid}/catalogs/${catalogid}/categories`).send({id: categoryid, parentCategoryId})
 
-	// export const getCategory = (params: {projectId: string, id: string}) =>
-	// 	agent.get(`/projects/${params.projectId}/catalogs/${params.id}`)
+	export const getCategory = (projectid: string, catalogid: string, categoryid: string) =>
+		agent.get(`/projects/${projectid}/catalogs/${catalogid}/categories/${categoryid}`)
 
-	// export const getAllCategories = (params: {projectId: string}) =>
-	// 	agent.get(`/projects/${params.projectId}/catalogs`)
+	export const getAllCategories = (projectid: string, catalogid: string) =>
+		agent.get(`/projects/${projectid}/catalogs/${catalogid}/categories`)
 
 // ===== UTILITY ===== //
 

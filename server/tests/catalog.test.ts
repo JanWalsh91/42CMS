@@ -6,10 +6,7 @@ import { clearDataBase, createUser, printret, userData, createCatalog, getCatalo
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 const { OK, BAD_REQUEST } = ResponseStatusTypes 
 
-import { User } from '../src/models/userModel'
 import { Project } from '../src/models/projectModel';
-// import { Project } from '../src/models/projectModel'
-// import { Catalog } from '../src/models/catalogModel'
 
 let ret: any
 
@@ -17,7 +14,7 @@ const catalogData = {
 	id: 'storefrontCatalog'
 }
 
-describe.only('Catalog', () => {
+describe('Catalog', () => {
 	let project: any = {};
 
 	beforeEach(async() => {
@@ -67,7 +64,7 @@ describe.only('Catalog', () => {
 	})
 
 	describe('GetAll', () => {
-		it.only('Should get all categories of a project', async() => {
+		it('Should get all categories of a project', async() => {
 			console.log(chalk.blue('Should get all categories of a project'))
 			await Promise.all(['matser', 'china', 'international'].map(id => createCatalog(project.id, id)))
 			ret = await getAllCatalogs(project.id)

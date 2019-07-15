@@ -1,11 +1,10 @@
 import { Router, Request, Response, NextFunction } from 'express'
-import { projectController } from '../controllers/projectController'
+import chalk from 'chalk';
 
 import authorize from '../middleware/authorize'
 import { Project, IProject } from '../models/projectModel'
-
+import { projectController } from '../controllers/projectController'
 import catalogs from './catalogsRoute'
-import chalk from 'chalk';
 
 const router: Router = Router()
 
@@ -18,12 +17,12 @@ router
 	// .use('/:projectid/users', projectUsers)
 
 function getProjectById(req: Request, res: Response, next: NextFunction) {
-	console.log(chalk.magenta('[getProjectById]'))
+	// console.log(chalk.magenta('[getProjectById]'))
 	Project.findOne({id: req.params.projectid}, (err, project) => {
 		if (err) {
 			next(err);
 		} else if (project) {
-			console.log(chalk.green('[getProjectById] SUCCESS'), project)
+			// console.log(chalk.green('[getProjectById] SUCCESS'), project)
 			req.body.project = project;
 			next();
 		} else {
