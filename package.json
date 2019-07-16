@@ -11,6 +11,7 @@
 		"dev": "npm run dev:server && npm run dev:client",
 		"prod": "npm run build && npm run start",
 		"test": "NODE_ENV=test nyc --reporter=html --reporter=text mocha -r ts-node/register ./**/tests/*.test.ts --exit --timeout 2000",
+		"test-simple": "mocha -r ts-node/register ./**/tests/*.test.ts --exit --timeout 2000",
 		"db-start": "mkdir -p ./db && mongod --dbpath ./db",
 		"storybook": "start-storybook"
 	},
