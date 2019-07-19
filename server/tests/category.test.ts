@@ -11,7 +11,7 @@ import { ICategory } from '../src/models/categoryModel';
 
 let ret: any
 
-describe.only('Category', () => {
+describe('Category', () => {
 	let project: any = {}
 	let catalog: any = {}
 
@@ -34,7 +34,7 @@ describe.only('Category', () => {
 		catalog = ret.body
 	})
 
-	describe.only('Create category', () => {
+	describe('Create category', () => {
 		it('Should create category', async() => {
 			console.log(chalk.blue('Should create category'))
 			// Create Category
@@ -44,7 +44,7 @@ describe.only('Category', () => {
 			// Should return category
 			ret.body.id.should.equal(categoryData.id)
 		})
-		it.only('Should create a subcategory', async() => {
+		it('Should create a subcategory', async() => {
 			let subCatId = 'subcat'
 			console.log(chalk.blue('Should create a subcategory'))
 			console.log(chalk.blue('Creating parent category START'))

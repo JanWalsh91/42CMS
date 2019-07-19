@@ -114,13 +114,7 @@ export const userController = {
 
 	get(req: Request, res: Response) {
 		console.log(chalk.magenta('[User] get'))
-		res.send({user: req.params.user})				
-		// User.findById(req.params.userid, (err, user) => {
-		// 	if (err){
-		// 		res.send(err)
-		// 	}
-		// 	res.json(user)
-		// })
+		res.send({user: req.params.user})
 	},
 
 	update(req: Request, res: Response) {				

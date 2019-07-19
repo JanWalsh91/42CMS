@@ -11,10 +11,11 @@ import { Project } from '../src/models/projectModel';
 let ret: any
 
 const catalogData = {
-	id: 'storefrontCatalog'
+	id: 'storefrontCatalog',
+	isMaster: true
 }
 
-describe('Catalog', () => {
+describe.only('Catalog', () => {
 	let project: any = {};
 
 	beforeEach(async() => {
@@ -27,7 +28,7 @@ describe('Catalog', () => {
 	})
 
 	describe('Create', () => {
-		it('Should create a catalog', async() => {
+		it.only('Should create a catalog', async() => {
 			console.log(chalk.blue('Should create a catalog'))
 			// Should return OK
 			ret = await createCatalog(project.id, catalogData.id)

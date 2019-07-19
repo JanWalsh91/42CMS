@@ -1,6 +1,6 @@
 import { Schema, Document, Model, model } from 'mongoose'
 
-import { CatalogSchema } from './catalogModel'
+import { ICatalog } from './catalogModel'
 
 class CategoryClass {
 	// define virtuals here
@@ -14,21 +14,23 @@ class CategoryClass {
 		return null;
 	}
 
-	linkToParent(this: ICategory, parentID: string) {
-		
-	}
 
-	linkToSubcategory() {
 
-	}
+	setParent(this: ICategory, parentID: string) {}
+
 }
 
 export interface ICategory extends Document {
 	id: string,
 	name: string,
-	parentCategory: ICategory['_id'],
+	catalog: ICatalog['_id'],
+
+	parent: ICategory['_id'],
 	subCategories: [ICategory['_id']],
+
 	getSubcategory: (query: object) => ICategory,
+	setParent: (this: ICategory, parentID: string) => void,
+
 }
 
 export const CategorySchema = new Schema({
@@ -39,14 +41,25 @@ export const CategorySchema = new Schema({
 	name: {
 		type: String,
 	},
-	parentCategory: {
+	catalog: {
 		type: Schema.Types.ObjectId,
-		ref: 'Catalog.categories',
-		default: null
+		ref: 'Catalog',
+		required: true
+	},
+	parent: {
+		type: Schema.Types.ObjectId,
+		ref: 'Category',
 	},
 	subCategories: [{
 		type: Schema.Types.ObjectId,
-		ref: 'Catalog.categories',
+		ref: 'Category',
 		default: null
 	}],
-}, { _id : true }).loadClass(CategoryClass)	
+	products: [{
+		type: Schema.Types.ObjectId,
+		ref: 'Product',
+		default: null
+	}]
+}).loadClass(CategoryClass)	
+
+export const Category: Model<ICategory> = model('Category', CategorySchema);

@@ -22,7 +22,7 @@ function getCategoryById(req: Request, res: Response, next: NextFunction) {
 		return
 	}
 
-	const category: ICategory = catalog.categories.find(category => category.id == req.params.categoryid)
+	const category: ICategory = catalog.getCategory({ id: req.params.categoryid })
 	if (!category) {
 		console.log(chalk.red('[getCategoryById] FAIL'))		
 		next(new Error('failed to load category'))

@@ -8,6 +8,7 @@ const router: Router = Router();
 
 router
 	.post('/', userController.create)
+	.get('/', userController.getAll)
 	.get('/:username', authorize, userController.get)
 	.post('/:username', authorize, userController.update)
 	.delete('/:username', authorize, userController.delete)

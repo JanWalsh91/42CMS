@@ -47,5 +47,4 @@ const UserSchema = new Schema({
 	}]
 }).loadClass(UserClass)	
 
-export const User: Model<IUser> = model('User', UserSchema);
-
+export const User: Model<IUser> = model('User', UserSchema)

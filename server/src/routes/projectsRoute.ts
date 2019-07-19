@@ -5,16 +5,19 @@ import authorize from '../middleware/authorize'
 import { Project, IProject } from '../models/projectModel'
 import { projectController } from '../controllers/projectController'
 import catalogs from './catalogsRoute'
+import sites from './sitesRoute'
+// import users from './usersRoute' // PROJECTUSER
 
 const router: Router = Router()
 
 router
 	.use('/:projectid/catalogs', authorize, getProjectById, catalogs)
+	.use('/:projectid/sites', authorize, getProjectById, sites)
+	// .use('/:projectid/users', users)
+
 	.get('/:projectid', authorize, getProjectById, projectController.get)
 	.post('/', authorize, projectController.create)
 	.get('/', authorize, projectController.getAll)
-	// .use('/:projectid/products', products)
-	// .use('/:projectid/users', projectUsers)
 
 function getProjectById(req: Request, res: Response, next: NextFunction) {
 	// console.log(chalk.magenta('[getProjectById]'))

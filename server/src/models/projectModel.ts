@@ -3,6 +3,9 @@ import { Schema, Document, Model, model, SchemaType } from 'mongoose';
 import { IUser } from './userModel';
 import { ICatalog, CatalogSchema } from './catalogModel';
 import { IProduct, ProductSchema } from './productModel';
+import { unstable_renderSubtreeIntoContainer } from 'react-dom';
+import { ISite, SiteSchema } from './siteModel';
+// import { IUser, UserSchema } from './userModel';
 
 class ProjectClass {
 	// define virtuals here
@@ -15,15 +18,22 @@ class ProjectClass {
 		}
 		return null;
 	}
+
+	// getSite(this: ISite, query: object): ISite {}
+	// getUser(this: IUser, query: object): IUser {}
 }
 
 export interface IProject extends Document {
 	id: string,
 	name: string,
 	owner: IUser['_id'],
-	catalogs: ICatalog[],
-	products: IProduct[],
+	// users: [IUser['_id']],
+	catalogs: [ICatalog['_id']],
+	sites: [ISite['_id']],
+
 	getCatalog: (query: object) => ICatalog,
+	// getSite: (query: object) => ISite,
+	// getUser: (query: object) => IUser,
 }
 
 export const ProjectSchema = new Schema({
@@ -41,9 +51,22 @@ export const ProjectSchema = new Schema({
 		ref: 'User',
 		required: true
 	},
-	catalogs: [CatalogSchema],
-	products: [ProductSchema],
+	catalogs: [{
+		type: Schema.Types.ObjectId,
+		ref: 'Catalogs',
+		default: null
+	}],
+	sites: [{
+		type: Schema.Types.ObjectId,
+		ref: 'Sites',
+		default: null
+	}],
+	// Users: [{
+	// 	type: Schema.Types.ObjectId,
+	// 	ref: 'Users',
+	// 	default: null
+	// }],
 
 }).loadClass(ProjectClass)
 
-export const Project: Model<IProject> = model('Project', ProjectSchema);
+export const Project: Model<IProject> = model('Project', ProjectSchema)
