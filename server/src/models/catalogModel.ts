@@ -13,6 +13,16 @@ class CatalogClass {
 		}
 		return null;
 	}
+
+	addCatalog() {
+
+	}
+
+	removeCatalog() {
+
+	}
+
+	
 }
 
 export interface ICatalog extends Document {

@@ -13,6 +13,14 @@ class CategoryClass {
 		}
 		return null;
 	}
+
+	linkToParent(this: ICategory, parentID: string) {
+		
+	}
+
+	linkToSubcategory() {
+
+	}
 }
 
 export interface ICategory extends Document {

@@ -47,12 +47,19 @@ describe.only('Category', () => {
 		it.only('Should create a subcategory', async() => {
 			let subCatId = 'subcat'
 			console.log(chalk.blue('Should create a subcategory'))
+			console.log(chalk.blue('Creating parent category START'))
 			// Create category
 			ret = await createCategory(project.id, catalog.id, categoryData.id)
 			ret.should.have.status(OK)
+			console.log(chalk.blue('Creating parent category END'))
+
 			// Create subcategory
+			console.log(chalk.blue('Creating child category START'))
+
 			ret = await createCategory(project.id, catalog.id, subCatId, categoryData.id)
 			ret.should.have.status(OK)
+			console.log(chalk.blue('Creating child category END'))
+
 			ret.body.id.should.equal(subCatId)
 			project = await Project.findOne({id: project.id})
 			catalog = project.getCatalog({id: catalog.id})

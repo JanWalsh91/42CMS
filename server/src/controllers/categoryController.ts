@@ -35,17 +35,60 @@ export class CategoryController {
 			return
 		}
 
-		let promises = [addCategoryToCatalog()];
-		if (parentCategory) {
-			promises.push(linkCategories())
-		}
 		try {
-			await Promise.all(promises);
+			let newCategory = await addCategoryToCatalog();
+			console.log({newCategory});
+			if (parentCategory) {
+				// await linkCategories({parent: })
+			}
 		} catch (e) {
-			console.log(chalk.red('ERROR'))
+			console.log('catch', e)
 		}
+		// let promises = [addCategoryToCatalog()];
+		// if (parentCategory) {
+		// 	promises.push(linkCategories());
+		// }
+		// try {
+		// 	await Promise.all(promises);
+		// } catch (e) {
+		// 	console.log(chalk.red('ERROR'))
+		// }
 
 		res.send(newCategory)
+
+		function addCategoryToCatalog() {
+			return new Promise((resolve, reject) => {
+				Project.findOneAndUpdate(
+					// Get current project only if category doesn't already exist in catalog
+					{
+						id: project.id,							// update project
+						catalogs: {
+							$elemMatch: { id: catalog.id, },	// update catalog
+						},
+					},
+					{
+						$push: {
+							'catalogs.$.categories': newCategory
+						},
+					},
+					// Return updated Project in callback
+					{ new: true },
+					(err, project: IProject) => {
+						if (err) {
+							console.log(chalk.blue('addCategoryToCatalog CALLBACK err: '), err);
+							reject({err})
+							return 
+						}
+						if (!project) {
+							console.log(chalk.blue('addCategoryToCatalog CALLBACK no project: '));
+							reject('No project found')
+							return 
+						}
+						resolve(project.getCatalog({id: catalog.id}).getCategory({id}))
+					}
+				)
+			})
+		}
 
 		function linkCategories() {
 			return new Promise(async (resolve, reject) => {
@@ -67,6 +110,7 @@ export class CategoryController {
 						}
 					},
 					(err, project: IProject) => {
+						console.log(chalk.blue('linkCategories CALLBACK'));
 						console.log({err, project})
 						resolve();
 					}
@@ -74,46 +118,7 @@ export class CategoryController {
 			})
 		}
 
-		function addCategoryToCatalog() {
-			return new Promise((resolve, reject) => {
-				Project.findOneAndUpdate(
-					// Get current project only if category doesn't already exist in catalog
-					{
-						id: project.id,
-						catalogs: {
-							$elemMatch: {
-								id: catalog.id,
-								// Refactor ?
-								categories: {
-									$not: {
-										$elemMatch: { id }
-									}
-								}
-							}
-						}
-					},
-					{
-						// Add newCategory to catalog
-						$push: {
-							'catalogs.$.categories': newCategory
-						},
-					},
-					// Return updated Project in callback
-					{ new: true },
-					(err, project: IProject) => {
-						if (err) {
-							reject(err)
-							return 
-						}
-						if (!project) {
-							reject('No project found')
-							return 
-						}
-						resolve()
-					}
-				)
-			})
-		}
+		
 		// TODO: create refrences between child and parent categories
 
 	
