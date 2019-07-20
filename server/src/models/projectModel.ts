@@ -3,9 +3,11 @@ import { Schema, Document, Model, model, SchemaType } from 'mongoose';
 import { IUser } from './userModel';
 import { ICatalog, CatalogSchema } from './catalogModel';
 import { IProduct, ProductSchema } from './productModel';
-import { unstable_renderSubtreeIntoContainer } from 'react-dom';
 import { ISite, SiteSchema } from './siteModel';
 // import { IUser, UserSchema } from './userModel';
+
+import { ServerError, ErrorType } from '../utils/ServerError' 
+import chalk from 'chalk';
 
 class ProjectClass {
 	// define virtuals here
@@ -31,6 +33,7 @@ export interface IProject extends Document {
 	catalogs: [ICatalog['_id']],
 	sites: [ISite['_id']],
 
+	// createCatalog: (catalog: ICatalog) => Promise<any>,
 	getCatalog: (query: object) => ICatalog,
 	// getSite: (query: object) => ISite,
 	// getUser: (query: object) => IUser,
@@ -53,12 +56,12 @@ export const ProjectSchema = new Schema({
 	},
 	catalogs: [{
 		type: Schema.Types.ObjectId,
-		ref: 'Catalogs',
+		ref: 'Catalog',
 		default: null
 	}],
 	sites: [{
 		type: Schema.Types.ObjectId,
-		ref: 'Sites',
+		ref: 'Site',
 		default: null
 	}],
 	// Users: [{

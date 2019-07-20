@@ -1,8 +1,11 @@
-export class ServerError {
+import { Error } from "mongoose";
+
+export class ServerError extends Error {
 	code: number
 	message: string
 
 	constructor(code: ErrorType, message?: string) {
+		super(message)
 		this.code = code;
 		this.message = ErrorMessages[code](message);
 	}
@@ -15,6 +18,7 @@ export enum ErrorType {
 	CATALOG_EXISTS,
 	CATEGORY_EXISTS,
 	BAD_LOGIN,
+	// VALIDATION_ERROR,
 }
 
 export const ErrorMessages: {[code: string]: Function} = {
@@ -24,4 +28,5 @@ export const ErrorMessages: {[code: string]: Function} = {
 	[ErrorType.CATALOG_EXISTS]: catalogid => `Catalog ${catalogid ? catalogid + ' ' : ''}already exists`,
 	[ErrorType.CATEGORY_EXISTS]: categoryid => `Category ${categoryid ? categoryid + ' ' : ''}already exists`,
 	[ErrorType.BAD_LOGIN]: () => `Wrong username or password`,
+	// [ErrorType.VALIDATION_ERROR]: (e: Error.ValidationError) => `Wrong username or password`,
 }

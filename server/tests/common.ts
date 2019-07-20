@@ -6,7 +6,10 @@ const agent = chai.request.agent(app)
 
 import { User } from '../src/models/userModel'
 import { Project } from '../src/models/projectModel'
-// import { Product } from '../src/models/productModel'
+import { Site } from '../src/models/siteModel'
+import { Catalog } from '../src/models/catalogModel'
+import { Category } from '../src/models/categoryModel'
+import { Product } from '../src/models/productModel'
 
 export const userData = {
 	name: 'John Smith',
@@ -35,7 +38,11 @@ export const clearDataBase = async (...models: any) => {
 	if (!models.length) {
 		models = [
 			User,
-			Project
+			Project,
+			Site,
+			Catalog,
+			Category,
+			Product
 		]
 	}
 	await Promise.all(models.map(model => model.deleteMany({})))

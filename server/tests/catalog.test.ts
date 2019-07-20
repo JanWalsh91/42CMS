@@ -7,6 +7,7 @@ import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 const { OK, BAD_REQUEST } = ResponseStatusTypes 
 
 import { Project } from '../src/models/projectModel';
+import { Catalog } from '../src/models/catalogModel';
 
 let ret: any
 
@@ -15,11 +16,11 @@ const catalogData = {
 	isMaster: true
 }
 
-describe.only('Catalog', () => {
+describe('Catalog', () => {
 	let project: any = {};
 
 	beforeEach(async() => {
-		console.log('[Catalog] beforeEach')
+		// console.log('[Catalog] beforeEach')
 		// Clear database
 		await clearDataBase()
 		// Create user
@@ -33,13 +34,18 @@ describe.only('Catalog', () => {
 			// Should return OK
 			ret = await createCatalog(project.id, catalogData.id)
 			ret.should.have.status(OK)
+			printret(ret)
 			ret.body.id.should.equal(catalogData.id)
-			// Catalog should exist
-			project = await Project.findOne({id: project.id})
+			// Project should have the catalog reference
+			project = await Project.findOne({id: project.id}).populate('catalogs')
+			console.log({catalog: project.catalogs[0]})
 			project.catalogs.should.have.length(1)
-			project.catalogs[0].id.should.equal(catalogData.id)
-			// const catalog = await Catalog.findOne({id: catalogData.id})
-			// catalog.should.exist
+			// Catalog should be added to database
+			const catalog = await Catalog.findOne({project: project._id, id: catalogData.id})
+			console.log({catalog})
+			catalog.should.exist
+			// Catalog should have a root category which exists in the databse
+			catalog.rootCategory.should.exist
 		})
 		describe('Should fail to create a catalog if ...', () => {
 			console.log(chalk.blue('Should fail to create a catalog if ...'))
@@ -48,6 +54,7 @@ describe.only('Catalog', () => {
 				ret = await createCatalog(project.id, catalogData.id)
 				ret.should.have.status(OK)
 				ret = await createCatalog(project.id, catalogData.id)
+				printret(ret)
 				ret.should.have.status(BAD_REQUEST)
 			})
 		})
@@ -59,6 +66,7 @@ describe.only('Catalog', () => {
 			ret = await createCatalog(project.id, catalogData.id)
 			ret.should.have.status(OK)
 			ret = await getCatalog(project.id, catalogData.id)
+			printret(ret)
 			ret.body.id.should.equal(catalogData.id)
 			ret.should.have.status(OK)
 		})
