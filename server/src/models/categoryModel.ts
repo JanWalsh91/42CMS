@@ -97,7 +97,8 @@ CategorySchema.pre('save', function(this: ICategory, next: Function) {
 		console.log(chalk.yellow('is new!'))
 		this.wasNew = this.isNew
 
-		// Check if category exists in catalog
+		// Check if category in catalog
+		// Update catalog.categories
 		Catalog.findById(this.catalog).populate('categories').exec((err, catalog: ICatalog) => {
 			if (err) { next(err); return; }
 

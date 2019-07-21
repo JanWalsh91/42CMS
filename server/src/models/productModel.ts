@@ -2,6 +2,8 @@ import { Schema, Document, Model, model } from 'mongoose'
 import { ICatalog } from './catalogModel';
 import { ICategory } from './categoryModel';
 import chalk from 'chalk';
+import { Project, IProject } from './projectModel';
+import { ServerError, ErrorType } from '../utils/ServerError';
 
 class ProductClass {
 	// define virtuals here
@@ -11,6 +13,7 @@ class ProductClass {
 export interface IProduct extends Document {
 	id: string,
 	name: string,
+	project: IProject['_id'],
 	masterCatalog: ICatalog['_id'],
 	assignedCatalogs: [ICatalog['_id']],
 	primaryCategoryByCatalog: [Record<ICatalog['_id'], ICategory['_id']>],
@@ -26,6 +29,11 @@ export const ProductSchema = new Schema({
 	},
 	name: {
 		type: String,
+		required: true
+	},
+	project: {
+		type: Schema.Types.ObjectId,
+		ref: 'Project',
 		required: true
 	},
 	masterCatalog: {
@@ -55,11 +63,26 @@ export const ProductSchema = new Schema({
 
 ProductSchema.pre('save', function(this: IProduct, next: Function) {
 	if (this.isNew) {
-		this.wasNew = false
-		console.log(chalk.magenta('CategorySchema pre save ' + this.id))
+		this.wasNew = true
+		console.log(chalk.magenta('ProductSchema pre save ' + this.id))
 		console.log(chalk.yellow('is new!'))
 		
-		// Check if id already in Catalog
+		// Check if id in Project
+		// Update project.products
+		Project.findById(this.project, (err, project: IProject) => {
+			if (err) { next(err); return; }
+
+			if (project.products.some((product: IProduct) => product.id == this.id)) {
+				next(new ServerError(ErrorType.PRODUCT_EXISTS, this.id))
+				return
+			}
+			project.products.push(this._id)
+			project.markModified('products')
+			project.save((err, _project: IProject) => {
+				if (err) { next(err); return; }
+				next()
+			})
+		})
 
 		next()
 	} else {

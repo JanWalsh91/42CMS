@@ -17,6 +17,7 @@ export enum ErrorType {
 	USER_EXISTS,
 	CATALOG_EXISTS,
 	CATEGORY_EXISTS,
+	PRODUCT_EXISTS,
 	BAD_LOGIN,
 	// VALIDATION_ERROR,
 }
@@ -27,6 +28,7 @@ export const ErrorMessages: {[code: string]: Function} = {
 	[ErrorType.USER_EXISTS]: username => `User ${username ? username + ' ' : ''}already exists`,
 	[ErrorType.CATALOG_EXISTS]: catalogid => `Catalog ${catalogid ? catalogid + ' ' : ''}already exists`,
 	[ErrorType.CATEGORY_EXISTS]: categoryid => `Category ${categoryid ? categoryid + ' ' : ''}already exists`,
+	[ErrorType.PRODUCT_EXISTS]: productid => `Product ${productid ? productid + ' ' : ''}already exists`,
 	[ErrorType.BAD_LOGIN]: () => `Wrong username or password`,
 	// [ErrorType.VALIDATION_ERROR]: (e: Error.ValidationError) => `Wrong username or password`,
 }

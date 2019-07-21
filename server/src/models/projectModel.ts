@@ -29,6 +29,7 @@ export interface IProject extends Document {
 	owner: IUser['_id'],
 	// users: [IUser['_id']],
 	catalogs: [ICatalog['_id']],
+	products: [IProduct['_id']],
 	sites: [ISite['_id']],
 
 	getCatalog: (query: object) => Promise<ICatalog>,
@@ -54,6 +55,11 @@ export const ProjectSchema = new Schema({
 	catalogs: [{
 		type: Schema.Types.ObjectId,
 		ref: 'Catalog',
+		default: null
+	}],
+	products: [{
+		type: Schema.Types.ObjectId,
+		ref: 'Product',
 		default: null
 	}],
 	sites: [{

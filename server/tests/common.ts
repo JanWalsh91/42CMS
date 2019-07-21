@@ -111,8 +111,8 @@ export const clearDataBase = async (...models: any) => {
 
 // ===== PRODUCTS ====== //
 
-	export const createProduct = (projectid: string, catalogid: string, productid: string, params?: object) => 
-		agent.post(`/projects/${projectid}/products`).send({id: productid, catalogid, ...params})
+	export const createProduct = (projectid: string, masterCatalogId: string, productid: string, params?: object) => 
+		agent.post(`/projects/${projectid}/products`).send({id: productid, masterCatalogId, ...params})
 
 // ===== UTILITY ===== //
 

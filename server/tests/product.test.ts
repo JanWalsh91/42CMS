@@ -5,10 +5,12 @@ import chalk from 'chalk';
 import { clearDataBase, createUser, printret, userData, createProject, projectData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData  } from './common';
 
 import { User } from '../src/models/userModel'
-import { Project } from '../src/models/projectModel'
+import { Project, IProject } from '../src/models/projectModel'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 import { Category } from '../src/models/categoryModel';
 import { Catalog } from '../src/models/catalogModel';
+import { Product, IProduct } from '../src/models/productModel';
+import { Schema } from 'mongoose';
 const { OK, BAD_REQUEST } = ResponseStatusTypes 
 
 let ret: any;
@@ -46,7 +48,24 @@ describe('Product', () => {
 			console.log(chalk.blue('Should create a product'));
 			ret = await createProduct(project.id, catalogData.id, productData.id, {name: productData.name})
 			printret(ret)
+			// Should return a product
 			ret.status.should.equal(OK)
+			// Product should exist
+			let product: IProduct = await Product.findOne({id: productData.id}).populate('project').exec()
+			console.log({product})
+			// Project should have product
+			product.project.id.should.equal(project.id)
+			let _project: IProject = await product.project.populate('products').execPopulate();
+			console.log({_project})
+			_project.products.find((_product: IProduct) => {
+				return _product.id == product.id
+			}).should.exist
+		})
+		describe('Should fail if ...', () => {
+			it('Product of that id already exists in project', async() => {
+				console.log(chalk.blue('Should fail if ... Product of that id already exists in project'));
+				return 
+			})
 		})
 	})
 })

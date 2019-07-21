@@ -11,6 +11,7 @@ const router: Router = Router()
 router
 	// .get('/:productid', getProductById, productController.get)
 	.post('/', getCatalogById, productController.create)
+	.put('/:productid', productController.update)
 	
 
 /**
@@ -20,13 +21,14 @@ async function getCatalogById(req: Request, res: Response, next: NextFunction) {
 	console.log(chalk.magenta('[getCatalogById]'))
 	const project: IProduct = req.body.project
 
-	Catalog.findOne({ project: project._id, id: req.body.catalogid }, (err, catalog: ICatalog) => {
-		if (!catalog) {
+	Catalog.findOne({ project: project._id, id: req.body.masterCatalogId }, (err, masterCatalog: ICatalog) => {
+		if (err) { next(err); return; }
+		if (!masterCatalog) {
 			console.log(chalk.red('[getCatalogById] FAIL HERE'))		
 			next(new Error('failed to load catalog'))
 			return 
 		}
-		req.body.catalog = catalog
+		req.body.masterCatalog = masterCatalog
 		next()
 	})
 }
