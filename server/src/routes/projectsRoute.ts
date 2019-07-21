@@ -6,6 +6,7 @@ import { Project, IProject } from '../models/projectModel'
 import { projectController } from '../controllers/projectController'
 import catalogs from './catalogsRoute'
 import sites from './sitesRoute'
+import products from './productsRoute'
 // import users from './usersRoute' // PROJECTUSER
 
 const router: Router = Router()
@@ -13,6 +14,7 @@ const router: Router = Router()
 router
 	.use('/:projectid/catalogs', authorize, getProjectById, catalogs)
 	.use('/:projectid/sites', authorize, getProjectById, sites)
+	.use('/:projectid/products', authorize, getProjectById, products)
 	// .use('/:projectid/users', users)
 
 	.get('/:projectid', authorize, getProjectById, projectController.get)

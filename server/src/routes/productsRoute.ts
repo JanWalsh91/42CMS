@@ -4,14 +4,32 @@ import chalk from 'chalk'
 import { productController } from '../controllers/productController'
 
 import { IProduct } from '../models/productModel'
-import { ICatalog } from '../models/catalogModel';
+import { ICatalog, Catalog } from '../models/catalogModel';
 
 const router: Router = Router()
 
 router
 	// .get('/:productid', getProductById, productController.get)
-	.post('/', productController.create)
+	.post('/', getCatalogById, productController.create)
 	
+
+/**
+ * Catalog ID supplied in body for products 
+ */
+async function getCatalogById(req: Request, res: Response, next: NextFunction) {
+	console.log(chalk.magenta('[getCatalogById]'))
+	const project: IProduct = req.body.project
+
+	Catalog.findOne({ project: project._id, id: req.body.catalogid }, (err, catalog: ICatalog) => {
+		if (!catalog) {
+			console.log(chalk.red('[getCatalogById] FAIL HERE'))		
+			next(new Error('failed to load catalog'))
+			return 
+		}
+		req.body.catalog = catalog
+		next()
+	})
+}
 
 async function getProductById(req: Request, res: Response, next: NextFunction) {
 	console.log(chalk.magenta('[getProductById]'))
@@ -30,3 +48,5 @@ async function getProductById(req: Request, res: Response, next: NextFunction) {
 		next(new Error('failed to load product'))
 	}
 }
+
+export default router

@@ -46,6 +46,7 @@ describe('Product', () => {
 			console.log(chalk.blue('Should create a product'));
 			ret = await createProduct(project.id, catalogData.id, productData.id, {name: productData.name})
 			printret(ret)
+			ret.status.should.equal(OK)
 		})
 	})
 })
