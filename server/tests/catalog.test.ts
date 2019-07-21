@@ -29,7 +29,7 @@ describe('Catalog', () => {
 	})
 
 	describe('Create', () => {
-		it.only('Should create a catalog', async() => {
+		it('Should create a catalog', async() => {
 			console.log(chalk.blue('Should create a catalog'))
 			// Should return OK
 			ret = await createCatalog(project.id, catalogData.id)
@@ -46,6 +46,12 @@ describe('Catalog', () => {
 			catalog.should.exist
 			// Catalog should have a root category which exists in the databse
 			catalog.rootCategory.should.exist
+		})
+		it('Should create two catalogs', async () => {
+			ret = await createCatalog(project.id, catalogData.id)
+			ret.should.have.status(OK)
+			ret = await createCatalog(project.id, catalogData.id + '2')
+			ret.should.have.status(OK)
 		})
 		describe('Should fail to create a catalog if ...', () => {
 			console.log(chalk.blue('Should fail to create a catalog if ...'))

@@ -7,7 +7,8 @@ import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 const { OK, BAD_REQUEST } = ResponseStatusTypes
 
 import { Project } from '../src/models/projectModel';
-import { ICategory } from '../src/models/categoryModel';
+import { ICategory, Category } from '../src/models/categoryModel';
+import { Catalog, ICatalog } from '../src/models/catalogModel';
 
 let ret: any
 
@@ -16,22 +17,24 @@ describe('Category', () => {
 	let catalog: any = {}
 
 	before(async() => {
-		console.log('[Category] beforeEach')
+		console.log(chalk.blue('[Category] before'))
 		// Clear database
 		await clearDataBase()
 		// Create user
 		ret = await createUser(userData)
+		console.log(chalk.blue('[Category] before END'))
 	})
 	
 	beforeEach(async() => {
-		console.log('[Category] beforeEach')
-		await clearDataBase(Project)
+		console.log(chalk.blue('[Category] beforeEach'))
+		await clearDataBase(Project, Category, Catalog)
 		// Create project
 		ret = await createProject(projectData)
 		project = ret.body
 		// Create catalog
 		ret = await createCatalog(project.id, catalogData.id)
 		catalog = ret.body
+		console.log(chalk.blue('[Category] beforeEach END'))
 	})
 
 	describe('Create category', () => {
@@ -39,10 +42,20 @@ describe('Category', () => {
 			console.log(chalk.blue('Should create category'))
 			// Create Category
 			ret = await createCategory(project.id, catalog.id, categoryData.id)
-			printret(ret)
+			// printret(ret)
 			ret.should.have.status(OK)
 			// Should return category
 			ret.body.id.should.equal(categoryData.id)
+			ret.body.catalog.should.exist
+
+			// Catalog should have category
+			await new Promise(resolve => Catalog.findOne({id: catalog.id}).populate('categories').exec((err, catalog: ICatalog) => {
+				catalog.categories.find((c: ICategory) => c.id == categoryData.id).should.exist
+				resolve()
+			}))
+		})
+		it('Should create two categories', async() => {
+
 		})
 		it('Should create a subcategory', async() => {
 			let subCatId = 'subcat'

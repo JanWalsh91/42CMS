@@ -1,38 +1,31 @@
 import { Schema, Document, Model, model } from 'mongoose'
 
-import { ICatalog } from './catalogModel'
+import { ICatalog, Catalog } from './catalogModel'
 import { ServerError, ErrorType } from '../utils/ServerError';
 import chalk from 'chalk';
+import { NavLinkProps } from 'react-router-dom';
 
+// Define instance methods
 class CategoryClass {
 	// define virtuals here
-	static async create(catalog: ICatalog, id: string, name: string, parentCategoryId?: string): Promise<ICategory | void> {
-		let newCategory: ICategory = new Category({ id, name, catalog: catalog._id})
-		
-		catalog = await catalog.populate('categories').execPopulate()
-
-		// Check if category exists in catalog
-		if (catalog.categories.some((category: ICategory) => category.id == newCategory.id)) {
-			throw new ServerError(ErrorType.CATEGORY_EXISTS, newCategory.id)
+	static async linkCategories(parent: ICategory, child: ICategory): Promise<any> {
+		// console.log(chalk.magenta(`linkCategories. parent: ${parent.id} child: ${child.id}`))
+		if (child.parent != null) {
+			child = await child.populate('parent').execPopulate()
+			this.unlinkCategories(child.parent, child)
 		}
-
-		// Save category
-		newCategory = await newCategory.save()
-		
-		if (parentCategoryId) {
-			// Link parent with child category
-			let parentCategory: ICategory = catalog.categories.find((category: ICategory) => category.id == parentCategoryId)
-			if (parentCategory) {
-				newCategory.setParent(parentCategory)
-			} else {
-				console.log(chalk.red('No parent category found for ' + parentCategoryId))
-			}
-		}
-
-		// Add category to catalog
-		await  catalog.updateOne({ $push: { categories: newCategory._id }})
-		return newCategory
+		await parent.updateOne({ $addToSet: { subCategories: child._id }}).exec()
+		await child.updateOne({ $set: { parent: parent._id } }).exec()
+		// console.log(chalk.magenta(`linkCategories. parent: ${parent.id} child: ${child.id} END`))
 	}
+
+	static async unlinkCategories(parent: ICategory, child: ICategory) {
+		// console.log(chalk.magenta(`unlinkCategories. parent: ${parent.id} child: ${child.id}`))
+		await parent.updateOne({ $pull: { subCategories: child._id }}).exec()
+		await child.updateOne({ $unset: { parent: '' } }).exec()
+		// console.log(chalk.magenta(`unlinkCategories. parent: ${parent.id} child: ${child.id} END`))
+	}
+
 	getSubCategory(this: ICategory, query: object): ICategory {
 		for (let i = 0; i < this.subCategories.length; i++) {
 			let category = this.subCategories[i]
@@ -42,16 +35,6 @@ class CategoryClass {
 		}
 		return null;
 	}
-
-	/**
-	 * Set this category as child of parent
-	 * @param this 
-	 * @param parent 
-	 */
-	setParent(this: ICategory, parent: ICategory) {
-
-	}
-
 }
 
 export interface ICategory extends Document {
@@ -63,8 +46,10 @@ export interface ICategory extends Document {
 	subCategories: [ICategory['_id']],
 
 	getSubcategory: (query: object) => ICategory,
-	setParent: (this: ICategory, parent: ICategory) => void,
+	// linkCategories: (parent: ICategory, child: ICategory) => Promise<any>,
+	// unlinkCategories: (parent: ICategory, child: ICategory) => Promise<any>,
 
+	wasNew: boolean, // internal
 }
 
 export const CategorySchema = new Schema({
@@ -93,7 +78,62 @@ export const CategorySchema = new Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Product',
 		default: null
-	}]
+	}],
 }).loadClass(CategoryClass)	
 
-export const Category: Model<ICategory> = model('Category', CategorySchema);
+export interface ICategoryModel extends Model<ICategory> {
+	linkCategories: (parent: ICategory, child: ICategory) => Promise<any>,
+	unlinkCategories: (parent: ICategory, child: ICategory) => Promise<any>,
+}
+
+/**
+ * 'On create' middleware
+ * Create only if id not used in Catalog
+ * Add to catalog.categories
+ *  
+ */  
+
+CategorySchema.pre('save', function(this: ICategory, next: any) {
+	// New Category
+	if (this.isNew) {
+		this.wasNew = false
+		this.wasNew = false
+		console.log(chalk.magenta('CategorySchema pre save ' + this.id))
+		console.log(chalk.yellow('is new!'))
+		this.wasNew = this.isNew
+
+		// Check if category exists in catalog
+		Catalog.findById(this.catalog).populate('categories').exec((err, catalog: ICatalog) => {
+			if (err) { next(err); return; }
+
+			if (catalog.categories.some((category: ICategory) => category.id == this.id)) {
+				next(new ServerError(ErrorType.CATEGORY_EXISTS, this.id))
+				return
+			}
+			catalog.categories.push(this._id)
+			catalog.markModified('categories')
+			catalog.save((err, _catalog: ICatalog) => {
+				if (err) { next(err); return; }
+				next()
+			})
+		})
+	} else {
+		next()
+	}
+	// next(err) // if fail
+});
+
+
+// CategorySchema.post('save', function(this: ICategory, doc, next: any) {
+// 	if (this.wasNew) {
+// 		console.log(chalk.magenta('CategorySchema post save'))
+// 		console.log(chalk.yellow('was new!'))
+// 		Catalog.findById(this.catalog, (err, res) => {
+// 			next()
+// 		})
+// 	} else {
+// 		next()
+// 	}
+// })
+
+export const Category: ICategoryModel = model<ICategory, ICategoryModel>('Category', CategorySchema);

@@ -7,34 +7,11 @@ import { ISite } from './siteModel';
 import chalk from 'chalk';
 import { ServerError, ErrorType } from '../utils/ServerError';
 import { IUser } from './userModel';
+import { MongoError } from 'mongodb';
 // import { hasUniqueIdInProject } from './commonValidators';
 
 class CatalogClass {
 	// define virtuals here
-	static async create(project: IProject, id: string, name: string): Promise<ICatalog | void> { // TODO: change to ICatalog
-		let newCatalog: ICatalog = new Catalog({ id, name, project: project._id });
-
-		project = await project.populate('catalogs').execPopulate();
-		
-		// Check if catalog exists in project
-		if (project.catalogs.some((catalog: ICatalog) => catalog.id == newCatalog.id)) {
-			throw new ServerError(ErrorType.CATALOG_EXISTS, newCatalog.id)
-		}
-
-		// Create catalog
-		newCatalog = await newCatalog.save()
-
-		// Create root category
-		const rootCategory: ICategory = await Category.create(newCatalog, 'root', null)
-		
-		// Set root category as catalog root
-		newCatalog.rootCategory = rootCategory._id
-		newCatalog = await newCatalog.save()
-
-		// Add catalog to project.catalogs
-		await project.updateOne({ $addToSet: { catalogs: newCatalog._id } },)
-		return newCatalog
-	}
 
 	getCategory(this: ICatalog, query: Query<ICatalog>): Promise<ICategory> {
 		console.log(chalk.magenta('[getCategory]'), query)
@@ -86,6 +63,8 @@ export interface ICatalog extends Document {
 
 	getCategory: (query: object) => ICategory,
 	getProduct: (query: object) => IProduct,
+
+	wasNew: boolean, // internal use
 }
 
 export const CatalogSchema = new Schema({
@@ -117,10 +96,10 @@ export const CatalogSchema = new Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Category',
 	},
-	categories: {
-		type: [Schema.Types.ObjectId],
+	categories: [{
+		type: Schema.Types.ObjectId,
 		ref: 'Category',
-	},
+	}],
 	products: [{
 		type: Schema.Types.ObjectId,
 		ref: 'Product',
@@ -128,8 +107,44 @@ export const CatalogSchema = new Schema({
 	}],
 })
 .loadClass(CatalogClass)
-// .pre('save', async () => {
-// 	console.log(chalk.magenta('[catalogModel] pre save HOOK'), this)
-// 	console.log(chalk.magenta('[catalogModel] pre save HOOK END'))
-// })
+
+// 'On create' middleware
+CatalogSchema.pre('save', async function(this: ICatalog, next: any) {
+	console.log(chalk.magenta('CatalogSchema pre save', this.id))
+	if (this.isNew) {
+		this.wasNew = true
+		console.log(chalk.yellow('is new!'))
+		// Get project
+		// Populate project with catalogs
+		let project: IProject = await Project.findById(this.project).populate('catalogs');
+		// Check if catalog exists in project
+		if (project.catalogs.some((catalog: ICatalog) => catalog.id == this.id)) {
+			throw new ServerError(ErrorType.CATALOG_EXISTS, this.id)
+		}
+		await project.updateOne({ $addToSet: { catalogs: this._id } }).exec()
+	}
+
+	next()
+	// next(err) // if fail
+});
+
+// err: MongoError
+CatalogSchema.post('save', async function(this: ICatalog, doc: ICatalog, next: any) {
+	// New Catalog
+	if (this.wasNew) {
+		this.wasNew = false
+		console.log(chalk.magenta('CatalogSchema post save', this.id))
+		// Create 'root' category
+		const rootCategory: ICategory = await new Category({id: 'root', catalog: this._id})
+		await rootCategory.save()
+
+		this.rootCategory = rootCategory._id
+
+		// TODO: Add catalog to project.catalogs
+		await this.save()
+	}
+	console.log(chalk.magenta('CatalogSchema post save END'))
+	next()
+})
+
 export const Catalog: Model<ICatalog> = model('Catalog', CatalogSchema)

@@ -9,19 +9,15 @@ const { BAD_REQUEST } = ResponseStatusTypes;
 
 export class CatalogController {
 	public async create(req: Request, res: Response) {
-		console.log(chalk.magenta('[CatalogController] create'));
+		// console.log(chalk.magenta('[CatalogController] create'));
 		const { project, name, id }: {project: IProject, name: string, id: string } = req.body; // User acquired from authorization middleware
 
-		Catalog.create(project, id, name)
-		.then((newCatalog: ICatalog) => {
-			console.log(chalk.green('[CatalogController] create OK'), newCatalog);
-			res.send(newCatalog);
-		})
-		.catch(err => {
-			console.log(chalk.red('[CatalogController] create KO', err));
-			res.status(BAD_REQUEST)
-			res.send(err);
-		})
+		// TODO: Catch errors
+		let catalog: ICatalog = await new Catalog({id, name, project: project._id});
+		catalog = await catalog.save()
+
+		// console.log(chalk.magenta('[CatalogController] create END'), catalog);
+		res.send(catalog)
 	}
 
 	public async get(req: Request, res: Response) {
