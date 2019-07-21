@@ -1,7 +1,7 @@
 import { Schema, Document, Model, model, SchemaType } from 'mongoose';
 
 import { IUser } from './userModel';
-import { ICatalog, CatalogSchema } from './catalogModel';
+import { ICatalog, CatalogSchema, Catalog } from './catalogModel';
 import { IProduct, ProductSchema } from './productModel';
 import { ISite, SiteSchema } from './siteModel';
 // import { IUser, UserSchema } from './userModel';
@@ -11,14 +11,12 @@ import chalk from 'chalk';
 
 class ProjectClass {
 	// define virtuals here
-	getCatalog(this: IProject, query): ICatalog {
-		for (let i = 0; i < this.catalogs.length; i++) {
-			let catalog = this.catalogs[i]
-			if (Object.keys(query).every(key => catalog[key] == query[key])) {
-				return catalog
-			}
-		}
-		return null;
+	async getCatalog(this: IProject, query): Promise<ICatalog> {
+		return new Promise((resolve, reject) => {
+			Catalog.findOne({ project: this._id, ...query}, (err, catalog: ICatalog) => {
+				resolve(catalog)
+			})
+		})
 	}
 
 	// getSite(this: ISite, query: object): ISite {}
@@ -33,8 +31,7 @@ export interface IProject extends Document {
 	catalogs: [ICatalog['_id']],
 	sites: [ISite['_id']],
 
-	// createCatalog: (catalog: ICatalog) => Promise<any>,
-	getCatalog: (query: object) => ICatalog,
+	getCatalog: (query: object) => Promise<ICatalog>,
 	// getSite: (query: object) => ISite,
 	// getUser: (query: object) => IUser,
 }

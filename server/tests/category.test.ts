@@ -42,7 +42,6 @@ describe('Category', () => {
 			console.log(chalk.blue('Should create category'))
 			// Create Category
 			ret = await createCategory(project.id, catalog.id, categoryData.id)
-			// printret(ret)
 			ret.should.have.status(OK)
 			// Should return category
 			ret.body.id.should.equal(categoryData.id)
@@ -55,7 +54,12 @@ describe('Category', () => {
 			}))
 		})
 		it('Should create two categories', async() => {
-
+			console.log(chalk.blue('Should create two categories'))
+			// Create Category
+			ret = await createCategory(project.id, catalog.id, categoryData.id)
+			ret.should.have.status(OK)
+			ret = await createCategory(project.id, catalog.id, categoryData.id + '2')
+			ret.should.have.status(OK)
 		})
 		it('Should create a subcategory', async() => {
 			let subCatId = 'subcat'
@@ -69,17 +73,19 @@ describe('Category', () => {
 			// Create subcategory
 			console.log(chalk.blue('Creating child category START'))
 
-			ret = await createCategory(project.id, catalog.id, subCatId, categoryData.id)
+			ret = await createCategory(project.id, catalog.id, subCatId, { parentCategoryId: categoryData.id })
 			ret.should.have.status(OK)
 			console.log(chalk.blue('Creating child category END'))
 
 			ret.body.id.should.equal(subCatId)
 			project = await Project.findOne({id: project.id})
-			catalog = project.getCatalog({id: catalog.id})
-			let parentCategory: ICategory = catalog.getCategory({id: categoryData.id})
-			let childCategory: ICategory = catalog.getCategory({id: subCatId})
+			catalog = await project.getCatalog({id: catalog.id})
+			let parentCategory: ICategory = await catalog.getCategory({id: categoryData.id})
+			let childCategory: ICategory = await catalog.getCategory({id: subCatId})
 			// Parent Category should have ChildCategory as subCategory
 			console.log({parentCategory, childCategory})
+			parentCategory.subCategories.find(id => id.toString() == childCategory._id.toString()).should.exist
+			childCategory.parent.toString().should.equal(parentCategory._id.toString())
 			// parentCategory.getSubcategory({id: subCatId}).should.exist
 			// ChildCategory should have ParentCategory as parentCategory
 			// childCategory.parentCategory

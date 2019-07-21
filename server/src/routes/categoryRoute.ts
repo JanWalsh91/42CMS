@@ -12,7 +12,7 @@ router
 	// .get('/:catalogid', getCategoryById, categoryController.get)
 	.post('/', categoryController.create)
 
-function getCategoryById(req: Request, res: Response, next: NextFunction) {
+async function getCategoryById(req: Request, res: Response, next: NextFunction) {
 	console.log(chalk.magenta('[getCategoryById]'))
 	const catalog: ICatalog = req.body.catalog
 
@@ -22,7 +22,7 @@ function getCategoryById(req: Request, res: Response, next: NextFunction) {
 		return
 	}
 
-	const category: ICategory = catalog.getCategory({ id: req.params.categoryid })
+	const category: ICategory = await catalog.getCategory({ id: req.params.categoryid })
 	if (!category) {
 		console.log(chalk.red('[getCategoryById] FAIL'))		
 		next(new Error('failed to load category'))

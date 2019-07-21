@@ -1,6 +1,7 @@
 import { Schema, Document, Model, model } from 'mongoose'
 import { ICatalog } from './catalogModel';
 import { ICategory } from './categoryModel';
+import chalk from 'chalk';
 
 class ProductClass {
 	// define virtuals here
@@ -14,6 +15,8 @@ export interface IProduct extends Document {
 	assignedCatalogs: [ICatalog['_id']],
 	primaryCategoryByCatalog: [Record<ICatalog['_id'], ICategory['_id']>],
 	assignedCategoriesByCatalog: [Record<ICatalog['_id'], [ICategory['_id']]>]
+
+	wasNew: boolean, // internal
 }
 
 export const ProductSchema = new Schema({
@@ -49,5 +52,19 @@ export const ProductSchema = new Schema({
 		}]
 	}
 }).loadClass(ProductClass)
+
+ProductSchema.pre('save', function(this: IProduct, next: Function) {
+	if (this.isNew) {
+		this.wasNew = false
+		console.log(chalk.magenta('CategorySchema pre save ' + this.id))
+		console.log(chalk.yellow('is new!'))
+		
+		// Check if id already in Catalog
+
+		next()
+	} else {
+		next()
+	}
+})
 
 export const Product: Model<IProduct> = model('Product', ProductSchema)

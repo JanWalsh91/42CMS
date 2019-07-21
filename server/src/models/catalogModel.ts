@@ -14,13 +14,17 @@ class CatalogClass {
 	// define virtuals here
 
 	getCategory(this: ICatalog, query: Query<ICatalog>): Promise<ICategory> {
-		console.log(chalk.magenta('[getCategory]'), query)
 		return new Promise((resolve, reject) => {
 			Category.findOne({catalog: this._id, ...query}, (err, category: ICategory) => {
-				if (category) {
-					resolve(category)
-				}
-				resolve()
+				resolve(category)
+			})
+		})
+	}
+
+	getRootCategory(this: ICatalog): Promise<ICategory> {
+		return new Promise((resolve, reject) => {
+			Category.findOne({ catalog: this._id, id: 'root'}, (err, category: ICategory) => {
+				resolve(category)
 			})
 		})
 	}
@@ -61,8 +65,8 @@ export interface ICatalog extends Document {
 	 */
 	isMaster: boolean,
 
-	getCategory: (query: object) => ICategory,
-	getProduct: (query: object) => IProduct,
+	getCategory: (query: object) => Promise<ICategory>,
+	getProduct: (query: object) => Promise<IProduct>,
 
 	wasNew: boolean, // internal use
 }

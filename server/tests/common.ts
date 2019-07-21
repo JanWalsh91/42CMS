@@ -34,6 +34,11 @@ export const categoryData = {
 	id: 'fragrance'
 }
 
+export const productData = {
+	name: 'Miss Dior',
+	id: 'missdior'
+}
+
 export const clearDataBase = async (...models: any) => {
 	if (!models.length) {
 		models = [
@@ -84,8 +89,8 @@ export const clearDataBase = async (...models: any) => {
 
 // ===== CATALOGS ====== //
 
-	export const createCatalog = (projectid: string, catalogid: string) =>
-		agent.post(`/projects/${projectid}/catalogs/`).send({id: catalogid})
+	export const createCatalog = (projectid: string, catalogid: string, params?: object) =>
+		agent.post(`/projects/${projectid}/catalogs/`).send({id: catalogid, ...params})
 
 	export const getCatalog = (projectid: string, catalogid: string) =>
 		agent.get(`/projects/${projectid}/catalogs/${catalogid}`)
@@ -95,14 +100,19 @@ export const clearDataBase = async (...models: any) => {
 
 // ===== CATEGORIES ====== //
 
-	export const createCategory = (projectid: string, catalogid: string, categoryid: string, parentCategoryId?: string) =>
-		agent.post(`/projects/${projectid}/catalogs/${catalogid}/categories`).send({id: categoryid, parentCategoryId})
+	export const createCategory = (projectid: string, catalogid: string, categoryid: string, params?: object) =>
+		agent.post(`/projects/${projectid}/catalogs/${catalogid}/categories`).send({id: categoryid, ...params})
 
 	export const getCategory = (projectid: string, catalogid: string, categoryid: string) =>
 		agent.get(`/projects/${projectid}/catalogs/${catalogid}/categories/${categoryid}`)
 
 	export const getAllCategories = (projectid: string, catalogid: string) =>
 		agent.get(`/projects/${projectid}/catalogs/${catalogid}/categories`)
+
+// ===== PRODUCTS ====== //
+
+	export const createProduct = (projectid: string, catalogid: string, productid: string, params?: object) => 
+		agent.post(`/projects/${projectid}/catalogs/${catalogid}/products`).send({id: productid, ...params})
 
 // ===== UTILITY ===== //
 

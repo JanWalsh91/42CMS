@@ -53,6 +53,10 @@ describe('Catalog', () => {
 			ret = await createCatalog(project.id, catalogData.id + '2')
 			ret.should.have.status(OK)
 		})
+		it('Should create a master catalog', async () => {
+			ret = await createCatalog(project.id, catalogData.id, {isMaster: true})
+			ret.should.have.status(OK)
+		})
 		describe('Should fail to create a catalog if ...', () => {
 			console.log(chalk.blue('Should fail to create a catalog if ...'))
 			it('Catalog with id already exists in project', async() => {

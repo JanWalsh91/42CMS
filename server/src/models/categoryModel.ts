@@ -26,14 +26,12 @@ class CategoryClass {
 		// console.log(chalk.magenta(`unlinkCategories. parent: ${parent.id} child: ${child.id} END`))
 	}
 
-	getSubCategory(this: ICategory, query: object): ICategory {
-		for (let i = 0; i < this.subCategories.length; i++) {
-			let category = this.subCategories[i]
-			if (Object.keys(query).every(key => category[key] == query[key])) {
-				return category
-			}
-		}
-		return null;
+	getSubCategory(this: ICategory, query: object): Promise<ICategory> {
+		return new Promise((resolve, reject) => {
+			Category.findOne({catalog: this.catalog, parent: this._id, ...query}, (err, category: ICategory) => {
+				resolve(category)
+			})
+		})
 	}
 }
 
@@ -45,9 +43,7 @@ export interface ICategory extends Document {
 	parent: ICategory['_id'],
 	subCategories: [ICategory['_id']],
 
-	getSubcategory: (query: object) => ICategory,
-	// linkCategories: (parent: ICategory, child: ICategory) => Promise<any>,
-	// unlinkCategories: (parent: ICategory, child: ICategory) => Promise<any>,
+	getSubcategory: (query: object) => Promise<ICategory>,
 
 	wasNew: boolean, // internal
 }
@@ -93,10 +89,9 @@ export interface ICategoryModel extends Model<ICategory> {
  *  
  */  
 
-CategorySchema.pre('save', function(this: ICategory, next: any) {
+CategorySchema.pre('save', function(this: ICategory, next: Function) {
 	// New Category
 	if (this.isNew) {
-		this.wasNew = false
 		this.wasNew = false
 		console.log(chalk.magenta('CategorySchema pre save ' + this.id))
 		console.log(chalk.yellow('is new!'))

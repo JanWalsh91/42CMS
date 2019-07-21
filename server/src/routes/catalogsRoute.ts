@@ -28,9 +28,10 @@ function getCatalogById(req: Request, res: Response, next: NextFunction) {
 		if (!catalog) {
 			console.log(chalk.red('[getCatalogById] FAIL HERE'))		
 			next(new Error('failed to load catalog'))
+			return 
 		}
 		req.body.catalog = catalog
-		next();
+		next()
 	})
 }
 
