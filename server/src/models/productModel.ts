@@ -1,13 +1,89 @@
-import { Schema, Document, Model, model } from 'mongoose'
-import { ICatalog, Catalog } from './catalogModel';
+import { Schema, Document, Model, model, ModelPopulateOptions } from 'mongoose'
+import { ICatalog, Catalog, CatalogSchema } from './catalogModel';
 import { ICategory } from './categoryModel';
 import chalk from 'chalk';
 import { Project, IProject } from './projectModel';
 import { ServerError, ErrorType } from '../utils/ServerError';
 
+export type AssignedCategoriesByCatalog = {
+	[catalogid: string] : (string | ICategory)[]
+};
+export type PrimaryCategoryByCatalog = {
+	[catalogid: string] : string | ICategory
+};
+// Cannot update project
+export interface UpdatableAttributes {
+	name?: string,
+	masterCatalog?: string | ICatalog,
+	assignedCatalogs?: (string | ICatalog)[],
+	primaryCategoryByCatalog? : PrimaryCategoryByCatalog,
+	assignedCategoriesByCatalog?: AssignedCategoriesByCatalog,
+};
+
 class ProductClass {
 	// define virtuals here
 
+	async update(this: IProduct, attributes: UpdatableAttributes) {
+		let { name, masterCatalog, assignedCategoriesByCatalog } : UpdatableAttributes = attributes
+		
+		let populateParams: ModelPopulateOptions[] = []
+		
+		if (assignedCategoriesByCatalog) {
+			// Populate product.masterCatalog
+			// Populate product.assignedCatalogs
+			// => Can access through product.catalogs
+			populateParams.push({ path: 'masterCatalog' })
+			populateParams.push({ path: 'assignedCatalogs' })
+		}
+		if (masterCatalog) {
+			populateParams.push({ path: 'project' })
+		}
+		if (populateParams.length > 0) {
+			await this.populate(populateParams).execPopulate()
+		}
+
+		if (assignedCategoriesByCatalog) {
+			// For each catalog
+			for (let catalogid in assignedCategoriesByCatalog) {
+				console.log('CATALOG', catalogid)
+				// Get category by catalog
+				assignedCategoriesByCatalog[catalogid] = await new Promise(async (resolve, reject) => {
+					// Get catalog populated with categories
+					let catalog: ICatalog = await this.catalogs.find((catalog: ICatalog) => catalog.id == catalogid)
+					if (!catalog) {
+						throw (new ServerError(ErrorType.CATALOG_NOT_FOUND, 'catalogid'))
+					}
+					await catalog.populate('categories').execPopulate()
+					console.log({catalog})
+					// Return array of categories
+					resolve(assignedCategoriesByCatalog[catalogid].map((categoryid: string) => {
+						console.log('CATEGORY', categoryid)
+						return catalog.categories.find((category: ICategory) => category.id == categoryid)
+					}))
+				})
+			}
+			// TODO: update product.assignedCategoriesByCatalog
+			
+			console.log('found assignedCategoriesByCatalog: ', assignedCategoriesByCatalog)
+		} else if (assignedCategoriesByCatalog == null) {
+
+		}
+		if (masterCatalog) {
+			let id = masterCatalog
+			masterCatalog = await Catalog.findOne({ project: this.project._id, id: masterCatalog})
+			if (!masterCatalog) {
+				throw (new ServerError(ErrorType.CATALOG_NOT_FOUND, id.toString()))
+			}
+			let oldMasterCatelog: ICatalog = this.masterCatalog
+			oldMasterCatelog.removeProduct(this)
+			await oldMasterCatelog.save()
+			this.masterCatalog = masterCatalog._id
+			this.masterCatalog.addProduct(this)
+			await this.masterCatalog.save()
+		} else if (masterCatalog == null) {
+
+		}		
+	}
 }
 
 export interface IProduct extends Document {
@@ -19,7 +95,11 @@ export interface IProduct extends Document {
 	primaryCategoryByCatalog: [Record<ICatalog['_id'], ICategory['_id']>],
 	assignedCategoriesByCatalog: [Record<ICatalog['_id'], [ICategory['_id']]>]
 
-	wasNew: boolean, // internal
+	// virtuals
+	catalogs: ICatalog[],
+
+	// internal
+	wasNew: boolean,
 }
 
 export const ProductSchema = new Schema({
@@ -59,7 +139,13 @@ export const ProductSchema = new Schema({
 			ref: 'Category'
 		}]
 	}
+	// categoriesByCatalogs: primary + assigned
 }).loadClass(ProductClass)
+
+ProductSchema.virtual('catalogs').get(function(this: IProduct) {
+	console.log(chalk.magenta('ProductSchema virtual catalogs '))
+	return [this.masterCatalog, ...this.assignedCatalogs]
+})
 
 ProductSchema.pre('save', function(this: IProduct, next: Function) {
 	if (this.isNew) {
@@ -107,4 +193,4 @@ ProductSchema.pre('save', function(this: IProduct, next: Function) {
 	}
 })
 
-export const Product: Model<IProduct> = model('Product', ProductSchema)
+export const Product: Model<IProduct> = model<IProduct>('Product', ProductSchema)

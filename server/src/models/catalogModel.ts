@@ -42,6 +42,16 @@ class CatalogClass {
 		this.markModified('products')
 	}
 
+	// TODO: 
+	removeProduct(this: ICatalog, product: IProduct): ServerError {
+		// console.log(chalk.magenta('[CatalogModel] addProduct'))
+		if (this.products.find((_product: IProduct) => _product.id == product.id)) {
+			return (new ServerError(ErrorType.PRODUCT_EXISTS, product.id))
+		}
+		this.products.push(product._id)
+		this.markModified('products')
+	}
+
 	addCatalog() {
 
 	}
@@ -78,6 +88,7 @@ export interface ICatalog extends Document {
 	getCategory: (query: object) => Promise<ICategory>,
 	getProduct: (query: object) => Promise<IProduct>,
 	addProduct: (prodict: IProduct) => ServerError,
+	removeProduct: (prodict: IProduct) => ServerError,
 
 	wasNew: boolean, // internal use
 }

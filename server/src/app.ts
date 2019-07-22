@@ -1,45 +1,52 @@
-import * as mongoose from 'mongoose';
-import * as express from "express";
-import { Request, Response } from "express";
-import * as bcrypt from "bcrypt";
-import * as bodyParser from "body-parser";
-import * as cors from 'cors';
-import * as session from 'express-session';
+import * as mongoose from 'mongoose'
+import * as express from "express"
+import { Request, Response, NextFunction } from "express"
+import * as bcrypt from "bcrypt"
+import * as bodyParser from "body-parser"
+import * as cors from 'cors'
+import * as session from 'express-session'
 
-import ResponseStatusTypes from "./utils/ResponseStatusTypes";
+import ResponseStatusTypes from "./utils/ResponseStatusTypes"
 
-import routes from './routes';
+import routes from './routes'
+import chalk from 'chalk'
 
 class App {
 
-	public app: express.Application;
-	private static salt: string = "$2b$05$PD21LwJzPhCGI8XjSPcHzO";
+	public app: express.Application
+	private static salt: string = "$2b$05$PD21LwJzPhCGI8XjSPcHzO"
 
     constructor() {
-        this.app = express();
-		this.config();
-		this.app.use('/', routes);
+        this.app = express()
+		this.config()
+		this.app.use('/', routes)
+		// Error handler
+		this.app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
+			console.error(chalk.red('ERROR'))
+			console.error(err.stack)
+			res.status(500).send('Something broke!')
+		})
     }
 
     private config(): void{
-		this.app.disable('x-powered-by');
+		this.app.disable('x-powered-by')
 		this.app.use(express.static('public'))
-        this.app.use(bodyParser.json());
-		this.app.use(bodyParser.urlencoded({ extended: true }));
+        this.app.use(bodyParser.json())
+		this.app.use(bodyParser.urlencoded({ extended: true }))
 		// allow client delivered by webpack server to access this server
 		this.app.use(cors({
 			origin: ['http://localhost:8080'], // TODO: centralize configs
 			credentials: true
-		}));
+		}))
 
-		mongoose.set('useFindAndModify', false);
+		mongoose.set('useFindAndModify', false)
 		
 		mongoose.connect('mongodb://127.0.0.1:27017/MYDB', { useNewUrlParser: true })
-		let db = mongoose.connection;
+		let db = mongoose.connection
 		// mongoose.set('debug', true)
 		db.on('error', err => {
 			console.log('err: ', err)
-		});
+		})
 		// set up session
 		const sessionParams = {
 			name: 'sessionname',
@@ -54,9 +61,9 @@ class App {
 				secure: false
 			}
 		}
-		this.app.use(session(sessionParams));
+		this.app.use(session(sessionParams))
 		// hash passwords
-		this.app.use(this.hashPassword);
+		this.app.use(this.hashPassword)
 	}
 	
 	private async hashPassword(req: Request, res: Response, next:Function): Promise<any> {
@@ -79,6 +86,8 @@ class App {
 		req.body.password = bcrypt.hashSync(req.body.password, App.salt);
 		next();
 	}
+
+
 }
 
 export default new App().app;

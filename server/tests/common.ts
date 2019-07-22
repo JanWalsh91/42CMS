@@ -26,7 +26,7 @@ export const projectData = {
 
 export const catalogData = {
 	name: 'International',
-	id: 'int'
+	id: 'international'
 }
 
 export const categoryData = {
@@ -113,6 +113,10 @@ export const clearDataBase = async (...models: any) => {
 
 	export const createProduct = (projectid: string, masterCatalogId: string, productid: string, params?: object) => 
 		agent.post(`/projects/${projectid}/products`).send({id: productid, masterCatalogId, ...params})
+
+	export const updateProduct = (projectid: string, productid: string, params?: object) => 
+		agent.put(`/projects/${projectid}/products/${productid}`).send(params)
+
 
 // ===== UTILITY ===== //
 

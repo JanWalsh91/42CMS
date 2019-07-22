@@ -5,13 +5,14 @@ import { productController } from '../controllers/productController'
 
 import { IProduct } from '../models/productModel'
 import { ICatalog, Catalog } from '../models/catalogModel';
+import { IProject } from '../models/projectModel';
 
 const router: Router = Router()
 
 router
 	// .get('/:productid', getProductById, productController.get)
 	.post('/', getCatalogById, productController.create)
-	.put('/:productid', productController.update)
+	.put('/:productid', getProductById, productController.update)
 	
 
 /**
@@ -35,10 +36,9 @@ async function getCatalogById(req: Request, res: Response, next: NextFunction) {
 
 async function getProductById(req: Request, res: Response, next: NextFunction) {
 	console.log(chalk.magenta('[getProductById]'))
-	const catalog: ICatalog = req.body.catalog
-
+	const project: IProject = req.body.project
 	try {
-		let product = await catalog.getProduct({id: req.body.productid})
+		let product: IProduct = await project.getProduct({id: req.params.productid})
 		if (!product) {
 			console.log(chalk.red('[getProductById] FAIL HERE'))		
 			next(new Error('failed to load product'))
