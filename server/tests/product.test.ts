@@ -35,7 +35,7 @@ describe('Product', () => {
 		ret = await createProject(projectData)
 		project = ret.body
 		// Create catalog
-		ret = await createCatalog(project.id, catalogData.id)
+		ret = await createCatalog(project.id, catalogData.id, {isMaster: true})
 		catalog = ret.body
 		// Create catalog
 		ret = await createCategory(project.id, catalogData.id, categoryData.id)
@@ -47,19 +47,17 @@ describe('Product', () => {
 		it.only('Should create a product', async() => {
 			console.log(chalk.blue('Should create a product'));
 			ret = await createProduct(project.id, catalogData.id, productData.id, {name: productData.name})
-			printret(ret)
 			// Should return a product
 			ret.status.should.equal(OK)
 			// Product should exist
-			let product: IProduct = await Product.findOne({id: productData.id}).populate('project').exec()
-			console.log({product})
-			// Project should have product
-			product.project.id.should.equal(project.id)
-			let _project: IProject = await product.project.populate('products').execPopulate();
-			console.log({_project})
-			_project.products.find((_product: IProduct) => {
-				return _product.id == product.id
-			}).should.exist
+			let product: IProduct = await Product.findOne({id: productData.id}).populate([
+				{ path: 'project', populate: { path: 'products' } },
+				{ path: 'masterCatalog', populate: { path: 'products' } }
+			]).exec()
+			product.masterCatalog.should.exist
+			product.masterCatalog.products.find((_product: IProduct) => _product.id == productData.id).should.exist
+			product.project.should.exist
+			product.project.products.find((_product: IProduct) => _product.id == productData.id).should.exist
 		})
 		describe('Should fail if ...', () => {
 			it('Product of that id already exists in project', async() => {

@@ -1,5 +1,5 @@
 import { Schema, Document, Model, model } from 'mongoose'
-import { ICatalog } from './catalogModel';
+import { ICatalog, Catalog } from './catalogModel';
 import { ICategory } from './categoryModel';
 import chalk from 'chalk';
 import { Project, IProject } from './projectModel';
@@ -69,22 +69,39 @@ ProductSchema.pre('save', function(this: IProduct, next: Function) {
 		
 		// Check if id in Project
 		// Update project.products
-		Project.findById(this.project, (err, project: IProject) => {
-			if (err) { next(err); return; }
-
-			if (project.products.some((product: IProduct) => product.id == this.id)) {
-				next(new ServerError(ErrorType.PRODUCT_EXISTS, this.id))
-				return
-			}
-			project.products.push(this._id)
-			project.markModified('products')
-			project.save((err, _project: IProject) => {
-				if (err) { next(err); return; }
-				next()
+		let addProductToProject = new Promise((resolve, reject) => {
+			Project.findById(this.project, (err, project: IProject) => {
+				if (err) { reject(err); return; }
+				
+				err = project.addProduct(this)
+				if (err) { reject(err); return; }
+				
+				project.save((err, _project: IProject) => {
+					if (err) { reject(err); return; }
+					resolve()
+				})
 			})
 		})
 
-		next()
+		// Check if masterCatalog.isMaster // TODO
+		// Update catalog.products
+		let addProductToCatalog = new Promise((resolve, reject) => {
+			Catalog.findById(this.masterCatalog, (err, catalog: ICatalog) => {
+				if (err) { reject(err); return; }
+				
+				err = catalog.addProduct(this)
+				if (err) { reject(err); return; }
+				
+				catalog.save((err, _catalog: ICatalog) => {
+					if (err) { reject(err); return; }
+					resolve()
+				})
+			})
+		})
+
+		Promise.all([addProductToProject, addProductToCatalog])
+			.then(() => next())
+			.catch((err) => next(err))
 	} else {
 		next()
 	}

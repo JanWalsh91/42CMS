@@ -33,6 +33,15 @@ class CatalogClass {
 		return null
 	}
 
+	addProduct(this: ICatalog, product: IProduct): ServerError {
+		// console.log(chalk.magenta('[CatalogModel] addProduct'))
+		if (this.products.find((_product: IProduct) => _product.id == product.id)) {
+			return (new ServerError(ErrorType.PRODUCT_EXISTS, product.id))
+		}
+		this.products.push(product._id)
+		this.markModified('products')
+	}
+
 	addCatalog() {
 
 	}
@@ -59,6 +68,7 @@ export interface ICatalog extends Document {
 	sitesAssignedTo: [ISite['_id']],
 	rootCategory: ICategory['_id'],
 	categories: [ICategory['_id']],
+	products: [IProduct['_id']],
 	/**
 	 * Determines if this catalog owns products, or if products are assigned to it (cannot do both)
 	 * Products can only be owned by one Catalog, but can be assigned to many
@@ -67,6 +77,7 @@ export interface ICatalog extends Document {
 
 	getCategory: (query: object) => Promise<ICategory>,
 	getProduct: (query: object) => Promise<IProduct>,
+	addProduct: (prodict: IProduct) => ServerError,
 
 	wasNew: boolean, // internal use
 }
@@ -91,11 +102,6 @@ export const CatalogSchema = new Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Site',
 	}],
-	isMaster: {
-		type: Boolean,
-		required: true,
-		default: false,
-	},
 	rootCategory: {
 		type: Schema.Types.ObjectId,
 		ref: 'Category',
@@ -109,6 +115,11 @@ export const CatalogSchema = new Schema({
 		ref: 'Product',
 		default: null
 	}],
+	isMaster: {
+		type: Boolean,
+		required: true,
+		default: false,
+	},
 })
 .loadClass(CatalogClass)
 

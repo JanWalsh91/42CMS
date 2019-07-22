@@ -1,5 +1,5 @@
 import { Schema, Document, Model, model, SchemaType } from 'mongoose';
-
+import { ObjectId } from 'mongodb'
 import { IUser } from './userModel';
 import { ICatalog, CatalogSchema, Catalog } from './catalogModel';
 import { IProduct, ProductSchema } from './productModel';
@@ -19,6 +19,15 @@ class ProjectClass {
 		})
 	}
 
+	addProduct(this: IProject, product: IProduct) {
+		// console.log(chalk.magenta('[ProjectModel] addProduct'))
+		if (this.products.find((_product: IProduct) => _product.id == product.id)) {
+			return (new ServerError(ErrorType.PRODUCT_EXISTS, product.id))
+		}
+		this.products.push(product._id)
+		this.markModified('products')
+	}
+
 	// getSite(this: ISite, query: object): ISite {}
 	// getUser(this: IUser, query: object): IUser {}
 }
@@ -33,6 +42,7 @@ export interface IProject extends Document {
 	sites: [ISite['_id']],
 
 	getCatalog: (query: object) => Promise<ICatalog>,
+	addProduct: (prodict: IProduct) => Promise<any>,
 	// getSite: (query: object) => ISite,
 	// getUser: (query: object) => IUser,
 }

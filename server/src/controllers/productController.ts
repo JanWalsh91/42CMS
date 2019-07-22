@@ -17,7 +17,11 @@ export class ProductController {
 		let id: string = req.body.id
 		
 		try {
-			let product: IProduct = await new Product({ project: project._id, masterCatalog: masterCatalog._id, ...{name, id} })
+			let product: IProduct = await new Product({
+				project: project._id,
+				masterCatalog: masterCatalog._id,
+				...{name, id}
+			})
 			product = await product.save()
 			res.send(product)
 		} catch (e) {
