@@ -36,10 +36,11 @@ class ProductClass {
 			populateParams.push({ path: 'assignedCatalogs' })
 		}
 		if (masterCatalog) {
-			populateParams.push({ path: 'project' })
+			populateParams.push({ path: 'masterCatalog' })
 		}
 		if (populateParams.length > 0) {
 			await this.populate(populateParams).execPopulate()
+			console.log('======= AFTER POPULATE', this.masterCatalog)
 		}
 
 		if (assignedCategoriesByCatalog) {
@@ -56,11 +57,17 @@ class ProductClass {
 					await catalog.populate('categories').execPopulate()
 					console.log({catalog})
 					// Return array of categories
-					resolve(assignedCategoriesByCatalog[catalogid].map((categoryid: string) => {
+					let assignedCategories = assignedCategoriesByCatalog[catalogid]
+					.map((categoryid: string) => {
 						console.log('CATEGORY', categoryid)
-						return catalog.categories.find((category: ICategory) => category.id == categoryid)
-					}))
+						const _category: ICategory = catalog.categories.find((category: ICategory) => category.id == categoryid)
+						return _category ? _category._id : null
+					})
+					resolve(assignedCategories.filter(x => !!x))
 				})
+
+				this.assignedCategoriesByCatalog[catalogid] = assignedCategoriesByCatalog[catalogid]
+				this.markModified(`assignedCategoriesByCatalog.${catalogid}`)
 			}
 			// TODO: update product.assignedCategoriesByCatalog
 			
@@ -68,18 +75,21 @@ class ProductClass {
 		} else if (assignedCategoriesByCatalog == null) {
 
 		}
+
 		if (masterCatalog) {
 			let id = masterCatalog
-			masterCatalog = await Catalog.findOne({ project: this.project._id, id: masterCatalog})
+			masterCatalog = await Catalog.findOne({ project: this.project, id: masterCatalog })
 			if (!masterCatalog) {
 				throw (new ServerError(ErrorType.CATALOG_NOT_FOUND, id.toString()))
 			}
 			let oldMasterCatelog: ICatalog = this.masterCatalog
 			oldMasterCatelog.removeProduct(this)
-			await oldMasterCatelog.save()
+			masterCatalog.addProduct(this)
+			await Promise.all([
+				oldMasterCatelog.save(),
+				masterCatalog.save(),
+			])
 			this.masterCatalog = masterCatalog._id
-			this.masterCatalog.addProduct(this)
-			await this.masterCatalog.save()
 		} else if (masterCatalog == null) {
 
 		}		

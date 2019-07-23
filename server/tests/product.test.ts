@@ -98,8 +98,6 @@ describe('Product', function() {
 			printret(ret)
 			ret.status.should.equal(OK)
 			let _product: IProduct = await Product.findOne({id: productData.id}).populate({ path: 'masterCatalog', populate: { path: 'products'}}).exec()
-			console.log({_product})
-			console.log({catproducts: _product.masterCatalog.products})
 			_product.masterCatalog.id.should.equal(newCatalogId)
 			_product.masterCatalog.products.find((_product: IProduct) => _product.id == productData.id).should.exist
 		})
