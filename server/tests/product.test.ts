@@ -75,7 +75,7 @@ describe('Product', function() {
 			product = await createProduct(project.id, catalogData.id, productData.id, {name: productData.name})
 			console.log(chalk.blue('[Product Update] beforeEach END'))
 		})
-		it('Should update assignedCategoriesByCatalog', async() => {
+		it.only('Should update assignedCategoriesByCatalog', async() => {
 			console.log(chalk.blue('Should update assignedCategoriesByCatalog'))
 			ret = await updateProduct(project.id, productData.id, {
 				assignedCategoriesByCatalog: {
@@ -84,10 +84,12 @@ describe('Product', function() {
 			})
 			printret(ret)
 			ret.status.should.equal(OK)
+			let _product: IProduct = await Product.findOne({id: productData.id}).populate({ path: 'assignedCategoriesByCatalog' }).exec()
+			console.log(_product)
 		})
 		it('Should update primaryCategory')
 		it('Should update catalog assignements')
-		it.only('Should update master catalog', async() => {
+		it('Should update master catalog', async() => {
 			console.log(chalk.blue('Should update master catalog'))
 			let newCatalogId = 'newcatalog'
 			ret = await createCatalog(projectData.id, newCatalogId)

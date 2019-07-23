@@ -5,9 +5,8 @@ import chalk from 'chalk';
 import { Project, IProject } from './projectModel';
 import { ServerError, ErrorType } from '../utils/ServerError';
 
-export type AssignedCategoriesByCatalog = {
-	[catalogid: string] : (string | ICategory)[]
-};
+export type AssignedCategoriesByCatalog = [Record<ICatalog['_id'] | string, ICategory['_id'] | string | ICategory>]
+
 export type PrimaryCategoryByCatalog = {
 	[catalogid: string] : string | ICategory
 };
@@ -47,15 +46,15 @@ class ProductClass {
 			// For each catalog
 			for (let catalogid in assignedCategoriesByCatalog) {
 				console.log('CATALOG', catalogid)
-				// Get category by catalog
+				// Get catalog populated with categories
+				let catalog: ICatalog = await this.catalogs.find((catalog: ICatalog) => catalog.id == catalogid)
+				if (!catalog) {
+					throw (new ServerError(ErrorType.CATALOG_NOT_FOUND, 'catalogid'))
+				}
+				await catalog.populate('categories').execPopulate()
+				console.log({catalog})
+				
 				assignedCategoriesByCatalog[catalogid] = await new Promise(async (resolve, reject) => {
-					// Get catalog populated with categories
-					let catalog: ICatalog = await this.catalogs.find((catalog: ICatalog) => catalog.id == catalogid)
-					if (!catalog) {
-						throw (new ServerError(ErrorType.CATALOG_NOT_FOUND, 'catalogid'))
-					}
-					await catalog.populate('categories').execPopulate()
-					console.log({catalog})
 					// Return array of categories
 					let assignedCategories = assignedCategoriesByCatalog[catalogid]
 					.map((categoryid: string) => {
@@ -66,12 +65,12 @@ class ProductClass {
 					resolve(assignedCategories.filter(x => !!x))
 				})
 
-				this.assignedCategoriesByCatalog[catalogid] = assignedCategoriesByCatalog[catalogid]
-				this.markModified(`assignedCategoriesByCatalog.${catalogid}`)
+				console.log('=======updating ', this.assignedCategoriesByCatalog)
+				this.assignedCategoriesByCatalog[catalog._id] = assignedCategoriesByCatalog[catalogid]
+				this.markModified(`assignedCategoriesByCatalog`)
+				console.log('=======updated ', this.assignedCategoriesByCatalog)
 			}
-			// TODO: update product.assignedCategoriesByCatalog
 			
-			console.log('found assignedCategoriesByCatalog: ', assignedCategoriesByCatalog)
 		} else if (assignedCategoriesByCatalog == null) {
 
 		}
@@ -140,14 +139,16 @@ export const ProductSchema = new Schema({
 		of: {
 			type: Schema.Types.ObjectId,
 			ref: 'Category'
-		}
+		},
+		default: {},
 	},
 	assignedCategoriesByCatalog: {
 		type: Map,
 		of: [{
 			type: Schema.Types.ObjectId,
 			ref: 'Category'
-		}]
+		}],
+		default: [],
 	}
 	// categoriesByCatalogs: primary + assigned
 }).loadClass(ProductClass)
