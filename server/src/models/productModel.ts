@@ -36,8 +36,17 @@ class ProductClass {
 		let { name, masterCatalog, assignedCategoriesByCatalog } : UpdatableAttributes = attributes
 		
 		// let populateParams: ModelPopulateOptions[] = []
-	
+		let promises: [Promise<any>] = []
 
+		if (name) promises.push(this.updateName(name))
+		if (masterCatalog) promises.push(this.updateMasterCatalog(masterCatalog))
+		if (assignedCategoriesByCatalog) promises.push(this.updateAssignedCategoriesByCatalog(assignedCategoriesByCatalog))
+
+		Promise.all(promises)
+			.then(() => this.save())
+			.catch(err => {
+				console.log('update err', err)
+			})
 
 		// if (assignedCategoriesByCatalog) {
 		// 	// Populate product.masterCatalog
@@ -45,7 +54,7 @@ class ProductClass {
 		// 	// => Can access through product.catalogs
 		// 	populateParams.push({ path: 'masterCatalog' })
 		// 	populateParams.push({ path: 'assignedCatalogs' })
-		// }
+		// }													
 		// if (masterCatalog) {
 		// 	populateParams.push({ path: 'masterCatalog' })
 		// }
