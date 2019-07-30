@@ -5,11 +5,21 @@ import chalk from 'chalk';
 import { Project, IProject } from './projectModel';
 import { ServerError, ErrorType } from '../utils/ServerError';
 
-export type AssignedCategoriesByCatalog = [Record<ICatalog['_id'] | string, ICategory['_id'] | string | ICategory>]
+// export type AssignedCategoriesByCatalog = [Record<ICatalog['_id'] | string, ICategory['_id'] | string | ICategory>]
+export type AssignedCategoriesByCatalog = [{
+	catalog: ICatalog['_id'],
+	categories: [ICategory['_id']]
+}]
 
-export type PrimaryCategoryByCatalog = {
-	[catalogid: string] : string | ICategory
-};
+// export type PrimaryCategoryByCatalog = {
+// 	[catalogid: string] : string | ICategory
+// };
+
+export type PrimaryCategoryByCatalog = [{
+	category: ICategory['_id'],
+	catalog: ICatalog['_id']
+}]
+
 // Cannot update project
 export interface UpdatableAttributes {
 	name?: string,
@@ -25,74 +35,87 @@ class ProductClass {
 	async update(this: IProduct, attributes: UpdatableAttributes) {
 		let { name, masterCatalog, assignedCategoriesByCatalog } : UpdatableAttributes = attributes
 		
-		let populateParams: ModelPopulateOptions[] = []
-		
-		if (assignedCategoriesByCatalog) {
-			// Populate product.masterCatalog
-			// Populate product.assignedCatalogs
-			// => Can access through product.catalogs
-			populateParams.push({ path: 'masterCatalog' })
-			populateParams.push({ path: 'assignedCatalogs' })
-		}
-		if (masterCatalog) {
-			populateParams.push({ path: 'masterCatalog' })
-		}
-		if (populateParams.length > 0) {
-			await this.populate(populateParams).execPopulate()
-			console.log('======= AFTER POPULATE', this.masterCatalog)
-		}
+		// let populateParams: ModelPopulateOptions[] = []
+	
 
-		if (assignedCategoriesByCatalog) {
-			// For each catalog
-			for (let catalogid in assignedCategoriesByCatalog) {
-				console.log('CATALOG', catalogid)
-				// Get catalog populated with categories
-				let catalog: ICatalog = await this.catalogs.find((catalog: ICatalog) => catalog.id == catalogid)
-				if (!catalog) {
-					throw (new ServerError(ErrorType.CATALOG_NOT_FOUND, 'catalogid'))
-				}
-				await catalog.populate('categories').execPopulate()
-				console.log({catalog})
+
+		// if (assignedCategoriesByCatalog) {
+		// 	// Populate product.masterCatalog
+		// 	// Populate product.assignedCatalogs
+		// 	// => Can access through product.catalogs
+		// 	populateParams.push({ path: 'masterCatalog' })
+		// 	populateParams.push({ path: 'assignedCatalogs' })
+		// }
+		// if (masterCatalog) {
+		// 	populateParams.push({ path: 'masterCatalog' })
+		// }
+		// if (populateParams.length > 0) {
+		// 	await this.populate(populateParams).execPopulate()
+		// 	console.log('======= AFTER POPULATE', this.masterCatalog)
+		// }
+
+		// if (assignedCategoriesByCatalog) {
+		// 	// For each catalog
+		// 	for (let catalogid in assignedCategoriesByCatalog) {
+		// 		console.log('CATALOG', catalogid)
+		// 		// Get catalog populated with categories
+		// 		let catalog: ICatalog = await this.catalogs.find((catalog: ICatalog) => catalog.id == catalogid)
+		// 		if (!catalog) {
+		// 			throw (new ServerError(ErrorType.CATALOG_NOT_FOUND, 'catalogid'))
+		// 		}
+		// 		await catalog.populate('categories').execPopulate()
+		// 		console.log({catalog})
 				
-				assignedCategoriesByCatalog[catalogid] = await new Promise(async (resolve, reject) => {
-					// Return array of categories
-					let assignedCategories = assignedCategoriesByCatalog[catalogid]
-					.map((categoryid: string) => {
-						console.log('CATEGORY', categoryid)
-						const _category: ICategory = catalog.categories.find((category: ICategory) => category.id == categoryid)
-						return _category ? _category._id : null
-					})
-					resolve(assignedCategories.filter(x => !!x))
-				})
+		// 		assignedCategoriesByCatalog[catalogid] = await new Promise(async (resolve, reject) => {
+		// 			// Return array of categories
+		// 			let assignedCategories = assignedCategoriesByCatalog[catalogid]
+		// 			.map((categoryid: string) => {
+		// 				console.log('CATEGORY', categoryid)
+		// 				const _category: ICategory = catalog.categories.find((category: ICategory) => category.id == categoryid)
+		// 				return _category ? _category._id : null
+		// 			})
+		// 			console.log({assignedCategories})
+		// 			resolve(assignedCategories.filter(x => !!x))
+		// 		})
 
-				console.log('=======updating ', this.assignedCategoriesByCatalog)
-				this.assignedCategoriesByCatalog[catalog._id] = assignedCategoriesByCatalog[catalogid]
-				this.markModified(`assignedCategoriesByCatalog`)
-				console.log('=======updated ', this.assignedCategoriesByCatalog)
-			}
+		// 		console.log('=======updating ', this.assignedCategoriesByCatalog, ' with ', assignedCategoriesByCatalog)
+		// 		this.assignedCategoriesByCatalog[catalog._id] = assignedCategoriesByCatalog[catalogid]
+		// 		this.markModified(`assignedCategoriesByCatalog`)
+		// 		console.log('=======updated ', this.assignedCategoriesByCatalog)
+		// 	}
 			
-		} else if (assignedCategoriesByCatalog == null) {
+		// } else if (assignedCategoriesByCatalog == null) {
 
-		}
+		// }
 
-		if (masterCatalog) {
-			let id = masterCatalog
-			masterCatalog = await Catalog.findOne({ project: this.project, id: masterCatalog })
-			if (!masterCatalog) {
-				throw (new ServerError(ErrorType.CATALOG_NOT_FOUND, id.toString()))
-			}
-			let oldMasterCatelog: ICatalog = this.masterCatalog
-			oldMasterCatelog.removeProduct(this)
-			masterCatalog.addProduct(this)
-			await Promise.all([
-				oldMasterCatelog.save(),
-				masterCatalog.save(),
-			])
-			this.masterCatalog = masterCatalog._id
-		} else if (masterCatalog == null) {
+		// if (masterCatalog) {
+		// 	let id = masterCatalog
+		// 	masterCatalog = await Catalog.findOne({ project: this.project, id: masterCatalog })
+		// 	if (!masterCatalog) {
+		// 		throw (new ServerError(ErrorType.CATALOG_NOT_FOUND, id.toString()))
+		// 	}
+		// 	let oldMasterCatelog: ICatalog = this.masterCatalog
+		// 	oldMasterCatelog.removeProduct(this)
+		// 	masterCatalog.addProduct(this)
+		// 	await Promise.all([
+		// 		oldMasterCatelog.save(),
+		// 		masterCatalog.save(),
+		// 	])
+		// 	this.masterCatalog = masterCatalog._id
+		// } else if (masterCatalog == null) {
 
-		}		
+		// }		
 	}
+
+	async updateName() {}
+
+	async updateMasterCatalog() {}
+
+	async updateAssignedCategoriesByCatalog() {}
+
+	async updatePrimaryCategoryByCatalog() {}
+
+
 }
 
 export interface IProduct extends Document {
@@ -101,13 +124,20 @@ export interface IProduct extends Document {
 	project: IProject['_id'],
 	masterCatalog: ICatalog['_id'],
 	assignedCatalogs: [ICatalog['_id']],
-	primaryCategoryByCatalog: [Record<ICatalog['_id'], ICategory['_id']>],
-	assignedCategoriesByCatalog: [Record<ICatalog['_id'], [ICategory['_id']]>]
+	primaryCategoryByCatalog: PrimaryCategoryByCatalog,
+	assignedCategoriesByCatalog: AssignedCategoriesByCatalog,
+
+	// methods
+	update(attributed: UpdatableAttributes): Promise<any>,
+	updateName(name: string): Promise<any>,
+	updateMasterCatalog(catalogid: string): Promise<any>,
+	updateAssignedCategoriesByCatalog(assignedCategoriesByCatalog: AssignedCategoriesByCatalog): Promise<any>,
+	updatePrimaryCategoryByCatalog(primaryCategoryByCatalog: PrimaryCategoryByCatalog): Promise<any>,
 
 	// virtuals
 	catalogs: ICatalog[],
 
-	// internal
+	// internal attributes
 	wasNew: boolean,
 }
 
@@ -135,22 +165,19 @@ export const ProductSchema = new Schema({
 		ref: 'Catalog',
 	}],
 	primaryCategoryByCatalog: {
-		type: Map,
-		of: {
-			type: Schema.Types.ObjectId,
-			ref: 'Category'
-		},
-		default: {},
+		type: [{
+			catalog: { type: Schema.Types.ObjectId, ref: 'Catalog' },
+			category: { type: Schema.Types.ObjectId, ref: 'Category' }
+		}],
+		default: []
 	},
 	assignedCategoriesByCatalog: {
-		type: Map,
-		of: [{
-			type: Schema.Types.ObjectId,
-			ref: 'Category'
+		type: [{
+			catalog: { type: Schema.Types.ObjectId, ref: 'Catalog' },
+			category: [{ type: Schema.Types.ObjectId, ref: 'Category' }]
 		}],
-		default: [],
-	}
-	// categoriesByCatalogs: primary + assigned
+		default: []
+	},
 }).loadClass(ProductClass)
 
 ProductSchema.virtual('catalogs').get(function(this: IProduct) {

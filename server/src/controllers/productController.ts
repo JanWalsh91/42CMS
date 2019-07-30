@@ -35,8 +35,6 @@ export class ProductController {
 
 	
 	public async update(req: Request, res: Response) {
-
-
 		console.log(chalk.magenta('[ProductController] update'), req.body)
 		let project: IProject = req.body.project
 		let product: IProduct = req.body.product
