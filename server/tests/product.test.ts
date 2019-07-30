@@ -75,20 +75,16 @@ describe('Product', function() {
 			product = await createProduct(project.id, catalogData.id, productData.id, {name: productData.name})
 			console.log(chalk.blue('[Product Update] beforeEach END'))
 		})
-		it.only('Should update assignedCategoriesByCatalog', async() => {
-			console.log(chalk.blue('Should update assignedCategoriesByCatalog'))
+		it('Should update name', async () => {
+			console.log(chalk.blue('Should update name'))
+			let newName = 'newName'
 			ret = await updateProduct(project.id, productData.id, {
-				assignedCategoriesByCatalog: {
-					[catalogData.id]: [categoryData.id]
-				}
+				name: newName
 			})
-			printret(ret)
 			ret.status.should.equal(OK)
 			let _product: IProduct = await Product.findOne({id: productData.id}).populate({ path: 'assignedCategoriesByCatalog' }).exec()
-			console.log(_product)
+			_product.name.should.equal(newName)
 		})
-		it('Should update primaryCategory')
-		it('Should update catalog assignements')
 		it('Should update master catalog', async() => {
 			console.log(chalk.blue('Should update master catalog'))
 			let newCatalogId = 'newcatalog'
@@ -103,6 +99,36 @@ describe('Product', function() {
 			_product.masterCatalog.id.should.equal(newCatalogId)
 			_product.masterCatalog.products.find((_product: IProduct) => _product.id == productData.id).should.exist
 		})
+		it.only('Should update primaryCategory', async() => {
+			console.log(chalk.blue('Should update primaryCategory'))
+			let newCategoryId = 'newcatgory'
+			ret = await createCategory(projectData.id, catalogData.id, newCategoryId)
+			ret.status.should.equal(OK)
+			ret = await updateProduct(project.id, productData.id, {
+				primaryCategoryByCatalog: [{
+					catalog: catalogData.id,
+					category: newCategoryId
+				}]
+			})
+			printret(ret)
+			ret.status.should.equal(OK)
+			
+		})
+		it('Should update assignedCategoriesByCatalog', async() => {
+			console.log(chalk.blue('Should update assignedCategoriesByCatalog'))
+			ret = await updateProduct(project.id, productData.id, {
+				assignedCategoriesByCatalog: {
+					[catalogData.id]: [categoryData.id]
+				}
+			})
+			printret(ret)
+			ret.status.should.equal(OK)
+			let _product: IProduct = await Product.findOne({id: productData.id}).populate({ path: 'assignedCategoriesByCatalog' }).exec()
+			console.log(_product)
+		})
+		
+		it('Should update catalog assignements')
+		
 		it('Should update name')
 	})
 })

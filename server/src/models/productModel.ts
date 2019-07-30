@@ -23,8 +23,8 @@ export type PrimaryCategoryByCatalog = [{
 // Cannot update project
 export interface UpdatableAttributes {
 	name?: string,
-	masterCatalog?: string | ICatalog,
-	assignedCatalogs?: (string | ICatalog)[],
+	masterCatalog?: string,
+	assignedCatalogs?: string[],
 	primaryCategoryByCatalog? : PrimaryCategoryByCatalog,
 	assignedCategoriesByCatalog?: AssignedCategoriesByCatalog,
 };
@@ -32,21 +32,19 @@ export interface UpdatableAttributes {
 class ProductClass {
 	// define virtuals here
 
-	async update(this: IProduct, attributes: UpdatableAttributes) {
-		let { name, masterCatalog, assignedCategoriesByCatalog } : UpdatableAttributes = attributes
+	async updateAttributes(this: IProduct, attributes: UpdatableAttributes) {
+		let { name, masterCatalog, primaryCategoryByCatalog, assignedCategoriesByCatalog } : UpdatableAttributes = attributes
+		console.log(attributes);
 		
 		// let populateParams: ModelPopulateOptions[] = []
-		let promises: [Promise<any>] = []
+		let promises = []
 
 		if (name) promises.push(this.updateName(name))
 		if (masterCatalog) promises.push(this.updateMasterCatalog(masterCatalog))
+		if (primaryCategoryByCatalog) promises.push(this.updatePrimaryCategoryByCatalog(primaryCategoryByCatalog))
 		if (assignedCategoriesByCatalog) promises.push(this.updateAssignedCategoriesByCatalog(assignedCategoriesByCatalog))
 
-		Promise.all(promises)
-			.then(() => this.save())
-			.catch(err => {
-				console.log('update err', err)
-			})
+		return Promise.all(promises)
 
 		// if (assignedCategoriesByCatalog) {
 		// 	// Populate product.masterCatalog
@@ -116,13 +114,38 @@ class ProductClass {
 		// }		
 	}
 
-	async updateName() {}
+	async updateName(this: IProduct, name: string): Promise<any> {
+		console.log('updateName')
+		this.name = name;
+	}
 
-	async updateMasterCatalog() {}
+	async updateMasterCatalog(this: IProduct, catalogid: string) {
+		console.log('updateMasterCatalog')
+		await this.populate([{path: 'project'}, {path: 'masterCatalog'}]).execPopulate()
+		let newMasterCatalog: ICatalog = await Catalog.findOne({ project: this.project, id: catalogid })
+		if (!newMasterCatalog) {
+			throw (new ServerError(ErrorType.CATALOG_NOT_FOUND, catalogid))
+		}
+		this.masterCatalog.removeProduct(this)
+		newMasterCatalog.addProduct(this)
+		await Promise.all([
+			this.masterCatalog.save(),
+			newMasterCatalog.save(),
+		])
+		this.masterCatalog = newMasterCatalog._id
+	}
 
-	async updateAssignedCategoriesByCatalog() {}
+	async updatePrimaryCategoryByCatalog(this: IProduct, primaryCategoryByCatalog: PrimaryCategoryByCatalog) {
+		console.log('updatePrimaryCategoryByCatalog')
+		
+		
 
-	async updatePrimaryCategoryByCatalog() {}
+	}
+
+
+
+	async updateAssignedCategoriesByCatalog(this: IProduct) {}
+
 
 
 }
@@ -137,7 +160,7 @@ export interface IProduct extends Document {
 	assignedCategoriesByCatalog: AssignedCategoriesByCatalog,
 
 	// methods
-	update(attributed: UpdatableAttributes): Promise<any>,
+	updateAttributes(attributed: UpdatableAttributes): Promise<any>,
 	updateName(name: string): Promise<any>,
 	updateMasterCatalog(catalogid: string): Promise<any>,
 	updateAssignedCategoriesByCatalog(assignedCategoriesByCatalog: AssignedCategoriesByCatalog): Promise<any>,

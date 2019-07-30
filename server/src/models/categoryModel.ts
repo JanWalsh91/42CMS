@@ -4,6 +4,7 @@ import { ICatalog, Catalog } from './catalogModel'
 import { ServerError, ErrorType } from '../utils/ServerError';
 import chalk from 'chalk';
 import { NavLinkProps } from 'react-router-dom';
+import { IProduct, Product } from './productModel';
 
 // Define instance methods
 class CategoryClass {
@@ -33,19 +34,51 @@ class CategoryClass {
 			})
 		})
 	}
+
+	getProduct(this: ICategory, query: object): Promise<IProduct> {
+		return new Promise((resolve, reject) => {
+			Product.findOne({ catalog: this.catalog, category: this._id, ...query}, (err, product: IProduct) => {
+				resolve(product)
+			})
+		})
+	}
+
+	addProduct(this: ICategory, product: IProduct): ServerError {
+		// console.log(chalk.magenta('[CatalogModel] addProduct'))
+		if (this.products.find((_product: IProduct) => _product.id == product.id)) {
+			return (new ServerError(ErrorType.PRODUCT_EXISTS, product.id))
+		}
+		this.products.push(product._id)
+		this.markModified('products')
+	}
+
+	// TODO: 
+	removeProduct(this: ICategory, product: IProduct): ServerError {
+		// console.log(chalk.magenta('[CatalogModel] addProduct'))
+		if (this.products.find((_product: IProduct) => _product.id == product.id)) {
+			return (new ServerError(ErrorType.PRODUCT_EXISTS, product.id))
+		}
+		this.products.push(product._id)
+		this.markModified('products')
+	}
 }
 
 export interface ICategory extends Document {
 	id: string,
 	name: string,
 	catalog: ICatalog['_id'],
-
 	parent: ICategory['_id'],
 	subCategories: [ICategory['_id']],
+	products: [IProduct['_id']],
 
+	// methods
 	getSubcategory: (query: object) => Promise<ICategory>,
+	getProduct: (query: object) => Promise<IProduct>,
+	addProduct: (product: IProduct) => ServerError,
+	removeProduct: (product: IProduct) => ServerError,
 
-	wasNew: boolean, // internal
+	// internal
+	wasNew: boolean,
 }
 
 export const CategorySchema = new Schema({

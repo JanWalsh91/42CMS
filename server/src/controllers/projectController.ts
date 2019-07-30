@@ -39,7 +39,7 @@ export class ProjectController {
 					id: project.id
 				});
 			}
-        });
+		});
 	}
 
 	/**

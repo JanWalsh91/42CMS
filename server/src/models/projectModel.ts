@@ -36,6 +36,19 @@ class ProjectClass {
 		this.markModified('products')
 	}
 
+	addCatalog(this: ICatalog, product: IProduct) {
+		// console.log(chalk.magenta('[ProjectModel] addProduct'))
+		if (this.products.find((_product: IProduct) => _product.id == product.id)) {
+			return (new ServerError(ErrorType.PRODUCT_EXISTS, product.id))
+		}
+		this.products.push(product._id)
+		this.markModified('products')
+	}
+
+	removeProduct(this: IProject, product: IProduct) {
+		
+	}
+
 	// getSite(this: ISite, query: object): ISite {}
 	// getUser(this: IUser, query: object): IUser {}
 }

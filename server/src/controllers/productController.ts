@@ -39,7 +39,8 @@ export class ProductController {
 		let project: IProject = req.body.project
 		let product: IProduct = req.body.product
 		try {
-			await product.update({...req.body})
+			await product.updateAttributes({...req.body})
+			console.log('await save in productController')
 			product = await product.save()
 			res.send(product.toJSON()) // TODO: to JSONForUser
 		} catch (e) {

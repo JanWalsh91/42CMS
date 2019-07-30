@@ -1,7 +1,7 @@
 import { Schema, Document, Model, model, Query } from 'mongoose'
 
 import { ICategory, Category } from './categoryModel'
-import { IProduct } from './productModel';
+import { IProduct, Product } from './productModel';
 import { IProject, Project } from './projectModel';
 import { ISite } from './siteModel';
 import chalk from 'chalk';
@@ -29,8 +29,12 @@ class CatalogClass {
 		})
 	}
 
-	getProduct(this: ICatalog, query: object): IProduct {
-		return null
+	getProduct(this: ICatalog, query: object): Promise<IProduct> {
+		return new Promise((resolve, reject) => {
+			Product.findOne({ catalog: this._id, ...query}, (err, product: IProduct) => {
+				resolve(product)
+			})
+		})
 	}
 
 	addProduct(this: ICatalog, product: IProduct): ServerError {
@@ -87,8 +91,8 @@ export interface ICatalog extends Document {
 
 	getCategory: (query: object) => Promise<ICategory>,
 	getProduct: (query: object) => Promise<IProduct>,
-	addProduct: (prodict: IProduct) => ServerError,
-	removeProduct: (prodict: IProduct) => ServerError,
+	addProduct: (product: IProduct) => ServerError,
+	removeProduct: (product: IProduct) => ServerError,
 
 	wasNew: boolean, // internal use
 }
@@ -140,14 +144,15 @@ CatalogSchema.pre('save', async function(this: ICatalog, next: any) {
 	if (this.isNew) {
 		this.wasNew = true
 		console.log(chalk.yellow('is new!'))
-		// Get project
-		// Populate project with catalogs
-		let project: IProject = await Project.findById(this.project).populate('catalogs');
+		
 		// Check if catalog exists in project
-		if (project.catalogs.some((catalog: ICatalog) => catalog.id == this.id)) {
+		await this.populate('project').execPopulate()
+		if (await this.project.getCatalog({id: this.id})) {
 			throw new ServerError(ErrorType.CATALOG_EXISTS, this.id)
 		}
-		await project.updateOne({ $addToSet: { catalogs: this._id } }).exec()
+
+		// Add Catalog to project
+		await this.project.updateOne({ $addToSet: { catalogs: this._id } }).exec()
 	}
 
 	next()
