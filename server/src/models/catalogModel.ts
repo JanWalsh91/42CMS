@@ -8,60 +8,90 @@ import chalk from 'chalk';
 import { ServerError, ErrorType } from '../utils/ServerError';
 import { IUser } from './userModel';
 import { MongoError } from 'mongodb';
+import { AddOptions } from '../types/addOptions';
 // import { hasUniqueIdInProject } from './commonValidators';
 
 class CatalogClass {
 	// define virtuals here
 
-	getCategory(this: ICatalog, query: Query<ICatalog>): Promise<ICategory> {
-		return new Promise((resolve, reject) => {
-			Category.findOne({catalog: this._id, ...query}, (err, category: ICategory) => {
-				resolve(category)
-			})
-		})
+	async getProject(this: ICatalog): Promise<IProject> {
+		await this.populate('project').execPopulate()
+		return this.project;
 	}
 
-	getRootCategory(this: ICatalog): Promise<ICategory> {
-		return new Promise((resolve, reject) => {
-			Category.findOne({ catalog: this._id, id: 'root'}, (err, category: ICategory) => {
-				resolve(category)
-			})
-		})
+	async getCategory(this: ICatalog, query: object): Promise<ICategory> {
+		return await Category.findOne({ catalog: this._id, ...query })
 	}
 
-	getProduct(this: ICatalog, query: object): Promise<IProduct> {
-		return new Promise((resolve, reject) => {
-			Product.findOne({ catalog: this._id, ...query}, (err, product: IProduct) => {
-				resolve(product)
-			})
-		})
+	async getProduct(this: ICatalog, query: object): Promise<IProduct> {
+		return await Product.findOne({ catalog: this._id, ...query })
 	}
 
-	addProduct(this: ICatalog, product: IProduct): ServerError {
-		// console.log(chalk.magenta('[CatalogModel] addProduct'))
-		if (this.products.find((_product: IProduct) => _product.id == product.id)) {
-			return (new ServerError(ErrorType.PRODUCT_EXISTS, product.id))
+	async getRootCategory(this: ICatalog): Promise<ICategory> {
+		await this.populate('rootCategory').execPopulate()
+		return this.rootCategory;
+	}
+
+	/**
+	 * Check if: 
+	 * - doesn't yet exist in catalog 
+	 */
+	async addCategory(this: ICatalog, categoryId: ICategory['_id'], options: AddOptions = {}): Promise<ServerError | void> {
+		console.log(chalk.magenta(`[CatalogModel.addCategory] ${categoryId} to ${this._id}`))
+		if (!options.skipCheckExists) {
+			const category: ICategory = await Category.findById(categoryId)
+			if (!category) {
+				throw new ServerError(ErrorType.CATEGORY_NOT_FOUND)
+			}
 		}
-		this.products.push(product._id)
+		if (categoryId in this.categories) {
+			console.log(chalk.yellow('[CatalogModel.addCategory] category already in catalog'))
+			return 
+		}
+		this.categories.push(categoryId)
+		this.markModified('categories')
+	}
+
+	/**
+	 * Check if: 
+	 * - exists in catalog's project
+	 * - doesn't yet exist in catalog 
+	 */
+	async addProduct(this: ICatalog, productId: IProduct['_id'], options: AddOptions = {}): Promise<ServerError | void> {
+		console.log(chalk.magenta(`[CatalogModel.addProduct] ${productId} to ${this._id}`))
+		if (!options.skipCheckExists) {
+			await this.getProject()
+			const product: IProduct = await this.project.getProduct({ _id: productId })
+			if (!product) {
+				throw new ServerError(ErrorType.PRODUCT_NOT_FOUND)
+			}
+		}
+		if (productId in this.products) {
+			console.log(chalk.yellow('[CatalogModel.addProduct] product already in catalog'))
+			return 
+		}
+		this.products.push(productId)
 		this.markModified('products')
 	}
 
-	// TODO: 
-	removeProduct(this: ICatalog, product: IProduct): ServerError {
-		// console.log(chalk.magenta('[CatalogModel] addProduct'))
-		if (this.products.find((_product: IProduct) => _product.id == product.id)) {
-			return (new ServerError(ErrorType.PRODUCT_EXISTS, product.id))
+	async removeCategory(this: ICatalog, categoryId: ICategory['_id']) {
+		console.log(chalk.magenta(`[ProjectModel.removeCategory] ${categoryId} from ${this._id}`))
+		if (categoryId in this.categories) {
+			this.categories = this.categories.filter(x => x !== categoryId)
+			this.markModified('categories')
+		} else {
+			console.log(chalk.yellow(`[ProjectModel.removeCategory] ${categoryId} not in ${this._id}`))
 		}
-		this.products.push(product._id)
-		this.markModified('products')
 	}
 
-	addCatalog() {
-
-	}
-
-	removeCatalog() {
-
+	async removeProduct(this: ICatalog, productId: IProduct['_id']) {
+		console.log(chalk.magenta(`[ProjectModel.removeProduct] ${productId} from ${this._id}`))
+		if (productId in this.products) {
+			this.products = this.products.filter(x => x !== productId)
+			this.markModified('products')
+		} else {
+			console.log(chalk.yellow(`[ProjectModel.removeProduct] ${productId} not in ${this._id}`))
+		}
 	}
 
 	toJSONfor(this: ICatalog, user: IUser) {
@@ -79,20 +109,30 @@ export interface ICatalog extends Document {
 	id: string,
 	name: string,
 	project: IProject['_id'],
-	sitesAssignedTo: [ISite['_id']],
+	sitesAssignedTo: ISite['_id'][],
 	rootCategory: ICategory['_id'],
-	categories: [ICategory['_id']],
-	products: [IProduct['_id']],
+	categories: ICategory['_id'][],
+	products: IProduct['_id'][],
 	/**
 	 * Determines if this catalog owns products, or if products are assigned to it (cannot do both)
 	 * Products can only be owned by one Catalog, but can be assigned to many
 	 */
 	isMaster: boolean,
 
+	
+	// get methods
+	getProject: () => Promise<IProject>,
+	getRootCategory: () => Promise<ICategory>,
 	getCategory: (query: object) => Promise<ICategory>,
 	getProduct: (query: object) => Promise<IProduct>,
-	addProduct: (product: IProduct) => ServerError,
-	removeProduct: (product: IProduct) => ServerError,
+	
+	// add methods
+	addCateory: (category: ICategory['_id'], options: AddOptions) => Promise<ServerError | void>,
+	addProduct: (product: IProduct['_id'], options: AddOptions) => Promise<ServerError | void>,
+
+	// remove methods
+	removeCateory: (category: ICategory['_id']) => Promise<void>,
+	removeProduct: (product: IProduct['_id']) => Promise<void>,
 
 	wasNew: boolean, // internal use
 }

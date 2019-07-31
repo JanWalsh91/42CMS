@@ -6,47 +6,71 @@ import { IProduct, ProductSchema, Product } from './productModel';
 import { ISite, SiteSchema } from './siteModel';
 // import { IUser, UserSchema } from './userModel';
 
+import { AddOptions } from '../types/AddOptions';
+
 import { ServerError, ErrorType } from '../utils/ServerError' 
 import chalk from 'chalk';
 
 class ProjectClass {
 	// define virtuals here
 	async getCatalog(this: IProject, query: object): Promise<ICatalog> {
-		return new Promise((resolve, reject) => {
-			Catalog.findOne({ project: this._id, ...query}, (err, catalog: ICatalog) => {
-				resolve(catalog)
-			})
-		})
+		return await Catalog.findOne({ project: this._id, ...query })
 	}
 
-	getProduct(this: IProject, query: object): Promise<IProduct> {
-		return new Promise((resolve, reject) => {
-			Product.findOne({ project: this._id, ...query}, (err, product: IProduct) => {
-				resolve(product)
-			})
-		})
+	async getProduct(this: IProject, query: object): Promise<IProduct> {
+		return await Product.findOne({ project: this._id, ...query })
 	}
 
-	addProduct(this: IProject, product: IProduct) {
-		// console.log(chalk.magenta('[ProjectModel] addProduct'))
-		if (this.products.find((_product: IProduct) => _product.id == product.id)) {
-			return (new ServerError(ErrorType.PRODUCT_EXISTS, product.id))
+	async addCatalog(this: IProject, catalogId: ICatalog['id'], options: AddOptions = {}): Promise<ServerError | void>  {
+		console.log(chalk.magenta(`[ProjectModel.addCatalog] ${catalogId} to ${this._id}`))
+		if (!options.skipCheckExists) {
+			const catalog: ICatalog = await Catalog.findById(catalogId)
+			if (!catalog) {
+				throw new ServerError(ErrorType.CATALOG_NOT_FOUND)
+			}
 		}
-		this.products.push(product._id)
+		if (catalogId in this.catalogs) {
+			console.log(chalk.yellow('[ProjectModel.addCatalog] catalog already in project'))
+			return 
+		}
+		this.catalogs.push(catalogId)
+		this.markModified('catalogs')
+	}
+
+	async addProduct(this: IProject, productId: IProduct['_id'], options: AddOptions = {}): Promise<ServerError | void> {
+		console.log(chalk.magenta(`[ProjectModel.addProduct] ${productId} to ${this._id}`))
+		if (!options.skipCheckExists) {
+			const product: IProduct = await Product.findById(productId)
+			if (!product) {
+				throw new ServerError(ErrorType.PRODUCT_NOT_FOUND)
+			}
+		}
+		if (productId in this.products) {
+			console.log(chalk.yellow('[ProjectModel.addProduct] product already in project'))
+			return 
+		}
+		this.products.push(productId)
 		this.markModified('products')
 	}
 
-	addCatalog(this: ICatalog, product: IProduct) {
-		// console.log(chalk.magenta('[ProjectModel] addProduct'))
-		if (this.products.find((_product: IProduct) => _product.id == product.id)) {
-			return (new ServerError(ErrorType.PRODUCT_EXISTS, product.id))
+	async removeProduct(this: IProject, productId: IProduct['_id']) {
+		console.log(chalk.magenta(`[ProjectModel.removeProduct] ${productId} from ${this._id}`))
+		if (productId in this.products) {
+			this.products = this.products.filter(x => x !== productId)
+			this.markModified('products')
+		} else {
+			console.log(chalk.yellow(`[ProjectModel.removeProduct] ${productId} not in ${this._id}`))
 		}
-		this.products.push(product._id)
-		this.markModified('products')
 	}
 
-	removeProduct(this: IProject, product: IProduct) {
-		
+	async removeCatalog(this: IProject, catalogId: ICatalog['_id']) {
+		console.log(chalk.magenta(`[ProjectModel.removeCatalog] ${catalogId} from ${this._id}`))
+		if (catalogId in this.catalogs) {
+			this.catalogs = this.catalogs.filter(x => x !== catalogId)
+			this.markModified('catalogs')
+		} else {
+			console.log(chalk.yellow(`[ProjectModel.removeCatalog] ${catalogId} not in ${this._id}`))
+		}
 	}
 
 	// getSite(this: ISite, query: object): ISite {}
@@ -58,13 +82,22 @@ export interface IProject extends Document {
 	name: string,
 	owner: IUser['_id'],
 	// users: [IUser['_id']],
-	catalogs: [ICatalog['_id']],
-	products: [IProduct['_id']],
-	sites: [ISite['_id']],
-
+	catalogs: ICatalog['_id'][],
+	products: IProduct['_id'][],
+	sites: ISite['_id'][],
+	
+	// get methods
 	getCatalog: (query: object) => Promise<ICatalog>,
-	addProduct: (product: IProduct) => Promise<any>,
 	getProduct: (query: object) => Promise<IProduct>,
+	
+	// add methods
+	addCatalog: (catalog: ICatalog['_id'], options: AddOptions) => Promise<ServerError | void>,
+	addProduct: (product: IProduct['_id'], options: AddOptions) => Promise<ServerError | void>,
+
+	// remove methods
+	removeCatalog: (catalog: ICatalog['_id']) => Promise<void>,
+	removeProduct: (product: IProduct['_id']) => Promise<void>,
+
 	// getSite: (query: object) => ISite,
 	// getUser: (query: object) => IUser,
 }
