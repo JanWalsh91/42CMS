@@ -1,4 +1,4 @@
-export interface AddOptions {
+export interface ModelUpdateOptions {
 	skipCheckExists?: boolean,
 	skipCheckScope?: boolean,
 }

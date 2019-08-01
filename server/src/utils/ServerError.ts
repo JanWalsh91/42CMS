@@ -27,6 +27,8 @@ export enum ErrorType {
 	CATALOG_NOT_FOUND,
 	CATEGORY_NOT_FOUND,
 	
+	PRODUCT_NOT_ASSIGNED_TO_CATALOG,
+
 	BAD_LOGIN,
 	// VALIDATION_ERROR,
 }
@@ -47,6 +49,9 @@ export const ErrorMessages: {[code: string]: Function} = {
 	[ErrorType.CATALOG_NOT_FOUND]: catalogid => `Catalog ${catalogid ? catalogid + ' ' : ''}not found`,
 	[ErrorType.CATEGORY_NOT_FOUND]: categoryid => `Category ${categoryid ? categoryid + ' ' : ''}not found`,
 
+	[ErrorType.PRODUCT_NOT_ASSIGNED_TO_CATALOG]: catalogid => `Product not assigned to catalog${catalogid ? ' ' + catalogid : ''}`,
+
+	
 	[ErrorType.BAD_LOGIN]: () => `Wrong username or password`,
 	// [ErrorType.VALIDATION_ERROR]: (e: Error.ValidationError) => `Wrong username or password`,
 }

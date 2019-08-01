@@ -6,7 +6,7 @@ import { IProduct, ProductSchema, Product } from './productModel';
 import { ISite, SiteSchema } from './siteModel';
 // import { IUser, UserSchema } from './userModel';
 
-import { AddOptions } from '../types/AddOptions';
+import { ModelUpdateOptions } from '../types/ModelUpdateOptions';
 
 import { ServerError, ErrorType } from '../utils/ServerError' 
 import chalk from 'chalk';
@@ -21,7 +21,7 @@ class ProjectClass {
 		return await Product.findOne({ project: this._id, ...query })
 	}
 
-	async addCatalog(this: IProject, catalogId: ICatalog['id'], options: AddOptions = {}): Promise<ServerError | void>  {
+	async addCatalog(this: IProject, catalogId: ICatalog['id'], options: ModelUpdateOptions = {}): Promise<ServerError | void>  {
 		console.log(chalk.magenta(`[ProjectModel.addCatalog] ${catalogId} to ${this._id}`))
 		if (!options.skipCheckExists) {
 			const catalog: ICatalog = await Catalog.findById(catalogId)
@@ -37,7 +37,7 @@ class ProjectClass {
 		this.markModified('catalogs')
 	}
 
-	async addProduct(this: IProject, productId: IProduct['_id'], options: AddOptions = {}): Promise<ServerError | void> {
+	async addProduct(this: IProject, productId: IProduct['_id'], options: ModelUpdateOptions = {}): Promise<ServerError | void> {
 		console.log(chalk.magenta(`[ProjectModel.addProduct] ${productId} to ${this._id}`))
 		if (!options.skipCheckExists) {
 			const product: IProduct = await Product.findById(productId)
@@ -91,8 +91,8 @@ export interface IProject extends Document {
 	getProduct: (query: object) => Promise<IProduct>,
 	
 	// add methods
-	addCatalog: (catalog: ICatalog['_id'], options: AddOptions) => Promise<ServerError | void>,
-	addProduct: (product: IProduct['_id'], options: AddOptions) => Promise<ServerError | void>,
+	addCatalog: (catalog: ICatalog['_id'], options: ModelUpdateOptions) => Promise<ServerError | void>,
+	addProduct: (product: IProduct['_id'], options: ModelUpdateOptions) => Promise<ServerError | void>,
 
 	// remove methods
 	removeCatalog: (catalog: ICatalog['_id']) => Promise<void>,

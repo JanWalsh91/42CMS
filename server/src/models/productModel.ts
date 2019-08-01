@@ -4,8 +4,11 @@ import { ICategory } from './categoryModel';
 import chalk from 'chalk';
 import { Project, IProject } from './projectModel';
 import { ServerError, ErrorType } from '../utils/ServerError';
+import { ModelUpdateOptions } from '../types/ModelUpdateOptions';
+import { stripBasename } from 'history/PathUtils';
 
 // export type AssignedCategoriesByCatalog = [Record<ICatalog['_id'] | string, ICategory['_id'] | string | ICategory>]
+// TODO: update to type and use as list of type
 export type AssignedCategoriesByCatalog = [{
 	catalog: ICatalog['_id'],
 	categories: [ICategory['_id']]
@@ -15,6 +18,7 @@ export type AssignedCategoriesByCatalog = [{
 // 	[catalogid: string] : string | ICategory
 // };
 
+// TODO: update to type and use as list of type
 export type PrimaryCategoryByCatalog = [{
 	category: ICategory['_id'],
 	catalog: ICatalog['_id']
@@ -31,6 +35,102 @@ export interface UpdatableAttributes {
 
 class ProductClass {
 	// define virtuals here
+
+	async getProject(this: IProduct): Promise<IProject> {
+		await this.populate('project').execPopulate()
+		return this.project
+	}
+
+	async getMasterCatalog(this: IProduct): Promise<IProject> {
+		await this.populate('masterCatalog').execPopulate()
+		return this.masterCatalog
+	}
+
+	async getAssignedCatalog(this: IProduct, query: object): Promise<ICatalog> {
+		return await Catalog.findOne({
+			project: this.populated('project') ? this.project._id : this.project,
+			products: { $in: this._id },
+			...query
+		})
+	}
+
+	// TODO: 
+	// getPrimaryCategoryByCatalog: (query: object) => Promise<>
+	// getAssignedCategoriesByCatalog: (query: object) => Promise<>
+
+	// set methods
+	setName(this: IProduct, name: string): void {
+		this.name = name
+	}
+
+	async setMasterCatalog(this: IProduct, catalogId: ICatalog['_id'] | null, options?: ModelUpdateOptions): Promise<ServerError | void> {
+		console.log(chalk.magenta(`[ProductModel.setMasterCatalog] ${catalogId} from ${this._id}`))
+		if (!catalogId) {
+			this.masterCatalog = null
+			this.markModified('masterCatalog')
+			// TODO: can you unset? Or is a masterCatalog required?
+		} else {
+			if (!options.skipCheckExists) {
+				await this.getProject()
+				const catalog: ICatalog = await this.project.getCatalog({ _id: catalogId })
+				if (!catalog) {
+					throw new ServerError(ErrorType.CATALOG_NOT_FOUND)
+				}
+			}
+			if (catalogId === this.populated('masterCatalog') ? this.masterCatalog._id : this.masterCatalog) {
+				console.log(chalk.yellow('[ProductModel.setParent] category already is parent'))
+				return 
+			}
+			this.masterCatalog = catalogId
+			this.markModified('masterCatalog')
+		}
+	}
+
+	async setPrimaryCategoryInCatalog(this: IProduct, categoryId: ICategory['_id'] | null, catalogId: ICatalog['_id'], options?: ModelUpdateOptions): Promise<ServerError | void> {
+		if (!options.skipCheckExists) {
+			// Check if product is assigned to catalog
+			let assignedCatalog: ICatalog = await this.getAssignedCatalog({ _id: catalogId })
+			if (assignedCatalog) {
+				throw new ServerError(ErrorType.PRODUCT_NOT_ASSIGNED_TO_CATALOG)
+			}
+			// Check if category exists in catalog
+			let newPrimaryCateogory = await assignedCatalog.getCategory({ _id: categoryId })
+			if (!newPrimaryCateogory) {
+				throw new ServerError(ErrorType.CATEGORY_NOT_FOUND)
+			}
+			// TODO: update to type and use as list of type (see type definition)
+			// this.primaryCategoryByCatalog.find((primaryCategoryForCatalog) => primaryCategoryForCatalog.catalog == catalogId)
+		}
+	}
+	
+
+
+	async addAssignedCatalog(this: IProduct, catalogId: ICatalog['_id'], options?: ModelUpdateOptions): Promise<ServerError | void> {
+		console.log(chalk.magenta(`[ProductModel.addAssignedCatalog] ${catalogId} to ${this._id}`))
+		if (!options.skipCheckExists) {
+			await this.getProject()
+			await this.project.getCatalogs()
+			const catalog: ICatalog = await this.project.catalogs({ _id: catalogId })
+			if (!catalog) {
+				throw new ServerError(ErrorType.CATALOG_NOT_FOUND)
+			}
+		}
+		if (catalogId in this.assignedCatalogs) {
+			console.log(chalk.yellow('[ProductModel.addSubCategory] catalog already in assignedCatalogs'))
+			return 
+		}
+		this.assignedCatalogs.push(catalogId)
+		this.markModified('assignedCatalogs')
+	} 
+
+	// TODO: 
+	async addAssignedCategoryInCatalog(this: IProduct, categoryId: ICategory['_id'], catalogId: ICatalog['_id'], options?: ModelUpdateOptions): Promise<ServerError | void> {
+		console.log(chalk.magenta(`[ProductModel.addAssignedCategoryInCatalog] ${categoryId} in ${catalogId} to ${this._id}`))
+	}
+
+
+
+
 
 	async updateAttributes(this: IProduct, attributes: UpdatableAttributes) {
 		let { name, masterCatalog, primaryCategoryByCatalog, assignedCategoriesByCatalog } : UpdatableAttributes = attributes
@@ -151,26 +251,46 @@ class ProductClass {
 }
 
 export interface IProduct extends Document {
-	id: string,
-	name: string,
-	project: IProject['_id'],
-	masterCatalog: ICatalog['_id'],
-	assignedCatalogs: [ICatalog['_id']],
-	primaryCategoryByCatalog: PrimaryCategoryByCatalog,
-	assignedCategoriesByCatalog: AssignedCategoriesByCatalog,
+	id: string
+	name: string
+	project: IProject['_id'] | IProject
+	masterCatalog: ICatalog['_id'] | ICatalog
+	assignedCatalogs: ICatalog['_id'][]
+	primaryCategoryByCatalog: PrimaryCategoryByCatalog
+	assignedCategoriesByCatalog: AssignedCategoriesByCatalog
+
+	// get methods
+	getProject: () => Promise<IProject>
+	getMasterCatalog: () => Promise<ICatalog>
+	getAssignedCatalog: (query: object) => Promise<ICatalog>
+	// getPrimaryCategoryByCatalog: (query: object) => Promise<>
+	// getAssignedCategoriesByCatalog: (query: object) => Promise<>
+
+	// set methods
+	setName: (name: string) => void
+	setMasterCatalog: (catalogId: ICatalog['_id'] | null, options?: ModelUpdateOptions) => Promise<ServerError | void>
+	setPrimaryCategoryInCatalog: (categoryId: ICategory['_id'] | null, catalogId: ICatalog['_id'], options?: ModelUpdateOptions) => Promise<ServerError | void>
+
+	// add methods
+	addAssignedCatalog: (catalogId: ICatalog['_id'], options?: ModelUpdateOptions) => Promise<ServerError | void>
+	addAssignedCategoryInCatalog: (categoryId: ICategory['_id'], catalogId: ICatalog['_id'], options?: ModelUpdateOptions) => Promise<ServerError | void>
+	
+	// remove methods
+	removeAssignedCatalog: (catalogId: ICatalog['_id']) => Promise<ServerError | void>
+	removeAssignedCategoryInCatalog: (categoryId: ICategory['_id'], catalogId: ICatalog['_id']) => Promise<ServerError | void>
 
 	// methods
-	updateAttributes(attributed: UpdatableAttributes): Promise<any>,
-	updateName(name: string): Promise<any>,
-	updateMasterCatalog(catalogid: string): Promise<any>,
-	updateAssignedCategoriesByCatalog(assignedCategoriesByCatalog: AssignedCategoriesByCatalog): Promise<any>,
-	updatePrimaryCategoryByCatalog(primaryCategoryByCatalog: PrimaryCategoryByCatalog): Promise<any>,
+	updateAttributes(attributed: UpdatableAttributes): Promise<any>
+	updateName(name: string): Promise<any>
+	updateMasterCatalog(catalogid: string): Promise<any>
+	updateAssignedCategoriesByCatalog(assignedCategoriesByCatalog: AssignedCategoriesByCatalog): Promise<any>
+	updatePrimaryCategoryByCatalog(primaryCategoryByCatalog: PrimaryCategoryByCatalog): Promise<any>
 
 	// virtuals
-	catalogs: ICatalog[],
+	catalogs: ICatalog[]
 
 	// internal attributes
-	wasNew: boolean,
+	wasNew: boolean
 }
 
 export const ProductSchema = new Schema({

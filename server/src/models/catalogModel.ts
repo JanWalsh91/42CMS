@@ -8,7 +8,7 @@ import chalk from 'chalk';
 import { ServerError, ErrorType } from '../utils/ServerError';
 import { IUser } from './userModel';
 import { MongoError } from 'mongodb';
-import { AddOptions } from '../types/addOptions';
+import { ModelUpdateOptions } from '../types/ModelUpdateOptions';
 // import { hasUniqueIdInProject } from './commonValidators';
 
 class CatalogClass {
@@ -16,7 +16,7 @@ class CatalogClass {
 
 	async getProject(this: ICatalog): Promise<IProject> {
 		await this.populate('project').execPopulate()
-		return this.project;
+		return this.project
 	}
 
 	async getCategory(this: ICatalog, query: object): Promise<ICategory> {
@@ -36,7 +36,7 @@ class CatalogClass {
 	 * Check if: 
 	 * - doesn't yet exist in catalog 
 	 */
-	async addCategory(this: ICatalog, categoryId: ICategory['_id'], options: AddOptions = {}): Promise<ServerError | void> {
+	async addCategory(this: ICatalog, categoryId: ICategory['_id'], options: ModelUpdateOptions = {}): Promise<ServerError | void> {
 		console.log(chalk.magenta(`[CatalogModel.addCategory] ${categoryId} to ${this._id}`))
 		if (!options.skipCheckExists) {
 			const category: ICategory = await Category.findById(categoryId)
@@ -57,7 +57,7 @@ class CatalogClass {
 	 * - exists in catalog's project
 	 * - doesn't yet exist in catalog 
 	 */
-	async addProduct(this: ICatalog, productId: IProduct['_id'], options: AddOptions = {}): Promise<ServerError | void> {
+	async addProduct(this: ICatalog, productId: IProduct['_id'], options: ModelUpdateOptions = {}): Promise<ServerError | void> {
 		console.log(chalk.magenta(`[CatalogModel.addProduct] ${productId} to ${this._id}`))
 		if (!options.skipCheckExists) {
 			await this.getProject()
@@ -106,35 +106,35 @@ class CatalogClass {
 }
 
 export interface ICatalog extends Document {
-	id: string,
-	name: string,
-	project: IProject['_id'],
-	sitesAssignedTo: ISite['_id'][],
-	rootCategory: ICategory['_id'],
-	categories: ICategory['_id'][],
-	products: IProduct['_id'][],
+	id: string
+	name: string
+	project: IProject['_id']
+	sitesAssignedTo: ISite['_id'][]
+	rootCategory: ICategory['_id']
+	categories: ICategory['_id'][]
+	products: IProduct['_id'][]
 	/**
 	 * Determines if this catalog owns products, or if products are assigned to it (cannot do both)
 	 * Products can only be owned by one Catalog, but can be assigned to many
 	 */
-	isMaster: boolean,
+	isMaster: boolean
 
 	
 	// get methods
-	getProject: () => Promise<IProject>,
-	getRootCategory: () => Promise<ICategory>,
-	getCategory: (query: object) => Promise<ICategory>,
-	getProduct: (query: object) => Promise<IProduct>,
+	getProject: () => Promise<IProject>
+	getRootCategory: () => Promise<ICategory>
+	getCategory: (query: object) => Promise<ICategory>
+	getProduct: (query: object) => Promise<IProduct>
 	
 	// add methods
-	addCateory: (category: ICategory['_id'], options: AddOptions) => Promise<ServerError | void>,
-	addProduct: (product: IProduct['_id'], options: AddOptions) => Promise<ServerError | void>,
+	addCateory: (category: ICategory['_id'], options: ModelUpdateOptions) => Promise<ServerError | void>
+	addProduct: (product: IProduct['_id'], options: ModelUpdateOptions) => Promise<ServerError | void>
 
 	// remove methods
-	removeCateory: (category: ICategory['_id']) => Promise<void>,
-	removeProduct: (product: IProduct['_id']) => Promise<void>,
+	removeCateory: (category: ICategory['_id']) => Promise<void>
+	removeProduct: (product: IProduct['_id']) => Promise<void>
 
-	wasNew: boolean, // internal use
+	wasNew: boolean // internal use
 }
 
 export const CatalogSchema = new Schema({
