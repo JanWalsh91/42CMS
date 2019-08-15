@@ -1,24 +1,41 @@
-import { ICategory, Category } from "../models";
-import { ValidationError, ResourceNotFoundError } from "../utils/Errors";
-import { uuid } from "../utils/uuid";
+import { ICategory, Category, ICatalog, Catalog } from "../models";
+import { ValidationError, ResourceNotFoundError } from "../utils/Errors"
+import { catalogService } from '../services' 
 
 class CategoryService {
 	public async create(options: Partial<ICategory>): Promise<ICategory> {
-		// Check if category exists
-		let existingCategorys: ICategory[] = await Category.find({id: options.id})
-		if (existingCategorys.length > 0) {
+		const catalog: ICatalog = await catalogService.getById(options.catalog)
+		if (!catalog) {
+			throw new ResourceNotFoundError('Catalog', options.catalog)
+		}
+		const existingCategory: ICategory = await catalog.getCategory({id: options.id})
+		if (existingCategory) {
 			throw new ValidationError('Category already exists')
 		}
-		
+		if (options.id != 'root') {
+			var parentCategory: ICategory = null
+			if (options.parent) {
+				parentCategory = await catalog.getCategory({id: options.parent})
+			}
+			if (!parentCategory && options.id != 'root') {
+				parentCategory = await catalog.getCategory({id: 'root'});
+			}
+			if (!parentCategory) {
+				throw new ResourceNotFoundError('Category', options.parent || 'root')
+			}
+		}
+
 		// Create new category
 		return await new Category({
 			id: options.id,
 			name: options.name,
+			parent: parentCategory ? parentCategory._id : null,
+			catalog
 		}).save()
 	}
-
-	public async getById(usernamae: string): Promise<ICategory> {
-		return Category.findOne({usernamae}).exec()
+	
+	public async getById(id: string): Promise<ICategory> {
+		return Category.findOne({id}).exec()
 	}
 
 	public async findAll(query: object): Promise<ICategory[]> {
@@ -39,4 +56,4 @@ class CategoryService {
 	}
 }
 
-export const userService: CategoryService = new CategoryService()
+export const categoryService: CategoryService = new CategoryService()

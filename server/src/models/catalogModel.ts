@@ -11,9 +11,9 @@ import { ModelUpdateOptions } from '../utils/ModelUpdateOptions';
 class CatalogClass {
 	// define virtuals here
 
-	// async getCategory(this: ICatalog, query: object): Promise<ICategory> {
-	// 	return await Category.findOne({ catalog: this._id, ...query })
-	// }
+	async getCategory(this: ICatalog, query: object): Promise<ICategory> {
+		return await Category.findOne({ catalog: this._id, ...query })
+	}
 
 	// async getProduct(this: ICatalog, query: object): Promise<IProduct> {
 	// 	return await Product.findOne({ catalog: this._id, ...query })

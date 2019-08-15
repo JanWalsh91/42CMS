@@ -1,35 +1,42 @@
-// import { Project, IProject } from '../models/projectModel'
-import { ICategory, Category } from '../models/categoryModel'
 import { Request, Response } from 'express';
 import chalk from 'chalk';
+
+import { ICategory, ICatalog } from '../models'
+import { categoryService, catalogService } from '../services';
 import ResponseStatusTypes from '../utils/ResponseStatusTypes';
-import { ICatalog, Catalog } from '../models/catalogModel';
+import { ValidationError, ResourceNotFoundError } from '../utils/Errors';
 
 const { BAD_REQUEST } = ResponseStatusTypes; 
 
 export class CategoryController {
 	
-	public async create(req: Request, res: Response) {
-		console.log(chalk.magenta('[CategoryController] create'));
-		// let catalog: ICatalog = req.body.catalog
-		// let project: IProject = req.body.project
-		let { name, id, parentCategoryId } = req.body // User acquired from authorization middleware
-	   
-		// TODO: link with parent if necessary
-		let parentCategory: ICategory = null
-		if (parentCategoryId) {
-			parentCategory = await catalog.getCategory({id: parentCategoryId})
+	public async create(req: Request, res: Response): Promise<void> {
+		console.log(chalk.magenta('[CategoryController.create]'));
+
+		const { name, id, parent } = req.body
+		const catalog = req.params.catalogid
+
+		const category: ICategory = await categoryService.create({ name, id, catalog, parent })
+
+		res.send(category)
+	}
+
+	public async get(req: Request, res: Response): Promise<void> {
+		console.log(chalk.magenta('[CategoryController.get]'));
+		if (!req.body.id) {
+			throw new ValidationError('Category id not provided')
 		}
-		if (!parentCategory && id != 'root') {
-			parentCategory = await catalog.getCategory({id: 'root'});
+		if (!req.params.catalogid) {
+			throw new ValidationError('Catalog id not provided')
+		}
+		const catalog: ICatalog = await catalogService.getById(req.params.catalogid)
+		if (!catalog) {
+			throw new ResourceNotFoundError('Catalog', req.params.catalogid)
 		}
 		
-		// TODO: Catch errors
-		let category: ICategory = await new Category({id, name, catalog: catalog._id});
-		category = await category.save()
-		if (parentCategory) {
-			console.log({parentCategory})
-			await Category.linkCategories(parentCategory, category)
+		const category: ICategory = await catalog.getCategory({id: req.body.id})
+		if (!category) {
+			throw new ResourceNotFoundError('Category', req.body.id)
 		}
 		res.send(category)
 	}
