@@ -13,18 +13,4 @@ router
 	.post('/:username', authorize, userController.update)
 	.delete('/:username', authorize, userController.delete)
 
-	// TODO: is this userful?
-	.param('username', (req: Request, res: Response, next: NextFunction, username) => {
-		User.findOne({username}, (err, user) => {
-			if (err) {
-				next(err);
-			} else if (user) {
-				req.params.user = user;
-				next();
-			} else {
-				next(new Error('failed to load user'));
-			}
-		})
-	})
-
 export default router;

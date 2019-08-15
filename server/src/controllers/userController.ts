@@ -2,88 +2,57 @@ import { Request, Response } from 'express'
 import chalk from 'chalk'
 
 import { User, IUser } from '../models/userModel'
-import { Project, IProject } from '../models/projectModel'
-import { uuid } from '../utils/uuid'
-import ResponseStatusTypes from "../utils/ResponseStatusTypes"
-import { ServerError, ErrorType } from '../utils/ServerError'
+import { userService } from '../services'
 
-const { BAD_REQUEST } = ResponseStatusTypes
+import ResponseStatusTypes from "../utils/ResponseStatusTypes"
+import { ValidationError, UnauthorizedError, LoginError, ResourceNotFoundError } from '../utils/Errors'
+import { NOTFOUND } from 'dns';
+
+const { NOT_IMPLEMENTED } = ResponseStatusTypes
 
 export const userController = {
 	/**
-	 * Creates a new user and project
+	 * Creates a new user
 	 */
 	async create(req: Request, res: Response) {
-		console.log(chalk.magenta('[UserContoller] create'))
+		console.log(chalk.magenta('[UserContoller.create]'))
 		// save params
-		const { username, password, projectName, projectId, name } = req.body
+		const { username, password, name } = req.body
 		
-		// Check if user exists
-		let existingUsers: IUser[] = await User.find({username})
-		if (existingUsers.length > 0) {
-			console.log(chalk.red('user already exists'))
-			res.status(BAD_REQUEST)
-			res.send(new ServerError(ErrorType.USER_EXISTS, username))
-			return 
+		if (!username) {
+			throw new ValidationError('Username not provided')
 		}
-		// Create new user
-		let newUser: IUser = new User({
-			username: username,
-			name: name,
-			password: password,
-			apiKey: uuid('apiKey')
-		})
-		// Create new project (TODO: use Project API ?)
-		let newProject: IProject = new Project({
-			name: projectName,
-			id: projectId,
-			owner: newUser._id
-		})
-		newUser.projects = [newProject._id]
-		
-		// TODO: handle errors
-		try {
-			await Promise.all([newUser.save(), newProject.save()])
-		} catch (e) {
-			console.log(e)
-			res.status(BAD_REQUEST)
-			res.send({error: e})
-			return 
+		if (!password) {
+			throw new ValidationError('Password not provided')
 		}
+
+		let user = await userService.create({username, password, name})
 		if (req.session) {
-			req.session.apiKey = newUser.apiKey
+			req.session.apiKey = user.apiKey
 		}
-		res.send({user: newUser, project: newProject})
+		res.send({user})
 	},
 
 	async getAll(req: Request, res: Response) {				
-		User.find({}, (err, user) => {
-			if (err){
-				res.send(err)
-			}
-			res.send(user)
-		})
+		console.log(chalk.magenta('[UserContoller.getAll]'))
+		let users: IUser[] = await userService.getAll()
+		res.send(users)
 	},
 
-	// set session
+	// Sets the session object
 	async setSession(req: Request, res: Response) {
-		console.log(chalk.magenta('[userController] setSession'))
+		console.log(chalk.magenta('[userController.setSession]'))
 		if (req.session && req.session.apiKey) {
-			User.findOne({apiKey: req.session.apiKey}, (err: any, user: IUser) => {
-				if (err) {
-					console.log('[authorize]', chalk.red('forbidden'))
-					res.statusCode = ResponseStatusTypes.UNAUTHORIZED
-					res.end()
-					return 
-				} else {
-					console.log('[authorize]', chalk.green('ok'))
-					res.send({name: user.name, id: user._id})
-					return 
-				}
-			})
+			let user: IUser = await userService.getUserByAPIKey(req.session.apiKey)
+			if (!user) {
+				throw new UnauthorizedError('unauthorized')
+			} else {
+				console.log('[authorize]', chalk.green('ok'))
+				res.send({name: user.name, id: user._id})
+				return 
+			}
 		} else {
-			res.statusCode = ResponseStatusTypes.UNAUTHORIZED
-			res.send()
+			throw new UnauthorizedError('unauthorized')
 		}
 	},
 
@@ -93,11 +62,11 @@ export const userController = {
 
 		let user: IUser = await User.findOne({username, password})
 		if (!user) {
-			res.statusCode = ResponseStatusTypes.UNAUTHORIZED
-			res.send(new ServerError(ErrorType.BAD_LOGIN))
+			throw new LoginError()
 		} else {
 			req.session.apiKey = user.apiKey
-			res.send({message: 'login success', user: { username: user.username}})
+			// TODO: prepare model for front
+			res.send({message: 'Login success', user: { username: user.username }})
 		}
 	},
 
@@ -105,6 +74,7 @@ export const userController = {
 		console.log(chalk.magenta('[User.logout]'))
 		if (req.session) {
 			req.session.destroy(err => {
+				if (err) { throw (err) }
 				res.send({message: 'Logout Success'})
 			});
 		} else {
@@ -112,27 +82,31 @@ export const userController = {
 		}
 	},
 
-	get(req: Request, res: Response) {
-		console.log(chalk.magenta('[User] get'))
+	async get(req: Request, res: Response) {
+		console.log(chalk.magenta('[User.get]'))
+		let user: IUser = await userService.getUserByUsername(req.body.username)
+		if (!user) {
+			throw new ResourceNotFoundError('user')
+		}
 		res.send({user: req.params.user})
 	},
 
-	update(req: Request, res: Response) {				
-		User.findOne({}, (err, user) => {
-			if (err){
-				res.send(err)
-			}	
-			res.json(user)
-		})
+	// TODO
+	async update(req: Request, res: Response) {
+		console.log(chalk.magenta('[UserContoller.update]'))
+		res.status(NOT_IMPLEMENTED)		
+		res.end()
 	},
 
-	delete(req: Request, res: Response) {				
-		User.remove({}, (err) => {
-			if (err){
-				res.send(err)
-			}
-			res.end()
-		})
+	async delete(req: Request, res: Response) {				
+		console.log(chalk.magenta('[UserContoller.delete]'))
+		const { username } = req.body
+		
+		if (!username) {
+			throw new ValidationError('Username not provided!')
+		}
+		await userService.deleteUser(username)
+		res
 	},
 
 }

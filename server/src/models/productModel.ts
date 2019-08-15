@@ -3,7 +3,7 @@ import { ICatalog, Catalog, CatalogSchema } from './catalogModel';
 import { ICategory } from './categoryModel';
 import chalk from 'chalk';
 import { ServerError, ErrorType } from '../utils/ServerError';
-import { ModelUpdateOptions } from '../types/ModelUpdateOptions';
+import { ModelUpdateOptions } from '../utils/ModelUpdateOptions';
 import { stripBasename } from 'history/PathUtils';
 
 // export type AssignedCategoriesByCatalog = [Record<ICatalog['_id'] | string, ICategory['_id'] | string | ICategory>]

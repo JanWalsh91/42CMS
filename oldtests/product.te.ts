@@ -2,13 +2,13 @@ import * as chai from 'chai'
 chai.should()
 import chalk from 'chalk';
 
-import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct  } from './common';
+import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct  } from '../server/tests/common';
 
-import { User } from '../src/models/userModel'
-import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
-import { Category } from '../src/models/categoryModel';
-import { Catalog } from '../src/models/catalogModel';
-import { Product, IProduct } from '../src/models/productModel';
+import { User } from '../server/src/models/userModel'
+import ResponseStatusTypes from '../server/src/utils/ResponseStatusTypes'
+import { Category } from '../server/src/models/categoryModel';
+import { Catalog } from '../server/src/models/catalogModel';
+import { Product, IProduct } from '../server/src/models/productModel';
 import { Schema } from 'mongoose';
 const { OK, BAD_REQUEST } = ResponseStatusTypes 
 
@@ -86,7 +86,7 @@ describe('Product', function() {
 			_product.masterCatalog.id.should.equal(newCatalogId)
 			_product.masterCatalog.products.find((_product: IProduct) => _product.id == productData.id).should.exist
 		})
-		it.only('Should update primaryCategory', async() => {
+		it('Should update primaryCategory', async() => {
 			console.log(chalk.blue('Should update primaryCategory'))
 			let newCategoryId = 'newcatgory'
 			ret = await createCategory(catalogData.id, newCategoryId)

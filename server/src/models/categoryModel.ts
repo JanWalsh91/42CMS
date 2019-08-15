@@ -5,7 +5,7 @@ import { ServerError, ErrorType } from '../utils/ServerError';
 import chalk from 'chalk';
 import { NavLinkProps } from 'react-router-dom';
 import { IProduct, Product } from './productModel';
-import { ModelUpdateOptions } from '../types/ModelUpdateOptions';
+import { ModelUpdateOptions } from '../utils/ModelUpdateOptions';
 
 // Define instance methods
 class CategoryClass {

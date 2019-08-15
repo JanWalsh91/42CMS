@@ -2,7 +2,6 @@ import { Router, Request, Response, NextFunction } from 'express'
 import chalk from 'chalk'
 
 import { categoryController } from '../controllers/categoryController'
-import { IProject } from '../models/projectModel'
 import { ICatalog } from '../models/catalogModel'
 import { ICategory } from '../models/categoryModel';
 

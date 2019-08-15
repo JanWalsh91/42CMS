@@ -2,11 +2,11 @@ import * as chai from 'chai'
 chai.should()
 import chalk from 'chalk';
 
-import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs } from './common';
-import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
+import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs } from '../server/tests/common';
+import ResponseStatusTypes from '../server/src/utils/ResponseStatusTypes'
 const { OK, BAD_REQUEST } = ResponseStatusTypes 
 
-import { Catalog } from '../src/models/catalogModel';
+import { Catalog } from '../server/src/models/catalogModel';
 
 let ret: any
 

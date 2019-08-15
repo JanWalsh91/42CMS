@@ -10,7 +10,7 @@ const { OK, BAD_REQUEST, UNAUTHORIZED } = ResponseStatusTypes
 
 let ret: any
 
-describe('User', () => {
+describe.only('User', () => {
 	beforeEach(async () => {
 		console.log(chalk.keyword('goldenrod')('====== [User] beforeEach START ======'))
 		await clearDataBase()

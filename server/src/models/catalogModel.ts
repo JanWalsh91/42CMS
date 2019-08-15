@@ -5,10 +5,9 @@ import { IProduct, Product } from './productModel';
 import { ISite } from './siteModel';
 
 import chalk from 'chalk';
-import { ServerError, ErrorType } from '../utils/ServerError';
 import { IUser } from './userModel';
 import { MongoError } from 'mongodb';
-import { ModelUpdateOptions } from '../types/ModelUpdateOptions';
+import { ModelUpdateOptions } from '../utils/ModelUpdateOptions';
 
 class CatalogClass {
 	// define virtuals here

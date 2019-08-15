@@ -6,6 +6,7 @@ enum ResponseStatusTypes {
 	NOT_FOUND = 404,
 	NOT_ACCEPTABLE = 406,
 	CONFLICT = 409,
+	SERVER_ERROR = 500,
 	NOT_IMPLEMENTED = 501
 }
 
