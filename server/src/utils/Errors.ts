@@ -1,6 +1,6 @@
 import ResponseStatusTypes from './ResponseStatusTypes'
 import chalk from 'chalk';
-const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR, UNAUTHORIZED } = ResponseStatusTypes
+const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR, UNAUTHORIZED, NOT_IMPLEMENTED } = ResponseStatusTypes
 
 export class ServerError extends Error {
 	httpCode: number
@@ -42,5 +42,11 @@ export class UnauthorizedError extends ServerError {
 export class LoginError extends UnauthorizedError {
 	constructor() {
 		super('Bad username or password')
+	}
+}
+
+export class NotImplementedError extends ServerError {
+	constructor(message?: string) {
+		super(NOT_IMPLEMENTED, message ? message : 'Feature not yet implemented')
 	}
 }

@@ -11,21 +11,19 @@ class UserService {
 		}
 		
 		// Create new user
-		let newUser: IUser = await new User({
+		return await new User({
 			username: options.username,
 			name: options.name,
 			password: options.password,
 			apiKey: uuid('apiKey')
 		}).save()
-
-		return newUser
 	}
 
-	public async getUserByUsername(usernamae: string): Promise<IUser> {
+	public async getByUsername(usernamae: string): Promise<IUser> {
 		return User.findOne({usernamae}).exec()
 	}
 
-	public async getUserByAPIKey(apiKey: string): Promise<IUser> {
+	public async getByAPIKey(apiKey: string): Promise<IUser> {
 		return User.findOne({apiKey}).exec()
 	}
 
@@ -39,11 +37,11 @@ class UserService {
 	}
 
 	public async deleteUser(username: string): Promise<void> {
-		let user: IUser = await this.getUserByUsername(username)
+		let user: IUser = await this.getByUsername(username)
 		if (!user) {
 			throw new ResourceNotFoundError('User', username)
 		}
-		await User.findByIdAndDelete({username})
+		await User.findOneAndDelete({username})
 	}
 }
 

@@ -1,11 +1,10 @@
 import { Schema, Document, Model, model } from 'mongoose'
 
-import { ICatalog, Catalog } from './catalogModel'
-import { ServerError, ErrorType } from '../utils/ServerError';
+import { ICatalog, Catalog } from '../models'
+
 import chalk from 'chalk';
-import { NavLinkProps } from 'react-router-dom';
-import { IProduct, Product } from './productModel';
-import { ModelUpdateOptions } from '../utils/ModelUpdateOptions';
+// import { ModelUpdateOptions } from '../utils/ModelUpdateOptions';
+import { ResourceNotFoundError, ValidationError } from '../utils/Errors';
 
 // Define instance methods
 class CategoryClass {
@@ -25,9 +24,9 @@ class CategoryClass {
 		return await Category.findOne({ catalog: this.populated('catalog') ? this.catalog._id : this.catalog, parent: this._id, ...query })
 	}
 
-	async getProduct(this: ICategory, query: object): Promise<IProduct> {
-		return await Product.findOne({ catalog: this.populated('catalog') ? this.catalog._id : this.catalog, category: this._id, ...query })
-	}
+	// async getProduct(this: ICategory, query: object): Promise<IProduct> {
+	// 	return await Product.findOne({ catalog: this.populated('catalog') ? this.catalog._id : this.catalog, category: this._id, ...query })
+	// }
 
 	/**
 	 * Check if:
@@ -35,13 +34,13 @@ class CategoryClass {
 	 * - doesn't yet exists in category
 	 * - TODO: does not loop
 	 */
-	async addSubCategory(this: ICategory, categoryId: ICategory['_id'], options: ModelUpdateOptions = {}) {
+	async addSubCategory(this: ICategory, categoryId: ICategory['_id']) {
 		console.log(chalk.magenta(`[CategoryModel.addSubCategory] ${categoryId} to ${this._id}`))
-		if (!options.skipCheckExists) {
+		if (true) {
 			await this.getCatalog()
 			const category: ICategory = await this.catalog.getCategory({ _id: categoryId })
 			if (!category) {
-				throw new ServerError(ErrorType.CATEGORY_NOT_FOUND)
+				throw new ResourceNotFoundError('Category', categoryId)
 			}
 		}
 		if (categoryId in this.subCategories) {
@@ -57,35 +56,35 @@ class CategoryClass {
 	 * - product is in category's catalog
 	 * - doesn't already exist in category
 	 */
-	async addProduct(this: ICategory, productId: IProduct['_id'], options: ModelUpdateOptions = {}): Promise<ServerError | void> {
-		console.log(chalk.magenta(`[CategoryModel.addProduct] ${productId} to ${this._id}`))
-		if (!options.skipCheckExists) {
-			await this.getCatalog()
-			const product: IProduct = await this.catalog.getProduct({ _id: productId })
-			if (!product) {
-				throw new ServerError(ErrorType.PRODUCT_NOT_FOUND)
-			}
-		}
-		if (productId in this.products) {
-			console.log(chalk.yellow('[CategoryModel.addProduct] product already in category'))
-			return 
-		}
-		this.products.push(productId)
-		this.markModified('products')
-	}
+	// async addProduct(this: ICategory, productId: IProduct['_id'], options: ModelUpdateOptions = {}): Promise<ServerError | void> {
+	// 	console.log(chalk.magenta(`[CategoryModel.addProduct] ${productId} to ${this._id}`))
+	// 	if (!options.skipCheckExists) {
+	// 		await this.getCatalog()
+	// 		const product: IProduct = await this.catalog.getProduct({ _id: productId })
+	// 		if (!product) {
+	// 			throw new ResourceNotFoundError('Product', productId)
+	// 		}
+	// 	}
+	// 	if (productId in this.products) {
+	// 		console.log(chalk.yellow('[CategoryModel.addProduct] product already in category'))
+	// 		return 
+	// 	}
+	// 	this.products.push(productId)
+	// 	this.markModified('products')
+	// }
 
 
-	async setParent(this: ICategory, categoryId: ICategory['_id'] | null, options: ModelUpdateOptions = {}): Promise<ServerError | void> {
+	async setParent(this: ICategory, categoryId: ICategory['_id']): Promise<void> {
 		console.log(chalk.magenta(`[CategoryModel.setParent] ${categoryId} from ${this._id}`))
 		if (!categoryId) {
 			this.parent = null
 			this.markModified('parent')
 		} else {
-			if (!options.skipCheckExists) {
+			if (true) {
 				await this.getCatalog()
 				const category: ICategory = await this.catalog.getCategory({ _id: categoryId })
 				if (!category) {
-					throw new ServerError(ErrorType.CATEGORY_NOT_FOUND)
+					throw new ResourceNotFoundError('Category', categoryId)
 				}
 			}
 			if (categoryId === this.populated('parent') ? this.parent._id : this.parent) {
@@ -108,34 +107,36 @@ class CategoryClass {
 		}
 	}
 
-	async removeProduct(this: ICategory, productId: IProduct['_id']) {
-		console.log(chalk.magenta(`[CategoryModel.removeProduct] ${productId} from ${this._id}`))
-		if (productId in this.products) {
-			this.products = this.products.filter(x => x !== productId)
-			this.markModified('products')
-		} else {
-			console.log(chalk.yellow(`[CategoryModel.removeProduct] ${productId} not in ${this._id}`))
-		}
-	}
+	// async removeProduct(this: ICategory, productId: IProduct['_id']) {
+	// 	console.log(chalk.magenta(`[CategoryModel.removeProduct] ${productId} from ${this._id}`))
+	// 	if (productId in this.products) {
+	// 		this.products = this.products.filter(x => x !== productId)
+	// 		this.markModified('products')
+	// 	} else {
+	// 		console.log(chalk.yellow(`[CategoryModel.removeProduct] ${productId} not in ${this._id}`))
+	// 	}
+	// }
 
-	static async linkCategories(parent: ICategory, child: ICategory, options: ModelUpdateOptions = {}): Promise<any> {
+	// Move to service
+	static async linkCategories(parent: ICategory, child: ICategory): Promise<any> {
 		console.log(chalk.magenta(`linkCategories. parent: ${parent.id} child: ${child.id}`))
 		if (child.parent != null) {
 			await child.getParent()
-			await this.unlinkCategories(child.parent._id, child._id, options)
+			await this.unlinkCategories(child.parent._id, child._id)
 		}
 		return Promise.all([
-			parent.addSubCateory(child._id),
+			parent.addSubCategory(child._id),
 			child.setParent(parent._id),
 		])
 		// console.log(chalk.magenta(`linkCategories. parent: ${parent.id} child: ${child.id} END`))
 	}
 
-	static async unlinkCategories(parent: ICategory, child: ICategory, options: ModelUpdateOptions = {}) {
+	// Move to service
+	static async unlinkCategories(parent: ICategory, child: ICategory) {
 		console.log(chalk.magenta(`unlinkCategories. parent: ${parent.id} child: ${child.id}`))
 		return Promise.all([
 			parent.removeSubCateory(child._id),
-			child.setParent(null, options),
+			child.setParent(null),
 		])
 		// console.log(chalk.magenta(`unlinkCategories. parent: ${parent.id} child: ${child.id} END`))
 	}
@@ -148,24 +149,24 @@ export interface ICategory extends Document {
 	catalog: ICatalog['_id'] | ICatalog
 	parent: ICategory['_id'] | ICategory
 	subCategories: ICategory['_id'][]
-	products: IProduct['_id'][]
+	// products: IProduct['_id'][]
 
 	// get methods
 	getParent: () => Promise<ICategory>
 	getCatalog: () => Promise<ICatalog>
 	getSubCategory: (query: object) => Promise<ICategory>
-	getProduct: (query: object) => Promise<IProduct>
+	// getProduct: (query: object) => Promise<IProduct>
 
 	// add methods
-	addSubCateory: (productId: ICategory['_id'], options?: ModelUpdateOptions) => Promise<ServerError | void>
-	addProduct: (productId: IProduct['_id'], options?: ModelUpdateOptions) => Promise<ServerError | void>
+	addSubCategory: (categoryId: ICategory['_id']) => Promise<void>
+	// addProduct: (productId: IProduct['_id']) => Promise<ServerError | void>
 
 	// set methods
-	setParent: (categoryId: ICategory['_id'] | null, options?: ModelUpdateOptions) => Promise<ServerError | void>
+	setParent: (categoryId: ICategory['_id'] | null) => Promise<void>
 
 	// remove methods
 	removeSubCateory: (categoryId: ICategory['_id']) => Promise<void>
-	removeProduct: (productId: IProduct['_id']) => Promise<void>
+	// removeProduct: (productId: IProduct['_id']) => Promise<void>
 
 	// internal
 	wasNew: boolean
@@ -193,16 +194,17 @@ export const CategorySchema = new Schema({
 		ref: 'Category',
 		default: null
 	}],
-	products: [{
-		type: Schema.Types.ObjectId,
-		ref: 'Product',
-		default: null
-	}],
+	// products: [{
+	// 	type: Schema.Types.ObjectId,
+	// 	ref: 'Product',
+	// 	default: null
+	// }],
 }).loadClass(CategoryClass)	
 
+// TODO: move to service
 export interface ICategoryModel extends Model<ICategory> {
-	linkCategories: (parent: ICategory, child: ICategory, options?: ModelUpdateOptions) => Promise<any>,
-	unlinkCategories: (parent: ICategory, child: ICategory, options?: ModelUpdateOptions) => Promise<any>,
+	linkCategories: (parent: ICategory, child: ICategory) => Promise<any>,
+	unlinkCategories: (parent: ICategory, child: ICategory) => Promise<any>,
 }
 
 /**
@@ -226,8 +228,7 @@ CategorySchema.pre('save', function(this: ICategory, next: Function) {
 			if (err) { next(err); return; }
 
 			if (catalog.categories.some((category: ICategory) => category.id == this.id)) {
-				next(new ServerError(ErrorType.CATEGORY_EXISTS, this.id))
-				return
+				throw new ValidationError('Category already exists')
 			}
 			catalog.categories.push(this._id)
 			catalog.markModified('categories')

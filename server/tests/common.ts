@@ -5,8 +5,8 @@ chai.use(chaiHttp)
 const agent = chai.request.agent(app)
 
 import { User } from '../src/models/userModel'
+import { Catalog } from '../src/models/catalogModel'
 // import { Site } from '../src/models/siteModel'
-// import { Catalog } from '../src/models/catalogModel'
 // import { Category } from '../src/models/categoryModel'
 // import { Product } from '../src/models/productModel'
 
@@ -35,8 +35,8 @@ export const clearDataBase = async (...models: any) => {
 	if (!models.length) {
 		models = [
 			User,
+			Catalog,
 			// Site,
-			// Catalog,
 			// Category,
 			// Product
 		]

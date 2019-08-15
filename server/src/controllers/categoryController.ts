@@ -1,18 +1,18 @@
-import { Project, IProject } from '../models/projectModel'
+// import { Project, IProject } from '../models/projectModel'
 import { ICategory, Category } from '../models/categoryModel'
 import { Request, Response } from 'express';
 import chalk from 'chalk';
 import ResponseStatusTypes from '../utils/ResponseStatusTypes';
-import { ServerError, ErrorType } from '../utils/ServerError';
 import { ICatalog, Catalog } from '../models/catalogModel';
 
 const { BAD_REQUEST } = ResponseStatusTypes; 
 
 export class CategoryController {
+	
 	public async create(req: Request, res: Response) {
 		console.log(chalk.magenta('[CategoryController] create'));
-		let catalog: ICatalog = req.body.catalog
-		let project: IProject = req.body.project
+		// let catalog: ICatalog = req.body.catalog
+		// let project: IProject = req.body.project
 		let { name, id, parentCategoryId } = req.body // User acquired from authorization middleware
 	   
 		// TODO: link with parent if necessary

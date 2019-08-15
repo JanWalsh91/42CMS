@@ -5,7 +5,7 @@ import login from './loginRoute';
 import logout from './logoutRoute';
 
 import auth from './authRoute';
-// import catalogs from './catalogsRoute';
+import catalogs from './catalogsRoute';
 // import products from './productsRoute';
 
 const router: Router = Router();
@@ -21,7 +21,7 @@ router.use('/login', login);
 router.use('/logout', logout);
 
 router.use('/users', users);
-// router.use('/catalogs', catalogs);
+router.use('/catalogs', catalogs);
 // router.use('/products', products);
 
 export default router;

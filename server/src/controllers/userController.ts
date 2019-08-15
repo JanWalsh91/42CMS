@@ -5,15 +5,13 @@ import { User, IUser } from '../models/userModel'
 import { userService } from '../services'
 
 import ResponseStatusTypes from "../utils/ResponseStatusTypes"
-import { ValidationError, UnauthorizedError, LoginError, ResourceNotFoundError } from '../utils/Errors'
+import { ValidationError, UnauthorizedError, LoginError, ResourceNotFoundError, NotImplementedError } from '../utils/Errors'
 import { NOTFOUND } from 'dns';
 
 const { NOT_IMPLEMENTED } = ResponseStatusTypes
 
 export const userController = {
-	/**
-	 * Creates a new user
-	 */
+
 	async create(req: Request, res: Response) {
 		console.log(chalk.magenta('[UserContoller.create]'))
 		// save params
@@ -43,11 +41,12 @@ export const userController = {
 	async setSession(req: Request, res: Response) {
 		console.log(chalk.magenta('[userController.setSession]'))
 		if (req.session && req.session.apiKey) {
-			let user: IUser = await userService.getUserByAPIKey(req.session.apiKey)
+			let user: IUser = await userService.getByAPIKey(req.session.apiKey)
 			if (!user) {
 				throw new UnauthorizedError('unauthorized')
 			} else {
 				console.log('[authorize]', chalk.green('ok'))
+				// TODO: to front end user
 				res.send({name: user.name, id: user._id})
 				return 
 			}
@@ -75,16 +74,16 @@ export const userController = {
 		if (req.session) {
 			req.session.destroy(err => {
 				if (err) { throw (err) }
-				res.send({message: 'Logout Success'})
+				res.send('Logout Success')
 			});
 		} else {
-			res.send({messsage: 'Not logged in'})
+			res.send('Not logged in')
 		}
 	},
 
 	async get(req: Request, res: Response) {
 		console.log(chalk.magenta('[User.get]'))
-		let user: IUser = await userService.getUserByUsername(req.body.username)
+		let user: IUser = await userService.getByUsername(req.body.username)
 		if (!user) {
 			throw new ResourceNotFoundError('user')
 		}
@@ -94,8 +93,7 @@ export const userController = {
 	// TODO
 	async update(req: Request, res: Response) {
 		console.log(chalk.magenta('[UserContoller.update]'))
-		res.status(NOT_IMPLEMENTED)		
-		res.end()
+		throw new NotImplementedError()
 	},
 
 	async delete(req: Request, res: Response) {				
@@ -103,10 +101,10 @@ export const userController = {
 		const { username } = req.body
 		
 		if (!username) {
-			throw new ValidationError('Username not provided!')
+			throw new ValidationError('username not provided')
 		}
 		await userService.deleteUser(username)
-		res
+		res.send('User deleted')
 	},
 
 }
