@@ -2,22 +2,16 @@ import { Schema, Document, Model, model, Query } from 'mongoose'
 
 import { ICategory, Category } from './categoryModel'
 import { IProduct, Product } from './productModel';
-import { IProject, Project } from './projectModel';
 import { ISite } from './siteModel';
+
 import chalk from 'chalk';
 import { ServerError, ErrorType } from '../utils/ServerError';
 import { IUser } from './userModel';
 import { MongoError } from 'mongodb';
 import { ModelUpdateOptions } from '../types/ModelUpdateOptions';
-// import { hasUniqueIdInProject } from './commonValidators';
 
 class CatalogClass {
 	// define virtuals here
-
-	async getProject(this: ICatalog): Promise<IProject> {
-		await this.populate('project').execPopulate()
-		return this.project
-	}
 
 	async getCategory(this: ICatalog, query: object): Promise<ICategory> {
 		return await Category.findOne({ catalog: this._id, ...query })
@@ -54,17 +48,17 @@ class CatalogClass {
 
 	/**
 	 * Check if: 
-	 * - exists in catalog's project
 	 * - doesn't yet exist in catalog 
 	 */
 	async addProduct(this: ICatalog, productId: IProduct['_id'], options: ModelUpdateOptions = {}): Promise<ServerError | void> {
 		console.log(chalk.magenta(`[CatalogModel.addProduct] ${productId} to ${this._id}`))
+		// check if exists ? (needed?)
 		if (!options.skipCheckExists) {
-			await this.getProject()
-			const product: IProduct = await this.project.getProduct({ _id: productId })
-			if (!product) {
-				throw new ServerError(ErrorType.PRODUCT_NOT_FOUND)
-			}
+			// await this.getProject()
+			// const product: IProduct = await this.project.getProduct({ _id: productId })
+			// if (!product) {
+			// 	throw new ServerError(ErrorType.PRODUCT_NOT_FOUND)
+			// }
 		}
 		if (productId in this.products) {
 			console.log(chalk.yellow('[CatalogModel.addProduct] product already in catalog'))
@@ -75,22 +69,22 @@ class CatalogClass {
 	}
 
 	async removeCategory(this: ICatalog, categoryId: ICategory['_id']) {
-		console.log(chalk.magenta(`[ProjectModel.removeCategory] ${categoryId} from ${this._id}`))
+		console.log(chalk.magenta(`[CatalogModel.removeCategory] ${categoryId} from ${this._id}`))
 		if (categoryId in this.categories) {
 			this.categories = this.categories.filter(x => x !== categoryId)
 			this.markModified('categories')
 		} else {
-			console.log(chalk.yellow(`[ProjectModel.removeCategory] ${categoryId} not in ${this._id}`))
+			console.log(chalk.yellow(`[CatalogModel.removeCategory] ${categoryId} not in ${this._id}`))
 		}
 	}
 
 	async removeProduct(this: ICatalog, productId: IProduct['_id']) {
-		console.log(chalk.magenta(`[ProjectModel.removeProduct] ${productId} from ${this._id}`))
+		console.log(chalk.magenta(`[CatalogModel.removeProduct] ${productId} from ${this._id}`))
 		if (productId in this.products) {
 			this.products = this.products.filter(x => x !== productId)
 			this.markModified('products')
 		} else {
-			console.log(chalk.yellow(`[ProjectModel.removeProduct] ${productId} not in ${this._id}`))
+			console.log(chalk.yellow(`[CatalogModel.removeProduct] ${productId} not in ${this._id}`))
 		}
 	}
 
@@ -108,7 +102,6 @@ class CatalogClass {
 export interface ICatalog extends Document {
 	id: string
 	name: string
-	project: IProject['_id']
 	sitesAssignedTo: ISite['_id'][]
 	rootCategory: ICategory['_id']
 	categories: ICategory['_id'][]
@@ -121,7 +114,6 @@ export interface ICatalog extends Document {
 
 	
 	// get methods
-	getProject: () => Promise<IProject>
 	getRootCategory: () => Promise<ICategory>
 	getCategory: (query: object) => Promise<ICategory>
 	getProduct: (query: object) => Promise<IProduct>
@@ -141,17 +133,9 @@ export const CatalogSchema = new Schema({
 	id: {
 		type: String,
 		required: true,
-		// validate: [
-		// 	<any>hasUniqueIdInProject()
-		// ],
 	},
 	name: {
 		type: String,
-	},
-	project: {
-		type: Schema.Types.ObjectId,
-		ref: 'Project',
-		required: true,
 	},
 	sitesAssignedTo: [{
 		type: Schema.Types.ObjectId,
@@ -184,15 +168,6 @@ CatalogSchema.pre('save', async function(this: ICatalog, next: any) {
 	if (this.isNew) {
 		this.wasNew = true
 		console.log(chalk.yellow('is new!'))
-		
-		// Check if catalog exists in project
-		await this.populate('project').execPopulate()
-		if (await this.project.getCatalog({id: this.id})) {
-			throw new ServerError(ErrorType.CATALOG_EXISTS, this.id)
-		}
-
-		// Add Catalog to project
-		await this.project.updateOne({ $addToSet: { catalogs: this._id } }).exec()
 	}
 
 	next()

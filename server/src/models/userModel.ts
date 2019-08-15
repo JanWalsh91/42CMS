@@ -1,7 +1,5 @@
 import { Schema, Document, Model, model}  from 'mongoose';
 
-import { IProject } from './projectModel';
-
 // https://mongoosejs.com/docs/advanced_schemas.html
 class UserClass {
 	authenticate = (name, password, callback) => {
@@ -16,7 +14,6 @@ export interface IUser extends Document {
 	name: string,
 	password: string,
 	create_date: Date,
-	projects: IProject['_id'],
 }
 
 const UserSchema = new Schema({
@@ -40,11 +37,7 @@ const UserSchema = new Schema({
     created_date: {
         type: Date,
         default: Date.now
-	},
-	projects: [{
-		type: Schema.Types.ObjectId,
-		ref: 'Project'
-	}]
+	}
 }).loadClass(UserClass)	
 
 export const User: Model<IUser> = model('User', UserSchema)

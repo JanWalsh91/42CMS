@@ -14,7 +14,6 @@ export interface ISite extends Document {
 	assignedCatalogs: [ICatalog['_id']],
 
 	getAssignedCatalog: (this: ISite, query: object) => ICatalog,
-
 }
 
 export const SiteSchema = new Schema({
@@ -24,11 +23,6 @@ export const SiteSchema = new Schema({
 	},
 	name: {
 		type: String,
-		required: true,
-	},
-	project: {
-		type: Schema.Types.ObjectId,
-		ref: 'Project',
 		required: true,
 	},
 	assignedCatalogs: [{

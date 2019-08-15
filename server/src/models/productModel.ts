@@ -2,7 +2,6 @@ import { Schema, Document, Model, model, ModelPopulateOptions } from 'mongoose'
 import { ICatalog, Catalog, CatalogSchema } from './catalogModel';
 import { ICategory } from './categoryModel';
 import chalk from 'chalk';
-import { Project, IProject } from './projectModel';
 import { ServerError, ErrorType } from '../utils/ServerError';
 import { ModelUpdateOptions } from '../types/ModelUpdateOptions';
 import { stripBasename } from 'history/PathUtils';
@@ -24,7 +23,6 @@ export type PrimaryCategoryByCatalog = [{
 	catalog: ICatalog['_id']
 }]
 
-// Cannot update project
 export interface UpdatableAttributes {
 	name?: string,
 	masterCatalog?: string,
@@ -36,12 +34,7 @@ export interface UpdatableAttributes {
 class ProductClass {
 	// define virtuals here
 
-	async getProject(this: IProduct): Promise<IProject> {
-		await this.populate('project').execPopulate()
-		return this.project
-	}
-
-	async getMasterCatalog(this: IProduct): Promise<IProject> {
+	async getMasterCatalog(this: IProduct): Promise<ICatalog> {
 		await this.populate('masterCatalog').execPopulate()
 		return this.masterCatalog
 	}
@@ -108,12 +101,12 @@ class ProductClass {
 	async addAssignedCatalog(this: IProduct, catalogId: ICatalog['_id'], options?: ModelUpdateOptions): Promise<ServerError | void> {
 		console.log(chalk.magenta(`[ProductModel.addAssignedCatalog] ${catalogId} to ${this._id}`))
 		if (!options.skipCheckExists) {
-			await this.getProject()
-			await this.project.getCatalogs()
-			const catalog: ICatalog = await this.project.catalogs({ _id: catalogId })
-			if (!catalog) {
-				throw new ServerError(ErrorType.CATALOG_NOT_FOUND)
-			}
+			// await this.getProject()
+			// await this.project.getCatalogs()
+			// const catalog: ICatalog = await this.project.catalogs({ _id: catalogId })
+			// if (!catalog) {
+			// 	throw new ServerError(ErrorType.CATALOG_NOT_FOUND)
+			// }
 		}
 		if (catalogId in this.assignedCatalogs) {
 			console.log(chalk.yellow('[ProductModel.addSubCategory] catalog already in assignedCatalogs'))
@@ -127,9 +120,6 @@ class ProductClass {
 	async addAssignedCategoryInCatalog(this: IProduct, categoryId: ICategory['_id'], catalogId: ICatalog['_id'], options?: ModelUpdateOptions): Promise<ServerError | void> {
 		console.log(chalk.magenta(`[ProductModel.addAssignedCategoryInCatalog] ${categoryId} in ${catalogId} to ${this._id}`))
 	}
-
-
-
 
 
 	async updateAttributes(this: IProduct, attributes: UpdatableAttributes) {
@@ -221,8 +211,8 @@ class ProductClass {
 
 	async updateMasterCatalog(this: IProduct, catalogid: string) {
 		console.log('updateMasterCatalog')
-		await this.populate([{path: 'project'}, {path: 'masterCatalog'}]).execPopulate()
-		let newMasterCatalog: ICatalog = await Catalog.findOne({ project: this.project, id: catalogid })
+		await this.populate([{path: 'masterCatalog'}]).execPopulate()
+		let newMasterCatalog: ICatalog = await Catalog.findOne({ , id: catalogid })
 		if (!newMasterCatalog) {
 			throw (new ServerError(ErrorType.CATALOG_NOT_FOUND, catalogid))
 		}
@@ -237,9 +227,6 @@ class ProductClass {
 
 	async updatePrimaryCategoryByCatalog(this: IProduct, primaryCategoryByCatalog: PrimaryCategoryByCatalog) {
 		console.log('updatePrimaryCategoryByCatalog')
-		
-		
-
 	}
 
 
@@ -253,14 +240,12 @@ class ProductClass {
 export interface IProduct extends Document {
 	id: string
 	name: string
-	project: IProject['_id'] | IProject
 	masterCatalog: ICatalog['_id'] | ICatalog
 	assignedCatalogs: ICatalog['_id'][]
 	primaryCategoryByCatalog: PrimaryCategoryByCatalog
 	assignedCategoriesByCatalog: AssignedCategoriesByCatalog
 
 	// get methods
-	getProject: () => Promise<IProject>
 	getMasterCatalog: () => Promise<ICatalog>
 	getAssignedCatalog: (query: object) => Promise<ICatalog>
 	// getPrimaryCategoryByCatalog: (query: object) => Promise<>
@@ -302,11 +287,6 @@ export const ProductSchema = new Schema({
 		type: String,
 		required: true
 	},
-	project: {
-		type: Schema.Types.ObjectId,
-		ref: 'Project',
-		required: true
-	},
 	masterCatalog: {
 		type: Schema.Types.ObjectId,
 		ref: 'Catalog',
@@ -343,29 +323,13 @@ ProductSchema.pre('save', function(this: IProduct, next: Function) {
 		console.log(chalk.magenta('ProductSchema pre save ' + this.id))
 		console.log(chalk.yellow('is new!'))
 		
-		// Check if id in Project
-		// Update project.products
-		let addProductToProject = new Promise((resolve, reject) => {
-			Project.findById(this.project, (err, project: IProject) => {
-				if (err) { reject(err); return; }
-				
-				err = project.addProduct(this)
-				if (err) { reject(err); return; }
-				
-				project.save((err, _project: IProject) => {
-					if (err) { reject(err); return; }
-					resolve()
-				})
-			})
-		})
-
 		// Check if masterCatalog.isMaster // TODO
 		// Update catalog.products
 		let addProductToCatalog = new Promise((resolve, reject) => {
 			Catalog.findById(this.masterCatalog, (err, catalog: ICatalog) => {
 				if (err) { reject(err); return; }
 				
-				err = catalog.addProduct(this)
+				err = catalog.addProduct(this, {})
 				if (err) { reject(err); return; }
 				
 				catalog.save((err, _catalog: ICatalog) => {
@@ -375,7 +339,7 @@ ProductSchema.pre('save', function(this: IProduct, next: Function) {
 			})
 		})
 
-		Promise.all([addProductToProject, addProductToCatalog])
+		addProductToCatalog
 			.then(() => next())
 			.catch((err) => next(err))
 	} else {
