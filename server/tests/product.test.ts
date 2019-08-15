@@ -2,10 +2,9 @@ import * as chai from 'chai'
 chai.should()
 import chalk from 'chalk';
 
-import { clearDataBase, createUser, printret, userData, createProject, projectData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct  } from './common';
+import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct  } from './common';
 
 import { User } from '../src/models/userModel'
-import { Project, IProject } from '../src/models/projectModel'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 import { Category } from '../src/models/categoryModel';
 import { Catalog } from '../src/models/catalogModel';
@@ -14,7 +13,6 @@ import { Schema } from 'mongoose';
 const { OK, BAD_REQUEST } = ResponseStatusTypes 
 
 let ret: any;
-let project: any = {}
 let catalog: any = {}
 let category: any = {}
 let product: any = {}
@@ -32,15 +30,12 @@ describe('Product', function() {
 
 	beforeEach(async function() {
 		console.log(chalk.blue('[Product] beforeEach'))
-		await clearDataBase(Project, Category, Catalog)
-		// Create project
-		ret = await createProject(projectData)
-		project = ret.body
+		await clearDataBase(Category, Catalog)
 		// Create catalog
-		ret = await createCatalog(project.id, catalogData.id, {isMaster: true})
+		ret = await createCatalog(catalogData.id, {isMaster: true})
 		catalog = ret.body
 		// Create catalog
-		ret = await createCategory(project.id, catalogData.id, categoryData.id)
+		ret = await createCategory(catalogData.id, categoryData.id)
 		category = ret.body
 		console.log(chalk.blue('[Product] beforeEach END'))
 	})
@@ -48,37 +43,29 @@ describe('Product', function() {
 	describe('Create', () => {
 		it('Should create a product', async() => {
 			console.log(chalk.blue('Should create a product'));
-			ret = await createProduct(project.id, catalogData.id, productData.id, {name: productData.name})
+			ret = await createProduct(catalogData.id, productData.id, {name: productData.name})
 			// Should return a product
 			ret.status.should.equal(OK)
 			// Product should exist
 			let product: IProduct = await Product.findOne({id: productData.id}).populate([
-				{ path: 'project', populate: { path: 'products' } },
 				{ path: 'masterCatalog', populate: { path: 'products' } }
 			]).exec()
 			product.masterCatalog.should.exist
 			product.masterCatalog.products.find((_product: IProduct) => _product.id == productData.id).should.exist
-			product.project.should.exist
-			product.project.products.find((_product: IProduct) => _product.id == productData.id).should.exist
 		})
-		describe('Should fail if ...', () => {
-			it('Product of that id already exists in project', async() => {
-				console.log(chalk.blue('Should fail if ... Product of that id already exists in project'));
-				return 
-			})
-		})
+		describe('Should fail if ...')
 	})
 
 	describe('Update', function() {
 		beforeEach(async function() {
 			console.log(chalk.blue('[Product Update] beforeEach'))
-			product = await createProduct(project.id, catalogData.id, productData.id, {name: productData.name})
+			product = await createProduct(catalogData.id, productData.id, {name: productData.name})
 			console.log(chalk.blue('[Product Update] beforeEach END'))
 		})
 		it('Should update name', async () => {
 			console.log(chalk.blue('Should update name'))
 			let newName = 'newName'
-			ret = await updateProduct(project.id, productData.id, {
+			ret = await updateProduct(productData.id, {
 				name: newName
 			})
 			ret.status.should.equal(OK)
@@ -88,9 +75,9 @@ describe('Product', function() {
 		it('Should update master catalog', async() => {
 			console.log(chalk.blue('Should update master catalog'))
 			let newCatalogId = 'newcatalog'
-			ret = await createCatalog(projectData.id, newCatalogId)
+			ret = await createCatalog(newCatalogId)
 			ret.status.should.equal(OK)
-			ret = await updateProduct(project.id, productData.id, {
+			ret = await updateProduct(productData.id, {
 				masterCatalog: newCatalogId
 			})
 			printret(ret)
@@ -102,9 +89,9 @@ describe('Product', function() {
 		it.only('Should update primaryCategory', async() => {
 			console.log(chalk.blue('Should update primaryCategory'))
 			let newCategoryId = 'newcatgory'
-			ret = await createCategory(projectData.id, catalogData.id, newCategoryId)
+			ret = await createCategory(catalogData.id, newCategoryId)
 			ret.status.should.equal(OK)
-			ret = await updateProduct(project.id, productData.id, {
+			ret = await updateProduct(productData.id, {
 				primaryCategoryByCatalog: [{
 					catalog: catalogData.id,
 					category: newCategoryId
@@ -116,7 +103,7 @@ describe('Product', function() {
 		})
 		it('Should update assignedCategoriesByCatalog', async() => {
 			console.log(chalk.blue('Should update assignedCategoriesByCatalog'))
-			ret = await updateProduct(project.id, productData.id, {
+			ret = await updateProduct(productData.id, {
 				assignedCategoriesByCatalog: {
 					[catalogData.id]: [categoryData.id]
 				}

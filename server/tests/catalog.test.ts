@@ -6,7 +6,6 @@ import { clearDataBase, createUser, printret, userData, createCatalog, getCatalo
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 const { OK, BAD_REQUEST } = ResponseStatusTypes 
 
-import { Project } from '../src/models/projectModel';
 import { Catalog } from '../src/models/catalogModel';
 
 let ret: any
@@ -17,65 +16,50 @@ const catalogData = {
 }
 
 describe('Catalog', () => {
-	let project: any = {};
-
 	beforeEach(async() => {
 		// console.log('[Catalog] beforeEach')
 		// Clear database
 		await clearDataBase()
 		// Create user
 		ret = await createUser(userData)
-		project = ret.body.project
 	})
 
 	describe('Create', () => {
 		it('Should create a catalog', async() => {
 			console.log(chalk.blue('Should create a catalog'))
 			// Should return OK
-			ret = await createCatalog(project.id, catalogData.id)
+			ret = await createCatalog(catalogData.id)
 			ret.should.have.status(OK)
 			printret(ret)
 			ret.body.id.should.equal(catalogData.id)
-			// Project should have the catalog reference
-			project = await Project.findOne({id: project.id}).populate('catalogs')
-			console.log({catalog: project.catalogs[0]})
-			project.catalogs.should.have.length(1)
 			// Catalog should be added to database
-			const catalog = await Catalog.findOne({project: project._id, id: catalogData.id})
+			const catalog = await Catalog.findOne({id: catalogData.id})
 			console.log({catalog})
 			catalog.should.exist
 			// Catalog should have a root category which exists in the databse
 			catalog.rootCategory.should.exist
 		})
 		it('Should create two catalogs', async () => {
-			ret = await createCatalog(project.id, catalogData.id)
+			ret = await createCatalog(catalogData.id)
 			ret.should.have.status(OK)
-			ret = await createCatalog(project.id, catalogData.id + '2')
+			ret = await createCatalog(catalogData.id + '2')
 			ret.should.have.status(OK)
 		})
 		it('Should create a master catalog', async () => {
-			ret = await createCatalog(project.id, catalogData.id, {isMaster: true})
+			ret = await createCatalog(catalogData.id, {isMaster: true})
 			ret.should.have.status(OK)
 		})
-		describe('Should fail to create a catalog if ...', () => {
-			console.log(chalk.blue('Should fail to create a catalog if ...'))
-			it('Catalog with id already exists in project', async() => {
-				console.log(chalk.blue('Catalog with id already exists in project'))
-				ret = await createCatalog(project.id, catalogData.id)
-				ret.should.have.status(OK)
-				ret = await createCatalog(project.id, catalogData.id)
-				printret(ret)
-				ret.should.have.status(BAD_REQUEST)
-			})
-		})
+		// describe('Should fail to create a catalog if ...', () => {
+		// 	console.log(chalk.blue('Should fail to create a catalog if ...'))
+		// })
 	})
 	
 	describe('Get', () => {
 		it('Should get a catalog', async() => {
 			console.log(chalk.blue('Should get a catalog'))
-			ret = await createCatalog(project.id, catalogData.id)
+			ret = await createCatalog(catalogData.id)
 			ret.should.have.status(OK)
-			ret = await getCatalog(project.id, catalogData.id)
+			ret = await getCatalog(catalogData.id)
 			printret(ret)
 			ret.body.id.should.equal(catalogData.id)
 			ret.should.have.status(OK)
@@ -85,8 +69,8 @@ describe('Catalog', () => {
 	describe('GetAll', () => {
 		it('Should get all categories of a project', async() => {
 			console.log(chalk.blue('Should get all categories of a project'))
-			await Promise.all(['matser', 'china', 'international'].map(id => createCatalog(project.id, id)))
-			ret = await getAllCatalogs(project.id)
+			await Promise.all(['matser', 'china', 'international'].map(id => createCatalog(id)))
+			ret = await getAllCatalogs()
 			printret(ret)
 			ret.body.catalogs.length.should.equal(3)
 			ret.should.have.status(OK)

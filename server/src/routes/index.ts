@@ -1,7 +1,6 @@
 import { Router, Request, Response } from 'express';
 
 import users from './usersRoute';
-import projects from './projectsRoute';
 import login from './loginRoute';
 import logout from './logoutRoute';
 import auth from './authRoute';
@@ -18,6 +17,5 @@ router.use('/auth', auth);
 router.use('/login', login);
 router.use('/logout', logout);
 router.use('/users', users);
-router.use('/projects', projects);
 
 export default router;

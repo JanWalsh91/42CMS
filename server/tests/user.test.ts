@@ -4,7 +4,6 @@ chai.should()
 import { authUser, login, logout, clearDataBase, userData, getAllUsers, createUser, printret } from './common'
 
 import { User } from '../src/models/userModel'
-import { Project } from '../src/models/projectModel'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 import chalk from 'chalk';
 const { OK, BAD_REQUEST, UNAUTHORIZED } = ResponseStatusTypes 
@@ -26,9 +25,6 @@ describe('User', () => {
 			// User should exist
 			const user = await User.find({apiKey: ret.body.user.apiKey})
 			user.should.exist
-			// Project should exist
-			const project = await Project.find({_id: ret.body.project._id})
-			project.should.exist
 		})
 	})
 
