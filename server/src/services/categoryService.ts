@@ -55,7 +55,7 @@ class CategoryService {
 	}
 
 	public async getAll(): Promise<ICategory[]> {
-		// TODO: format user object for non Database use
+		// TODO: format user object for front end user
 		return Category.find({}).exec()
 	}
 

@@ -15,9 +15,8 @@ const catalogData = {
 	isMaster: true
 }
 
-describe.only('Catalog', () => {
+describe('Catalog', () => {
 	beforeEach(async() => {
-		// console.log('[Catalog] beforeEach')
 		// Clear database
 		await clearDataBase()
 		// Create user
@@ -27,7 +26,6 @@ describe.only('Catalog', () => {
 	describe('Create', () => {
 		it('Should create a catalog', async() => {
 			console.log(chalk.blue('Should create a catalog'))
-			// Should return OK
 			ret = await createCatalog(catalogData.id)
 			ret.should.have.status(OK)
 			printret(ret)

@@ -34,9 +34,10 @@ class App {
 		// Error handler
 		this.app.use(function errorHandler(err: Error | ServerError, req: Request, res: Response, next: NextFunction) {
 			if ((<ServerError>err).httpCode) {
+				console.log(chalk.red(err.stack), '(0)')
 				res.status((<ServerError>err).httpCode).send(err.message)
 			} else {
-				console.log(chalk.red(err.stack))
+				console.log(chalk.red(err.stack), '(1)')
 				res.status(SERVER_ERROR).send('Unexpected Error')
 			}
 		})

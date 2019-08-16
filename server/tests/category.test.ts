@@ -11,7 +11,7 @@ import { Catalog, ICatalog } from '../src/models/catalogModel';
 
 let ret: any
 
-describe.only('Category', () => {
+describe('Category', () => {
 	let catalog: any = {}
 
 	before(async() => {

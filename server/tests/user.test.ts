@@ -6,25 +6,32 @@ import { authUser, login, logout, clearDataBase, userData, getAllUsers, createUs
 import { User } from '../src/models/userModel'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 import chalk from 'chalk';
-const { OK, BAD_REQUEST, UNAUTHORIZED } = ResponseStatusTypes 
+const { OK, BAD_REQUEST, UNAUTHORIZED, NOT_FOUND } = ResponseStatusTypes 
 
 let ret: any
 
 describe('User', () => {
-	beforeEach(async () => {
-		console.log(chalk.keyword('goldenrod')('====== [User] beforeEach START ======'))
-		await clearDataBase()
-		console.log(chalk.keyword('goldenrod')('====== [User] beforeEach END   ======'))
-	})
+	beforeEach(async () => await clearDataBase())
 
 	describe('Create', () => {
-		it('Should create a user and a project', async () => {
+		it('Should create a user', async () => {
 			// Create user
 			ret = await createUser(userData)
 			ret.should.have.status(OK)
 			// User should exist
 			const user = await User.find({apiKey: ret.body.user.apiKey})
 			user.should.exist
+		})
+		describe('Should fail if ...', () => {
+			it('User already exists', async () => {
+				ret = await createUser(userData)
+				ret = await createUser(userData)
+				ret.status.should.eq(BAD_REQUEST)
+			})
+			it('Password is invalid', async () => {
+				ret = await createUser({username: 'test', password: '1'})
+				ret.status.should.eq(BAD_REQUEST)
+			})
 		})
 	})
 
@@ -73,6 +80,23 @@ describe('User', () => {
 			// Should get user info
 			ret = await login({...userData})
 			ret.should.have.status(OK)
+		})
+		describe('Should fail if ...', () => {
+			it('User does not exist', async() => {
+				ret = await login({...userData})
+				ret.should.have.status(UNAUTHORIZED)
+			})
+			it('Password is invalid', async() => {
+				// Create user
+				ret = await createUser(userData)
+				ret.should.have.status(OK)
+				// Logout
+				ret = await logout()
+				ret.should.have.status(OK)
+				// Login with wrong password
+				ret = await login({...userData, password: 'notmypassword'})
+				ret.should.have.status(UNAUTHORIZED)
+			})
 		})
 	})
 
