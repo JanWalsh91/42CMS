@@ -63,13 +63,15 @@ class CategoryService {
 	public async delete(category: ICategory): Promise<void> {
 		console.log('[categoryService.delete]', category.id)
 		// Unlink categories
+		console.log(chalk.green('UNLINKING PARENT'))
 		if (category.parent) {
 			console.log(`unlinkning ${category} from parent`)
 			category = await category.populate('parent').execPopulate()
 			console.log({category})
-			await this.unlinkCategories(category.parent, category)
-			await category.parent.save()
+			const { parent, child } = await this.unlinkCategories(category.parent, category)
+			await parent.save()
 		}
+		console.log(chalk.green('UNLINKING SUBCATEGORIES'))
 		if (category.subCategories) {
 			await category.populate('subCategories').execPopulate()
 			await (<ICategory[]>category.subCategories).map(async(subcat: ICategory) => 
@@ -82,7 +84,7 @@ class CategoryService {
 
 	// ! does not save
 	public async linkCategories(parent: ICategory, child: ICategory): Promise<{parent: ICategory, child: ICategory}> {
-		console.log(chalk.magenta(`linkCategories. parent: ${parent.id} child: ${child.id}`))
+		console.log(chalk.magenta(`[CategoryService.linkCategories] parent: ${parent.id}, child: ${child.id}`))
 
 		await Promise.all([
 			parent.addSubCategory(child),
@@ -93,7 +95,7 @@ class CategoryService {
 
 	// ! does not save
 	public async unlinkCategories(parent: ICategory, child: ICategory): Promise<{parent: ICategory, child: ICategory}> {
-		console.log(chalk.magenta(`unlinkCategories. parent: ${parent.id} child: ${child.id}`))
+		console.log(chalk.magenta(`[CategoryService.unlinkCategories] parent: ${parent.id}, child: ${child.id}`))
 		await Promise.all([
 			parent.removeSubCategory(child),
 			child.setParent(null),

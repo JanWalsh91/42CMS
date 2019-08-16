@@ -98,7 +98,7 @@ export const clearDataBase = async (...models: any) => {
 		agent.get(`/catalogs/${catalogid}/categories`)
 
 	export const deleteCategory = (catalogid: string, categoryid: string) =>
-		agent.delete(`/categories/${catalogid}/categories/${categoryid}`)
+		agent.delete(`/catalogs/${catalogid}/categories/${categoryid}`)
 
 // ===== PRODUCTS ====== //
 

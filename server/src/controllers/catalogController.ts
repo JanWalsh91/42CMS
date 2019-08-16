@@ -44,7 +44,7 @@ export class CatalogController {
 	}
 
 	public async setCatalogFromParams(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[catalogController.setCatalogFromParams]'))
+		console.log(chalk.magenta('[CatalogController.setCatalogFromParams]'))
 		if (!req.params.catalogid) {
 			return next(new ValidationError('Catalog id not provided'))
 		}
@@ -52,7 +52,6 @@ export class CatalogController {
 		if (!catalog) {
 			return next(new ResourceNotFoundError('Catalog', req.params.catalogid))
 		}
-		console.log({catalog})
 		res.locals.catalog = catalog
 		next()
 	}

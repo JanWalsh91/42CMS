@@ -41,7 +41,6 @@ export class CategoryController {
 		res.end()
 	}
 
-	// helper functions
 	public async setCategoryFromParams(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[categoryController.setCategoryFromParams]'))
 		if (!req.params.categoryid) {
@@ -51,7 +50,6 @@ export class CategoryController {
 		if (!category) {
 			return next(new ResourceNotFoundError('Category', req.params.categoryid))
 		}
-		console.log({category})
 		res.locals.category = category
 		next()
 	}

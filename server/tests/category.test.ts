@@ -12,7 +12,7 @@ import { Catalog, ICatalog } from '../src/models/catalogModel';
 
 let ret: any
 
-describe.only('Category', () => {
+describe('Category', () => {
 	let catalog: any = {}
 
 	before(async() => {
@@ -147,13 +147,14 @@ describe.only('Category', () => {
 		})
 	})
 
-	describe.skip('Delete Category', () => {
-		it('Should delete the category', async() => {
+	describe('Delete Category', () => {
+		it.only('Should delete the category', async() => {
 			const catid1 = 'category1'
 			const catid2 = 'category2'
 			await createCategory(catalogData.id, catid1)
 			await createCategory(catalogData.id, catid2, {parent: catid1})
 			ret = await deleteCategory(catalogData.id, catid1)
+			printret(ret)
 			ret.status.should.eq(OK)
 
 			let cat: ICategory = await Category.findOne({id: catid1}).exec()

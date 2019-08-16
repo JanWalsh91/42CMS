@@ -71,7 +71,7 @@ class CategoryClass {
 
 
 	async setParent(this: ICategory, category: ICategory | null): Promise<void> {
-		console.log(chalk.magenta(`[CategoryModel.setParent] ${category.id} from ${this.id}`))
+		console.log(chalk.magenta(`[CategoryModel.setParent] ${category ? category.id : null} from ${this.id}`))
 		if (category === null) {
 			this.parent = null
 			this.markModified('parent')
@@ -91,8 +91,9 @@ class CategoryClass {
 
 	async removeSubCategory(this: ICategory, category: ICategory) {
 		console.log(chalk.magenta(`[CategoryModel.removeSubCategory] ${category.id} from ${this.id}`))
-		if (category._id in this.subCategories) {
-			this.subCategories = this.subCategories.filter(x => x !== category._id)
+		await this.populate('subCategories').execPopulate()
+		if (this.subCategories.some(cat => cat._id == category._id)) {
+			this.subCategories = this.subCategories.filter(x => x._id !== category._id)
 			this.markModified('subCategories')
 		} else {
 			console.log(chalk.yellow(`[CategoryModel.removeSubCategory] ${category.id} not in ${this.id}`))
@@ -129,14 +130,14 @@ export interface ICategory extends Document {
 	// getProduct: (query: object) => Promise<IProduct>
 
 	// add methods
-	addSubCategory: (categoryId: ICategory) => Promise<void>
+	addSubCategory: (category: ICategory) => Promise<void>
 	// addProduct: (productId: IProduct['_id']) => Promise<ServerError | void>
 
 	// set methods
-	setParent: (categoryId: ICategory | null) => Promise<void>
+	setParent: (category: ICategory | null) => Promise<void>
 
 	// remove methods
-	removeSubCategory: (categoryId: ICategory) => Promise<void>
+	removeSubCategory: (category: ICategory) => Promise<void>
 	// removeProduct: (productId: IProduct['_id']) => Promise<void>
 
 	// internal

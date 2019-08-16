@@ -16,7 +16,7 @@ const catalogData = {
 	isMaster: true
 }
 
-describe.only('Catalog', () => {
+describe('Catalog', () => {
 	beforeEach(async() => {
 		await clearDataBase()
 		await createUser(userData)
@@ -100,7 +100,7 @@ describe.only('Catalog', () => {
 		})
 	})
 
-	describe.skip('Delete Catalog', () => {
+	describe('Delete Catalog', () => {
 		it('Should delete catalog', async() => {
 			const catid1 = 'category1'
 			const catid2 = 'category2'
