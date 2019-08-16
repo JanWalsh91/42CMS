@@ -4,19 +4,16 @@ import chalk from 'chalk'
 import { User, IUser } from '../models/userModel'
 import { userService } from '../services'
 
-import ResponseStatusTypes from "../utils/ResponseStatusTypes"
 import { ValidationError, UnauthorizedError, LoginError, ResourceNotFoundError, NotImplementedError } from '../utils/Errors'
-import { NOTFOUND } from 'dns';
-
-const { NOT_IMPLEMENTED } = ResponseStatusTypes
 
 export const userController = {
 
 	async create(req: Request, res: Response, next: NextFunction) {
 		console.log(chalk.magenta('[UserContoller.create]'))
-		// save params
 		const { username, password, name } = req.body
 		
+		console.log({ username, password, name })
+
 		if (!username) {
 			return next(new ValidationError('Username not provided'))
 		}
@@ -29,6 +26,17 @@ export const userController = {
 				req.session.apiKey = user.apiKey
 			}
 			res.send({user})
+		} catch (e) { next(e) }
+	},
+
+	async get(req: Request, res: Response, next: NextFunction) {
+		console.log(chalk.magenta('[User.get]'))
+		try {
+			const user: IUser = await userService.getByUsername(req.params.username)
+			if (!user) {
+				return next(new ResourceNotFoundError('user', req.params.username))
+			}
+			res.send(user)
 		} catch (e) { next(e) }
 	},
 
@@ -88,17 +96,6 @@ export const userController = {
 		}
 	},
 
-	async get(req: Request, res: Response, next: NextFunction) {
-		console.log(chalk.magenta('[User.get]'))
-		try {
-			const user: IUser = await userService.getByUsername(req.params.username)
-			if (!user) {
-				return next(new ResourceNotFoundError('user', req.params.username))
-			}
-			res.send(user)
-		} catch (e) { next(e) }
-	},
-
 	// TODO
 	async update(req: Request, res: Response, next: NextFunction) {
 		console.log(chalk.magenta('[UserContoller.update]'))
@@ -107,15 +104,20 @@ export const userController = {
 
 	async delete(req: Request, res: Response, next: NextFunction) {				
 		console.log(chalk.magenta('[UserContoller.delete]'))
-		const { username } = req.body
+		let { username } = req.params
+
+		const currentUser: IUser = await userService.getByAPIKey(req.session.apiKey)
+		if (!currentUser) {
+			return next(new ResourceNotFoundError('User', 'session user'))
+		}
 		
 		if (!username) {
-			return next(new ValidationError('username not provided'))
+			username = currentUser.username
 		}
+
 		try {
-			await userService.deleteUser(username)
+			await userService.deleteUser(username, currentUser)
 			res.send('User deleted')
 		} catch (e) { next(e) }
 	},
-
 }

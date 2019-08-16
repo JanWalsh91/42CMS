@@ -7,7 +7,7 @@ const agent = chai.request.agent(app)
 import { User } from '../src/models/userModel'
 import { Catalog } from '../src/models/catalogModel'
 // import { Site } from '../src/models/siteModel'
-// import { Category } from '../src/models/categoryModel'
+import { Category } from '../src/models/categoryModel'
 // import { Product } from '../src/models/productModel'
 
 export const userData = {
@@ -37,7 +37,7 @@ export const clearDataBase = async (...models: any) => {
 			User,
 			Catalog,
 			// Site,
-			// Category,
+			Category,
 			// Product
 		]
 	}
@@ -45,6 +45,9 @@ export const clearDataBase = async (...models: any) => {
 }
 
 // ===== USERS ===== //
+
+	export const getUser = (username: string) => 
+		agent.get(`/users/${username}`)
 
 	export const getAllUsers = () =>
 		agent.get('/users')
@@ -65,7 +68,9 @@ export const clearDataBase = async (...models: any) => {
 	export const logout = () => 
 		agent.post('/logout')
 
-
+	// Delete user
+	export const deleteUser = (userid?: string) =>
+		agent.delete(`/users${userid ? `/${userid}` : ''}`)
 
 // ===== CATALOGS ====== //
 
@@ -78,6 +83,9 @@ export const clearDataBase = async (...models: any) => {
 	export const getAllCatalogs = () =>
 		agent.get(`/catalogs`)
 
+	export const deleteCatalog = (catalogid: string) =>
+		agent.delete(`/catalogs/${catalogid}`)
+
 // ===== CATEGORIES ====== //
 
 	export const createCategory = (catalogid: string, categoryid: string, params?: object) =>
@@ -89,6 +97,9 @@ export const clearDataBase = async (...models: any) => {
 	export const getAllCategories = (catalogid: string) =>
 		agent.get(`/catalogs/${catalogid}/categories`)
 
+	export const deleteCategory = (catalogid: string, categoryid: string) =>
+		agent.delete(`/categories/${catalogid}/categories/${categoryid}`)
+
 // ===== PRODUCTS ====== //
 
 	export const createProduct = (masterCatalogId: string, productid: string, params?: object) => 
@@ -97,6 +108,8 @@ export const clearDataBase = async (...models: any) => {
 	export const updateProduct = (productid: string, params?: object) => 
 		agent.put(`/products/${productid}`).send(params)
 
+	export const deleteProduct = (productid: string) =>
+		agent.delete(`/products/${productid}`)
 
 // ===== UTILITY ===== //
 

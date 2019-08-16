@@ -22,10 +22,11 @@ class App {
         this.app = express()
 		this.config()
 		this.app.use(function printQuery(req: Request, res: Response, next: NextFunction) {
-			console.log(`URL: ${req.url}`)
+			console.log(chalk.keyword('goldenrod')('=================================='))
+			console.log(`${req.method} : ${req.url}`)
 			new Array('body', 'params', 'query').forEach(x => {
 				if (Object.keys(req[x]).length > 0) {
-					console.log(`${x}: `, req[x])
+					console.log(`\t${x}: `, req[x])
 				}
 			})
 			next()

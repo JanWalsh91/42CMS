@@ -1,8 +1,9 @@
 import * as chai from 'chai'
 chai.should()
+const expect = require('chai').expect
 import chalk from 'chalk';
 
-import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs, createCategory, categoryData, catalogData, logout, login } from './common';
+import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs, createCategory, categoryData, catalogData, logout, login, getCategory, getAllCategories, deleteCategory } from './common';
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 const { OK, BAD_REQUEST, UNAUTHORIZED, NOT_FOUND } = ResponseStatusTypes
 
@@ -11,7 +12,7 @@ import { Catalog, ICatalog } from '../src/models/catalogModel';
 
 let ret: any
 
-describe('Category', () => {
+describe.only('Category', () => {
 	let catalog: any = {}
 
 	before(async() => {
@@ -98,9 +99,68 @@ describe('Category', () => {
 				ret.status.should.eq(NOT_FOUND)
 			})
 			// Prevent circular linking of category hierachies: not possible in Create!
-			it.only('Parent is self')
-			it.only('Parent\`s parent is self')
-			it.only('Parent\`s parent\'s parnetis self')
+			it('Parent is self')
+			it('Parent\`s parent is self')
+			it('Parent\`s parent\'s parnetis self')
+		})
+	})
+
+	describe('Get Category', () => {
+		it('Should get category', async() => {
+			ret = await createCategory(catalog.id, categoryData.id)
+			ret = await getCategory(catalog.id, categoryData.id)
+			ret.status.should.eq(OK)
+			ret.body.id.should.eq(categoryData.id)
+		})
+		describe('Should fail to get category if ...', () => {
+			it('user is not authorized', async() => {
+				await logout()
+				ret = await createCategory(catalog.id, categoryData.id)
+				ret = await getCategory(catalog.id, categoryData.id)
+				ret.status.should.eq(UNAUTHORIZED)
+				await login(userData)
+			})
+			it('Category does not exist', async() => {
+				ret = await getCategory(catalog.id, categoryData.id)
+				ret.status.should.eq(NOT_FOUND)
+			})
+		})
+	})
+
+	describe('Get All Cateogries', () => {
+		it('Should get all categories', async() => {
+			ret = await createCategory(catalog.id, categoryData.id)
+			ret = await createCategory(catalog.id, 'secondcat')
+			ret = await getAllCategories(catalog.id)
+			ret.status.should.eq(OK)
+			ret.body.length.should.equal(3)
+		})
+		describe('Should fail if ...', () => {
+			it('User is not authorized', async() => {
+				await logout()
+				ret = await createCategory(catalog.id, categoryData.id)
+				ret = await createCategory(catalog.id, 'secondcat')
+				ret = await getAllCategories(catalog.id)
+				ret.status.should.eq(UNAUTHORIZED)
+				await login(userData)
+			})
+		})
+	})
+
+	describe.skip('Delete Category', () => {
+		it('Should delete the category', async() => {
+			const catid1 = 'category1'
+			const catid2 = 'category2'
+			await createCategory(catalogData.id, catid1)
+			await createCategory(catalogData.id, catid2, {parent: catid1})
+			ret = await deleteCategory(catalogData.id, catid1)
+			ret.status.should.eq(OK)
+
+			let cat: ICategory = await Category.findOne({id: catid1}).exec()
+			expect(cat).to.not.exist
+			cat = await Category.findOne({id: catid2}).exec()
+			console.log({cat})
+			cat.parent.should.be.null
 		})
 	})
 })

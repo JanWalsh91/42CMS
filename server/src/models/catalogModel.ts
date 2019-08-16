@@ -158,14 +158,10 @@ export const CatalogSchema = new Schema({
 
 // 'On create' middleware
 CatalogSchema.pre('save', async function(this: ICatalog, next: any) {
-	console.log(chalk.magenta('CatalogSchema pre save', this.id))
 	if (this.isNew) {
 		this.wasNew = true
-		console.log(chalk.yellow('is new!'))
 	}
-
 	next()
-	// next(err) // if fail
 });
 
 // err: MongoError
@@ -179,10 +175,12 @@ CatalogSchema.post('save', async function(this: ICatalog, doc: ICatalog, next: a
 		await rootCategory.save()
 
 		this.rootCategory = rootCategory._id
+		this.categories.push(rootCategory._id)
+		this.markModified('categories')
 
 		await this.save()
+		console.log(chalk.magenta('CatalogSchema post save END'))
 	}
-	console.log(chalk.magenta('CatalogSchema post save END'))
 	next()
 })
 

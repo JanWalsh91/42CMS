@@ -1,9 +1,10 @@
 import * as chai from 'chai'
 chai.should()
+const expect = require('chai').expect
 
-import { authUser, login, logout, clearDataBase, userData, getAllUsers, createUser, printret } from './common'
+import { authUser, login, logout, clearDataBase, userData, getUser, getAllUsers, createUser, printret, deleteUser } from './common'
 
-import { User } from '../src/models/userModel'
+import { User, IUser } from '../src/models/userModel'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 import chalk from 'chalk';
 const { OK, BAD_REQUEST, UNAUTHORIZED, NOT_FOUND } = ResponseStatusTypes 
@@ -19,8 +20,14 @@ describe('User', () => {
 			ret = await createUser(userData)
 			ret.should.have.status(OK)
 			// User should exist
-			const user = await User.find({apiKey: ret.body.user.apiKey})
+			const user = await User.findOne({apiKey: ret.body.user.apiKey})
 			user.should.exist
+			// First user is admin
+			user.admin.should.eq(true)
+		})
+		it('Should create a user with only a username and password', async() => {
+			ret = await createUser({username: 'test', password: '32321321'})
+			ret.should.have.status(OK)
 		})
 		describe('Should fail if ...', () => {
 			it('User already exists', async () => {
@@ -42,7 +49,6 @@ describe('User', () => {
 			ret.should.have.status(OK)
 			// Auth
 			ret = await authUser()
-			printret(ret);
 			ret.should.have.status(OK)
 		})
 		describe('Should fail if', () => {
@@ -100,12 +106,87 @@ describe('User', () => {
 		})
 	})
 
+	describe('get', () => {
+		it('Should get a user', async () => {
+			ret = await createUser(userData)
+			ret = await getUser(userData.username)
+			ret.should.have.status(OK)
+			ret.body.username.should.eq(userData.username)
+		})
+		describe('Should fail if ...', () => {
+			it('user is unauthorized', async() => {
+				ret = await createUser(userData)
+				await logout()
+				ret = await getUser(userData.username)
+				ret.status.should.eq(UNAUTHORIZED)
+			})
+			it('user does not exist', async() => {
+				ret = await getUser(userData.username)
+				ret.status.should.eq(UNAUTHORIZED)
+			})
+		})
+	})
+
 	describe('getAll', () => {
 		it('Should get all users', async () => {
+			ret = await createUser(userData)				
 			ret = await getAllUsers()
-			ret.should.have.status(200)
+			ret.should.have.status(OK)
 			ret.body.should.be.a('array')
-			ret.body.length.should.be.eql(0)
+			ret.body.length.should.be.eql(1)
+		})
+
+		describe('Should fail if ...', () => {
+			it('user is unauthorized', async () => {
+				ret = await createUser(userData)				
+				await logout()
+				ret = await getAllUsers()
+				ret.status.should.eq(UNAUTHORIZED)
+			})
+		})
+	})
+	describe('Delete User', () => {
+		const secondUser = {
+			username: 'second',
+			password: 'lksjdflksj'
+		}
+
+		it('Should delete a non-admin user (self)', async() => {
+			ret = await createUser(userData)				
+			await logout()
+			console.log('creating user with ', secondUser)
+			ret = await createUser(secondUser)
+			ret = await deleteUser()
+			printret(ret)
+			ret.status.should.eq(OK)
+
+			const user: IUser = await User.findOne({username: secondUser.username}).exec()
+			expect(user).to.not.exist
+		})
+		it('Should delete a non-admin user', async() => {
+			ret = await createUser(userData)				
+			await logout()
+			ret = await createUser(secondUser)
+			await login(userData)
+			ret = await deleteUser(secondUser.username)
+			ret.status.should.eq(OK)
+
+			const user: IUser = await User.findOne({username: secondUser.username}).exec()
+			expect(user).to.not.exist
+		})
+		describe('Should fail to delete user if ...', () => {
+			it('user is admin (self)', async() => {
+				ret = await createUser(userData)
+				ret = await deleteUser()
+				ret.status.should.eq(UNAUTHORIZED)
+			})
+			it('non admin user tries to delete other user', async() => {
+				ret = await createUser(userData)			
+				await logout()
+				ret = await createUser(secondUser)				
+				ret = await deleteUser(userData.username)
+				ret.status.should.eq(UNAUTHORIZED)
+			})
 		})
 	})
 })

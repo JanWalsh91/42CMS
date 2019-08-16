@@ -34,20 +34,16 @@ class CategoryClass {
 	 * - doesn't yet exists in category
 	 * - TODO: does not loop
 	 */
-	async addSubCategory(this: ICategory, categoryId: ICategory['_id']) {
-		console.log(chalk.magenta(`[CategoryModel.addSubCategory] ${categoryId} to ${this._id}`))
-		if (true) {
-			await this.getCatalog()
-			const category: ICategory = await this.catalog.getCategory({ _id: categoryId })
-			if (!category) {
-				throw new ResourceNotFoundError('Category', categoryId)
-			}
+	async addSubCategory(this: ICategory, category: ICategory) {
+		console.log(chalk.magenta(`[CategoryModel.addSubCategory] ${category.id} to ${this.id}`))
+		if (!category) {
+			throw new ResourceNotFoundError('Category', '')
 		}
-		if (categoryId in this.subCategories) {
+		if (category._id in this.subCategories) {
 			console.log(chalk.yellow('[CategoryModel.addSubCategory] category already in subCategories'))
 			return 
 		}
-		this.subCategories.push(categoryId)
+		this.subCategories.push(category._id)
 		this.markModified('subCategories')
 	}
 
@@ -74,36 +70,32 @@ class CategoryClass {
 	// }
 
 
-	async setParent(this: ICategory, categoryId: ICategory['_id']): Promise<void> {
-		console.log(chalk.magenta(`[CategoryModel.setParent] ${categoryId} from ${this._id}`))
-		if (!categoryId) {
+	async setParent(this: ICategory, category: ICategory | null): Promise<void> {
+		console.log(chalk.magenta(`[CategoryModel.setParent] ${category.id} from ${this.id}`))
+		if (category === null) {
 			this.parent = null
 			this.markModified('parent')
 		} else {
-			if (true) {
-				await this.getCatalog()
-				const category: ICategory = await this.catalog.getCategory({ _id: categoryId })
-				if (!category) {
-					throw new ResourceNotFoundError('Category', categoryId)
-				}
+			if (!category) {
+				throw new ResourceNotFoundError('Category', '')
 			}
-			if (categoryId === this.populated('parent') ? this.parent._id : this.parent) {
+			if (category._id === (this.populated('parent') ? this.parent._id : this.parent)) {
 				console.log(chalk.yellow('[CategoryModel.setParent] category already is parent'))
 				return 
 			}
-			this.parent = categoryId
+			this.parent = category._id
 			this.markModified('parent')
 		}
 	}
 
 
-	async removeSubCategory(this: ICategory, categoryId: ICategory['_id']) {
-		console.log(chalk.magenta(`[CategoryModel.removeSubCategory] ${categoryId} from ${this._id}`))
-		if (categoryId in this.subCategories) {
-			this.subCategories = this.subCategories.filter(x => x !== categoryId)
+	async removeSubCategory(this: ICategory, category: ICategory) {
+		console.log(chalk.magenta(`[CategoryModel.removeSubCategory] ${category.id} from ${this.id}`))
+		if (category._id in this.subCategories) {
+			this.subCategories = this.subCategories.filter(x => x !== category._id)
 			this.markModified('subCategories')
 		} else {
-			console.log(chalk.yellow(`[CategoryModel.removeSubCategory] ${categoryId} not in ${this._id}`))
+			console.log(chalk.yellow(`[CategoryModel.removeSubCategory] ${category.id} not in ${this.id}`))
 		}
 	}
 
@@ -127,7 +119,7 @@ export interface ICategory extends Document {
 	name: string
 	catalog: ICatalog['_id'] | ICatalog
 	parent: ICategory['_id'] | ICategory
-	subCategories: ICategory['_id'][]
+	subCategories: (ICategory['_id'] | ICategory)[]
 	// products: IProduct['_id'][]
 
 	// get methods
@@ -137,14 +129,14 @@ export interface ICategory extends Document {
 	// getProduct: (query: object) => Promise<IProduct>
 
 	// add methods
-	addSubCategory: (categoryId: ICategory['_id']) => Promise<void>
+	addSubCategory: (categoryId: ICategory) => Promise<void>
 	// addProduct: (productId: IProduct['_id']) => Promise<ServerError | void>
 
 	// set methods
-	setParent: (categoryId: ICategory['_id'] | null) => Promise<void>
+	setParent: (categoryId: ICategory | null) => Promise<void>
 
 	// remove methods
-	removeSubCateory: (categoryId: ICategory['_id']) => Promise<void>
+	removeSubCategory: (categoryId: ICategory) => Promise<void>
 	// removeProduct: (productId: IProduct['_id']) => Promise<void>
 
 	// internal
@@ -167,6 +159,7 @@ export const CategorySchema = new Schema({
 	parent: {
 		type: Schema.Types.ObjectId,
 		ref: 'Category',
+		default: null,
 	},
 	subCategories: [{
 		type: Schema.Types.ObjectId,

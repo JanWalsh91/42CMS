@@ -1,5 +1,7 @@
-import { ICatalog, Catalog } from "../models/catalogModel";
-import { ResourceNotFoundError, NotImplementedError, ValidationError } from "../utils/Errors";
+import { ICatalog, Catalog } from '../models/catalogModel';
+import { ResourceNotFoundError, NotImplementedError, ValidationError } from '../utils/Errors';
+import { ICategory } from '../models';
+import { categoryService } from '.';
 
 export class CatalogService {
 	public async create(options: Partial<ICatalog>): Promise<ICatalog> {
@@ -32,12 +34,11 @@ export class CatalogService {
 		throw new NotImplementedError()
 	}
 
-	public async delete(id: string): Promise<void> {
-		let catalog: ICatalog = await this.getById(id)
-		if (!catalog) {
-			throw new ResourceNotFoundError('Catalog', id)
-		}
-		await Catalog.findOneAndDelete(id)
+	public async delete(catalog: ICatalog): Promise<void> {
+		// Delete all categories
+		catalog = await catalog.populate('categories').execPopulate()
+		await catalog.categories.reduce((_, category: ICategory) => _.then(() => categoryService.delete(category)), Promise.resolve())
+		await catalog.remove()
 	}
 
 	public async addCategory(catalogid: string, categoryid: string): Promise<void> {

@@ -4,10 +4,7 @@ import { ICatalog } from '../models'
 
 import { Request, Response, NextFunction } from 'express'
 import chalk from 'chalk'
-import ResponseStatusTypes from '../utils/ResponseStatusTypes'
-import { ResourceNotFoundError } from '../utils/Errors'
-
-const { BAD_REQUEST } = ResponseStatusTypes 
+import { ResourceNotFoundError, ValidationError } from '../utils/Errors'
 
 export class CatalogController {
 	public async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -27,16 +24,8 @@ export class CatalogController {
 	public async get(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[CatalogController.get]'))
 
-		try {
-			const catalog: ICatalog = await catalogService.getById(req.params.catalogid)
-			if (!catalog) {
-				throw new ResourceNotFoundError('Catalog', req.params.catalogid)
-			}
-			// TODO: output for front end user
-			res.send(catalog);
-		} catch (e) {
-			next(e);
-		}
+		// TODO: output for front end user
+		res.send(res.locals.catalog);
 	}
 
 	public async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -49,12 +38,23 @@ export class CatalogController {
 	}
 
 	public async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
-		const catalog: ICatalog = await catalogService.getById(req.params.id)
-		if (!catalog) {
-			throw new ResourceNotFoundError('Catalog', req.params.id)
+		console.log(chalk.magenta('[CatalogController.delete]'), req.params)
+		await catalogService.delete(res.locals.catalog)
+		res.end()
+	}
+
+	public async setCatalogFromParams(req: Request, res: Response, next: NextFunction): Promise<void> {
+		console.log(chalk.magenta('[catalogController.setCatalogFromParams]'))
+		if (!req.params.catalogid) {
+			return next(new ValidationError('Catalog id not provided'))
 		}
-		await catalogService.delete(req.body.id)
-		res.send('Catalog deleted')
+		const catalog: ICatalog = await catalogService.getById(req.params.catalogid)
+		if (!catalog) {
+			return next(new ResourceNotFoundError('Catalog', req.params.catalogid))
+		}
+		console.log({catalog})
+		res.locals.catalog = catalog
+		next()
 	}
 }
 

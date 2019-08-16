@@ -60,30 +60,42 @@ class CategoryService {
 		return Category.find({}).exec()
 	}
 
-	public async deleteCategory(id: string): Promise<void> {
-		let user: ICategory = await this.getById(id)
-		if (!user) {
-			throw new ResourceNotFoundError('Category', id)
+	public async delete(category: ICategory): Promise<void> {
+		console.log('[categoryService.delete]', category.id)
+		// Unlink categories
+		if (category.parent) {
+			console.log(`unlinkning ${category} from parent`)
+			category = await category.populate('parent').execPopulate()
+			console.log({category})
+			await this.unlinkCategories(category.parent, category)
+			await category.parent.save()
 		}
-		await Category.findOneAndDelete({id})
+		if (category.subCategories) {
+			await category.populate('subCategories').execPopulate()
+			await (<ICategory[]>category.subCategories).map(async(subcat: ICategory) => 
+				this.unlinkCategories(category, subcat).then(() => subcat.save()))	
+		}
+		// TODO: remove product assignments
+		await Category.findOneAndDelete({id: category.id})
 	}
 
+
+	// ! does not save
 	public async linkCategories(parent: ICategory, child: ICategory): Promise<{parent: ICategory, child: ICategory}> {
 		console.log(chalk.magenta(`linkCategories. parent: ${parent.id} child: ${child.id}`))
-		
-		// 
-		
+
 		await Promise.all([
-			parent.addSubCategory(child._id),
-			child.setParent(parent._id),
+			parent.addSubCategory(child),
+			child.setParent(parent),
 		])
 		return { parent, child }
 	}
 
-	static async unlinkCategories(parent: ICategory, child: ICategory): Promise<{parent: ICategory, child: ICategory}> {
+	// ! does not save
+	public async unlinkCategories(parent: ICategory, child: ICategory): Promise<{parent: ICategory, child: ICategory}> {
 		console.log(chalk.magenta(`unlinkCategories. parent: ${parent.id} child: ${child.id}`))
 		await Promise.all([
-			parent.removeSubCateory(child._id),
+			parent.removeSubCategory(child),
 			child.setParent(null),
 		])
 		return { parent, child }

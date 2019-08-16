@@ -1,10 +1,7 @@
 import { Schema, Document, Model, model}  from 'mongoose';
 
-// https://mongoosejs.com/docs/advanced_schemas.html
 class UserClass {
-	authenticate = (name, password, callback) => {
-		// User.findOne({name}, )
-	}
+
 }
 
 export interface IUser extends Document {
@@ -14,6 +11,7 @@ export interface IUser extends Document {
 	name: string,
 	password: string,
 	created_date: Date,
+	admin: boolean
 }
 
 const UserSchema = new Schema({
@@ -29,7 +27,6 @@ const UserSchema = new Schema({
 	},
 	name: {
         type: String,
-		required: 'Enter a name',
     },
 	password: {
 		type: String,
@@ -38,6 +35,11 @@ const UserSchema = new Schema({
     created_date: {
         type: Date,
         default: Date.now,
+	},
+	admin: {
+		type: Boolean,
+		default: false,
+		required: true
 	}
 }).loadClass(UserClass)	
 

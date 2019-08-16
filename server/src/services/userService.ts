@@ -1,5 +1,5 @@
 import { IUser, User } from "../models";
-import { ValidationError, ResourceNotFoundError } from "../utils/Errors";
+import { ValidationError, ResourceNotFoundError, ServerError, UnauthorizedError } from "../utils/Errors";
 import { uuid } from "../utils/uuid";
 
 class UserService {
@@ -10,17 +10,21 @@ class UserService {
 			throw new ValidationError('User already exists')
 		}
 		
+		// First user created is admin
+		const isFirstUser: boolean = (await User.count({}).exec()) == 0
+
 		// Create new user
 		return await new User({
 			username: options.username,
 			name: options.name,
 			password: options.password,
-			apiKey: uuid('apiKey')
+			apiKey: uuid('apiKey'),
+			admin: isFirstUser
 		}).save()
 	}
 
-	public async getByUsername(usernamae: string): Promise<IUser> {
-		return User.findOne({usernamae}).exec()
+	public async getByUsername(username: string): Promise<IUser> {
+		return User.findOne({username}).exec()
 	}
 
 	public async getByAPIKey(apiKey: string): Promise<IUser> {
@@ -36,10 +40,18 @@ class UserService {
 		return User.find({}).exec()
 	}
 
-	public async deleteUser(username: string): Promise<void> {
-		let user: IUser = await this.getByUsername(username)
+	public async deleteUser(username: string, currentUser: IUser): Promise<void> {
+		const user: IUser = await this.getByUsername(username)
 		if (!user) {
 			throw new ResourceNotFoundError('User', username)
+		}
+		if (user.admin) {
+			throw new UnauthorizedError('Cannot delete an admin')
+		}
+		if (user.id != currentUser.id) {
+			if (!currentUser.admin) {
+				throw new UnauthorizedError('Must be an admin to delete another user')
+			}
 		}
 		await User.findOneAndDelete({username})
 	}
