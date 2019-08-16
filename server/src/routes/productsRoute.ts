@@ -6,7 +6,7 @@ import { productController } from '../controllers/productController'
 import { IProduct, Product } from '../models/productModel'
 import { ICatalog, Catalog } from '../models/catalogModel';
 
-const router: Router = Router()
+const router: Router = Router({ mergeParams: true })
 
 router
 	// .get('/:productid', getProductById, productController.get)

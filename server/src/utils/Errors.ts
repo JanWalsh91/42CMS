@@ -16,8 +16,8 @@ export class ServerError extends Error {
 }
 
 export class ResourceNotFoundError extends ServerError {
-	constructor(resource: string, query?: string) {
-		super(NOT_FOUND, `${resource} ${query ? query : ''} not found`)
+	constructor(resource: string, query: string) {
+		super(NOT_FOUND, `${resource} [${query}] not found`)
 	}
 }
 

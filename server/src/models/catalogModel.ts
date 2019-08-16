@@ -28,21 +28,16 @@ class CatalogClass {
 	//  * Check if: 
 	//  * - doesn't yet exist in catalog 
 	//  */
-	// async addCategory(this: ICatalog, categoryId: ICategory['_id'], options: ModelUpdateOptions = {}): Promise<ServerError | void> {
-	// 	console.log(chalk.magenta(`[CatalogModel.addCategory] ${categoryId} to ${this._id}`))
-	// 	if (!options.skipCheckExists) {
-	// 		const category: ICategory = await Category.findById(categoryId)
-	// 		if (!category) {
-	// 			throw new ServerError(ErrorType.CATEGORY_NOT_FOUND)
-	// 		}
-	// 	}
-	// 	if (categoryId in this.categories) {
-	// 		console.log(chalk.yellow('[CatalogModel.addCategory] category already in catalog'))
-	// 		return 
-	// 	}
-	// 	this.categories.push(categoryId)
-	// 	this.markModified('categories')
-	// }
+	async addCategory(this: ICatalog, category: ICategory): Promise<ICatalog> {
+		console.log(chalk.magenta(`[CatalogModel.addCategory] ${category.id} to ${this._id}`))
+		if (category._id in this.categories) {
+			console.log(chalk.yellow('[CatalogModel.addCategory] category already in catalog'))
+			return 
+		}
+		this.categories.push(category._id)
+		this.markModified('categories')
+		return this.save()
+	}
 
 	// /**
 	//  * Check if: 
@@ -66,15 +61,16 @@ class CatalogClass {
 	// 	this.markModified('products')
 	// }
 
-	// async removeCategory(this: ICatalog, categoryId: ICategory['_id']) {
-	// 	console.log(chalk.magenta(`[CatalogModel.removeCategory] ${categoryId} from ${this._id}`))
-	// 	if (categoryId in this.categories) {
-	// 		this.categories = this.categories.filter(x => x !== categoryId)
-	// 		this.markModified('categories')
-	// 	} else {
-	// 		console.log(chalk.yellow(`[CatalogModel.removeCategory] ${categoryId} not in ${this._id}`))
-	// 	}
-	// }
+	async removeCategory(this: ICatalog, category: ICategory): Promise<ICatalog> {
+		console.log(chalk.magenta(`[CatalogModel.removeCategory] ${category.id} from ${this._id}`))
+		if (category._id in this.categories) {
+			this.categories = this.categories.filter(x => x !== category._id)
+			this.markModified('categories')
+			return this.save()
+		} else {
+			console.log(chalk.yellow(`[CatalogModel.removeCategory] ${category.id} not in ${this._id}`))
+		}
+	}
 
 	// async removeProduct(this: ICatalog, productId: IProduct['_id']) {
 	// 	console.log(chalk.magenta(`[CatalogModel.removeProduct] ${productId} from ${this._id}`))
@@ -117,11 +113,11 @@ export interface ICatalog extends Document {
 	// getProduct: (query: object) => Promise<IProduct>
 	
 	// add methods
-	addCateory: (category: ICategory['_id'], options: ModelUpdateOptions) => Promise<void>
+	addCategory: (category: ICategory['_id']) => Promise<ICatalog>
 	// addProduct: (product: IProduct['_id'], options: ModelUpdateOptions) => Promise<void>
 
 	// remove methods
-	removeCateory: (category: ICategory['_id']) => Promise<void>
+	removeCategory: (category: ICategory['_id']) => Promise<ICatalog>
 	// removeProduct: (product: IProduct['_id']) => Promise<void>
 
 	wasNew: boolean // internal use
@@ -184,7 +180,6 @@ CatalogSchema.post('save', async function(this: ICatalog, doc: ICatalog, next: a
 
 		this.rootCategory = rootCategory._id
 
-		// TODO: Add catalog to project.catalogs
 		await this.save()
 	}
 	console.log(chalk.magenta('CatalogSchema post save END'))

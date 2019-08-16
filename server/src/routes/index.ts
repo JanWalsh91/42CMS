@@ -8,7 +8,7 @@ import auth from './authRoute';
 import catalogs from './catalogsRoute';
 // import products from './productsRoute';
 
-const router: Router = Router();
+const router: Router = Router({ mergeParams: true });
 
 router.get('/', (req: Request, res: Response) => {
 	res.status(200).send({

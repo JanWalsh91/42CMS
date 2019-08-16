@@ -4,7 +4,7 @@ import chalk from 'chalk';
 
 import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs } from './common';
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
-const { OK, BAD_REQUEST } = ResponseStatusTypes 
+const { OK, BAD_REQUEST, NOT_FOUND } = ResponseStatusTypes 
 
 import { Catalog } from '../src/models/catalogModel';
 
@@ -56,23 +56,29 @@ describe.only('Catalog', () => {
 	
 	describe('Get', () => {
 		it('Should get a catalog', async() => {
-			console.log(chalk.blue('Should get a catalog'))
+			console.log(chalk.blue('Should get a catalog: '), catalogData)
 			ret = await createCatalog(catalogData.id)
 			ret.should.have.status(OK)
 			ret = await getCatalog(catalogData.id)
-			printret(ret)
-			ret.body.id.should.equal(catalogData.id)
 			ret.should.have.status(OK)
+			ret.body.id.should.equal(catalogData.id)
+		})
+		describe('Should fail if ...', () => {
+			it('Catalog does not exist', async () => {
+				console.log(chalk.blue('Should fail if catalog does not exist'))
+				ret = await getCatalog(catalogData.id)
+				ret.should.have.status(NOT_FOUND)				
+			})
 		})
 	})
 
 	describe('GetAll', () => {
-		it('Should get all categories of a project', async() => {
-			console.log(chalk.blue('Should get all categories of a project'))
+		it('Should get all categories', async() => {
+			console.log(chalk.blue('Should get all categories'))
 			await Promise.all(['matser', 'china', 'international'].map(id => createCatalog(id)))
 			ret = await getAllCatalogs()
 			printret(ret)
-			ret.body.catalogs.length.should.equal(3)
+			ret.body.length.should.equal(3)
 			ret.should.have.status(OK)
 		})
 	})

@@ -1,9 +1,15 @@
 import { ICategory, Category, ICatalog, Catalog } from "../models";
 import { ValidationError, ResourceNotFoundError } from "../utils/Errors"
 import { catalogService } from '../services' 
+import chalk from "chalk";
 
 class CategoryService {
+	/**
+	 * @description Create a category. If options.parent, sets parent category, else sets parent as root, else if root doesn't exist, set 
+	 * @param options 
+	 */
 	public async create(options: Partial<ICategory>): Promise<ICategory> {
+		console.log(chalk.blue('[CategoryService.create]'), options)
 		const catalog: ICatalog = await catalogService.getById(options.catalog)
 		if (!catalog) {
 			throw new ResourceNotFoundError('Catalog', options.catalog)
@@ -12,26 +18,32 @@ class CategoryService {
 		if (existingCategory) {
 			throw new ValidationError('Category already exists')
 		}
+		
+		// Create new category
+		let category: ICategory = await new Category({
+			id: options.id,
+			name: options.name,
+			catalog
+		}).save()
+
+		// Add category to catalog
+		await catalog.addCategory(category)
+
+		// Link to parent category
 		if (options.id != 'root') {
 			var parentCategory: ICategory = null
 			if (options.parent) {
 				parentCategory = await catalog.getCategory({id: options.parent})
-			}
-			if (!parentCategory && options.id != 'root') {
+			} else {
 				parentCategory = await catalog.getCategory({id: 'root'});
 			}
 			if (!parentCategory) {
 				throw new ResourceNotFoundError('Category', options.parent || 'root')
 			}
+			await this.linkCategories(parentCategory, category)
+			await parentCategory.save()
 		}
-
-		// Create new category
-		return await new Category({
-			id: options.id,
-			name: options.name,
-			parent: parentCategory ? parentCategory._id : null,
-			catalog
-		}).save()
+		return await category.save()
 	}
 	
 	public async getById(id: string): Promise<ICategory> {
@@ -53,6 +65,24 @@ class CategoryService {
 			throw new ResourceNotFoundError('Category', id)
 		}
 		await Category.findOneAndDelete({id})
+	}
+
+	public async linkCategories(parent: ICategory, child: ICategory): Promise<{parent: ICategory, child: ICategory}> {
+		console.log(chalk.magenta(`linkCategories. parent: ${parent.id} child: ${child.id}`))
+		await Promise.all([
+			parent.addSubCategory(child._id),
+			child.setParent(parent._id),
+		])
+		return { parent, child }
+	}
+
+	static async unlinkCategories(parent: ICategory, child: ICategory): Promise<{parent: ICategory, child: ICategory}> {
+		console.log(chalk.magenta(`unlinkCategories. parent: ${parent.id} child: ${child.id}`))
+		await Promise.all([
+			parent.removeSubCateory(child._id),
+			child.setParent(null),
+		])
+		return { parent, child }
 	}
 }
 

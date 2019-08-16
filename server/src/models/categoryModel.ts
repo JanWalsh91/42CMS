@@ -118,28 +118,7 @@ class CategoryClass {
 	// }
 
 	// Move to service
-	static async linkCategories(parent: ICategory, child: ICategory): Promise<any> {
-		console.log(chalk.magenta(`linkCategories. parent: ${parent.id} child: ${child.id}`))
-		if (child.parent != null) {
-			await child.getParent()
-			await this.unlinkCategories(child.parent._id, child._id)
-		}
-		return Promise.all([
-			parent.addSubCategory(child._id),
-			child.setParent(parent._id),
-		])
-		// console.log(chalk.magenta(`linkCategories. parent: ${parent.id} child: ${child.id} END`))
-	}
 
-	// Move to service
-	static async unlinkCategories(parent: ICategory, child: ICategory) {
-		console.log(chalk.magenta(`unlinkCategories. parent: ${parent.id} child: ${child.id}`))
-		return Promise.all([
-			parent.removeSubCateory(child._id),
-			child.setParent(null),
-		])
-		// console.log(chalk.magenta(`unlinkCategories. parent: ${parent.id} child: ${child.id} END`))
-	}
 
 }
 
@@ -201,12 +180,6 @@ export const CategorySchema = new Schema({
 	// }],
 }).loadClass(CategoryClass)	
 
-// TODO: move to service
-export interface ICategoryModel extends Model<ICategory> {
-	linkCategories: (parent: ICategory, child: ICategory) => Promise<any>,
-	unlinkCategories: (parent: ICategory, child: ICategory) => Promise<any>,
-}
-
 /**
  * 'On create' middleware
  * Create only if id not used in Catalog
@@ -214,34 +187,34 @@ export interface ICategoryModel extends Model<ICategory> {
  *  
  */  
 
-CategorySchema.pre('save', function(this: ICategory, next: Function) {
-	// New Category
-	if (this.isNew) {
-		this.wasNew = false
-		console.log(chalk.magenta('CategorySchema pre save ' + this.id))
-		console.log(chalk.yellow('is new!'))
-		this.wasNew = this.isNew
+// CategorySchema.pre('save', function(this: ICategory, next: Function) {
+// 	// New Category
+// 	if (this.isNew) {
+// 		this.wasNew = false
+// 		console.log(chalk.magenta('CategorySchema pre save ' + this.id))
+// 		console.log(chalk.yellow('is new!'))
+// 		this.wasNew = this.isNew
 
-		// Check if category in catalog
-		// Update catalog.categories
-		Catalog.findById(this.catalog).populate('categories').exec((err, catalog: ICatalog) => {
-			if (err) { next(err); return; }
+// 		// Check if category in catalog
+// 		// Update catalog.categories
+// 		Catalog.findById(this.catalog).populate('categories').exec((err, catalog: ICatalog) => {
+// 			if (err) { next(err); return; }
 
-			if (catalog.categories.some((category: ICategory) => category.id == this.id)) {
-				throw new ValidationError('Category already exists')
-			}
-			catalog.categories.push(this._id)
-			catalog.markModified('categories')
-			catalog.save((err, _catalog: ICatalog) => {
-				if (err) { next(err); return; }
-				next()
-			})
-		})
-	} else {
-		next()
-	}
-	// next(err) // if fail
-});
+// 			if (catalog.categories.some((category: ICategory) => category.id == this.id)) {
+// 				throw new ValidationError('Category already exists')
+// 			}
+// 			catalog.categories.push(this._id)
+// 			catalog.markModified('categories')
+// 			catalog.save((err, _catalog: ICatalog) => {
+// 				if (err) { next(err); return; }
+// 				next()
+// 			})
+// 		})
+// 	} else {
+// 		next()
+// 	}
+// 	// next(err) // if fail
+// });
 
 
 // CategorySchema.post('save', function(this: ICategory, doc, next: any) {
@@ -256,4 +229,4 @@ CategorySchema.pre('save', function(this: ICategory, next: Function) {
 // 	}
 // })
 
-export const Category: ICategoryModel = model<ICategory, ICategoryModel>('Category', CategorySchema);
+export const Category: Model<ICategory> = model<ICategory>('Category', CategorySchema);

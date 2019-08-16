@@ -4,7 +4,7 @@ import { userController } from '../controllers/userController';
 import { User } from '../models/userModel';
 import authorize from '../middleware/authorize';
 
-const router: Router = Router();
+const router: Router = Router({ mergeParams: true });
 
 router
 	.post('/', userController.create)

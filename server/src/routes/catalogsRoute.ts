@@ -1,14 +1,12 @@
-import { Router, Request, Response, NextFunction } from 'express'
-import chalk from 'chalk'
+import { Router } from 'express'
 
 import { catalogController } from '../controllers/catalogController'
-import { ICatalog, Catalog } from '../models/catalogModel'
 import categories from './categoriesRoute'
 
-const router: Router = Router()
+const router: Router = Router({ mergeParams: true })
 
 router
-	.use('/:catalogid/categories/', categories)
+	.use('/:catalogid/categories', categories)
 	.get('/:catalogid', catalogController.get)
 	.get('/', catalogController.getAll)
 	.post('/', catalogController.create)

@@ -5,11 +5,13 @@ import * as bcrypt from "bcrypt"
 import * as bodyParser from "body-parser"
 import * as cors from 'cors'
 import * as session from 'express-session'
+import chalk from 'chalk'
 
 import ResponseStatusTypes from "./utils/ResponseStatusTypes"
+const { SERVER_ERROR } = ResponseStatusTypes
 
 import routes from './routes'
-import chalk from 'chalk'
+import { ServerError } from './utils/Errors';
 
 class App {
 
@@ -19,12 +21,24 @@ class App {
     constructor() {
         this.app = express()
 		this.config()
+		this.app.use(function printQuery(req: Request, res: Response, next: NextFunction) {
+			console.log(`URL: ${req.url}`)
+			new Array('body', 'params', 'query').forEach(x => {
+				if (Object.keys(req[x]).length > 0) {
+					console.log(`${x}: `, req[x])
+				}
+			})
+			next()
+		})
 		this.app.use('/', routes)
 		// Error handler
-		this.app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
-			console.error(chalk.red('ERROR'))
-			console.error(err.stack)
-			res.status(500).send('Something broke!')
+		this.app.use(function errorHandler(err: Error | ServerError, req: Request, res: Response, next: NextFunction) {
+			if ((<ServerError>err).httpCode) {
+				res.status((<ServerError>err).httpCode).send(err.message)
+			} else {
+				console.log(chalk.red(err.stack))
+				res.status(SERVER_ERROR).send('Unexpected Error')
+			}
 		})
     }
 

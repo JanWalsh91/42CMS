@@ -2,21 +2,21 @@ import * as chai from 'chai'
 chai.should()
 import chalk from 'chalk';
 
-import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs, createCategory, categoryData, catalogData } from '../server/tests/common';
-import ResponseStatusTypes from '../server/src/utils/ResponseStatusTypes'
+import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs, createCategory, categoryData, catalogData } from './common';
+import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 const { OK, BAD_REQUEST } = ResponseStatusTypes
 
-import { ICategory, Category } from '../server/src/models/categoryModel';
-import { Catalog, ICatalog } from '../server/src/models/catalogModel';
+import { ICategory, Category } from '../src/models/categoryModel';
+import { Catalog, ICatalog } from '../src/models/catalogModel';
 
 let ret: any
 
-describe('Category', () => {
+describe.only('Category', () => {
 	let catalog: any = {}
 
 	before(async() => {
 		console.log(chalk.blue('[Category] before'))
-		// Clear database
+		// Clear all database
 		await clearDataBase()
 		// Create user
 		ret = await createUser(userData)
@@ -25,8 +25,8 @@ describe('Category', () => {
 	
 	beforeEach(async() => {
 		console.log(chalk.blue('[Category] beforeEach'))
+		// Clear Categories and Catalogs
 		await clearDataBase(Category, Catalog)
-		
 		ret = await createCatalog(catalogData.id)
 		catalog = ret.body
 		console.log(chalk.blue('[Category] beforeEach END'))
@@ -46,6 +46,11 @@ describe('Category', () => {
 			await new Promise(resolve => Catalog.findOne({id: catalog.id}).populate('categories').exec((err, catalog: ICatalog) => {
 				catalog.categories.find((c: ICategory) => c.id == categoryData.id).should.exist
 				resolve()
+			}))
+			// Root Category should have category
+			await new Promise(resolve => Category.findOne({id: 'root'}).populate({path: 'subcategories'}).exec((err, category: ICategory) => {
+				category.subCategories.length.should.be.eq(1)
+				resolve(0)
 			}))
 		})
 		it('Should create two categories', async() => {
@@ -68,7 +73,7 @@ describe('Category', () => {
 			// Create subcategory
 			console.log(chalk.blue('Creating child category START'))
 
-			ret = await createCategory(catalog.id, subCatId, { parentCategoryId: categoryData.id })
+			ret = await createCategory(catalog.id, subCatId, { parent: categoryData.id })
 			ret.should.have.status(OK)
 			console.log(chalk.blue('Creating child category END'))
 
