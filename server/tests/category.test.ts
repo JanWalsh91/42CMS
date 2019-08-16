@@ -2,9 +2,9 @@ import * as chai from 'chai'
 chai.should()
 import chalk from 'chalk';
 
-import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs, createCategory, categoryData, catalogData } from './common';
+import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs, createCategory, categoryData, catalogData, logout, login } from './common';
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
-const { OK, BAD_REQUEST } = ResponseStatusTypes
+const { OK, BAD_REQUEST, UNAUTHORIZED, NOT_FOUND } = ResponseStatusTypes
 
 import { ICategory, Category } from '../src/models/categoryModel';
 import { Catalog, ICatalog } from '../src/models/catalogModel';
@@ -15,21 +15,13 @@ describe('Category', () => {
 	let catalog: any = {}
 
 	before(async() => {
-		console.log(chalk.blue('[Category] before'))
-		// Clear all database
 		await clearDataBase()
-		// Create user
-		ret = await createUser(userData)
-		console.log(chalk.blue('[Category] before END'))
+		await createUser(userData)
 	})
 	
 	beforeEach(async() => {
-		console.log(chalk.blue('[Category] beforeEach'))
-		// Clear Categories and Catalogs
 		await clearDataBase(Category, Catalog)
-		ret = await createCatalog(catalogData.id)
-		catalog = ret.body
-		console.log(chalk.blue('[Category] beforeEach END'))
+		catalog = (await createCatalog(catalogData.id)).body
 	})
 
 	describe('Create category', () => {
@@ -62,32 +54,53 @@ describe('Category', () => {
 			ret.should.have.status(OK)
 		})
 		it('Should create a subcategory', async() => {
-			let subCatId = 'subcat'
-			console.log(chalk.blue('Should create a subcategory'))
-			console.log(chalk.blue('Creating parent category START'))
-			// Create category
+			const subCatId = 'subcat'
+
 			ret = await createCategory(catalog.id, categoryData.id)
 			ret.should.have.status(OK)
-			console.log(chalk.blue('Creating parent category END'))
-
-			// Create subcategory
-			console.log(chalk.blue('Creating child category START'))
 
 			ret = await createCategory(catalog.id, subCatId, { parent: categoryData.id })
 			ret.should.have.status(OK)
-			console.log(chalk.blue('Creating child category END'))
 
 			ret.body.id.should.equal(subCatId)
 			catalog = await Catalog.findOne({id: catalog.id}).exec()
-			let parentCategory: ICategory = await catalog.getCategory({id: categoryData.id})
-			let childCategory: ICategory = await catalog.getCategory({id: subCatId})
-			// Parent Category should have ChildCategory as subCategory
-			console.log({parentCategory, childCategory})
+			const parentCategory: ICategory = await catalog.getCategory({id: categoryData.id})
+			const childCategory: ICategory = await catalog.getCategory({id: subCatId})
 			parentCategory.subCategories.find(id => id.toString() == childCategory._id.toString()).should.exist
 			childCategory.parent.toString().should.equal(parentCategory._id.toString())
-			// parentCategory.getSubcategory({id: subCatId}).should.exist
-			// ChildCategory should have ParentCategory as parentCategory
-			// childCategory.parentCategory
+		})
+		it('Should create a categeory of the same id in a different catalog', async() => {
+			const cat2id = 'cat2'
+			await createCatalog(cat2id)
+			ret = await createCategory(catalog.id, categoryData.id)
+			ret = await createCategory(cat2id, categoryData.id)
+			ret.should.have.status(OK)
+		})
+
+		describe('Should fail to create if ...', () => {
+			it('User is not authorized', async() => {
+				await logout()
+				ret = await createCategory(catalog.id, categoryData.id)
+				ret.should.have.status(UNAUTHORIZED)
+				await login(userData)
+			})
+			it('Catalog does not exist', async() => {
+				ret = await createCategory('notarealcatalogid', categoryData.id)
+				ret.status.should.eq(NOT_FOUND)
+			})
+			it('Category already exists in Catalog', async() => {
+				ret = await createCategory(catalog.id, categoryData.id)
+				ret = await createCategory(catalog.id, categoryData.id)
+				ret.status.should.eq(BAD_REQUEST)
+			})
+			it('Parent category does not exist', async() => {
+				ret = await createCategory(catalog.id, categoryData.id, { parent: 'doesntexist' })
+				ret.status.should.eq(NOT_FOUND)
+			})
+			// Prevent circular linking of category hierachies: not possible in Create!
+			it.only('Parent is self')
+			it.only('Parent\`s parent is self')
+			it.only('Parent\`s parent\'s parnetis self')
 		})
 	})
 })

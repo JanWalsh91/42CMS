@@ -1,8 +1,14 @@
 import { ICatalog, Catalog } from "../models/catalogModel";
-import { ResourceNotFoundError, NotImplementedError } from "../utils/Errors";
+import { ResourceNotFoundError, NotImplementedError, ValidationError } from "../utils/Errors";
 
 export class CatalogService {
 	public async create(options: Partial<ICatalog>): Promise<ICatalog> {
+		// Check if catalog exists
+		let existingCatalogs: ICatalog[] = await Catalog.find({id: options.id})
+		if (existingCatalogs.length > 0) {
+			throw new ValidationError('Catalog already exists')
+		}
+
 		return await new Catalog({
 			id: options.id,
 			name: options.name,

@@ -14,9 +14,10 @@ class CategoryService {
 		if (!catalog) {
 			throw new ResourceNotFoundError('Catalog', options.catalog)
 		}
+
 		const existingCategory: ICategory = await catalog.getCategory({id: options.id})
 		if (existingCategory) {
-			throw new ValidationError('Category already exists')
+			throw new ValidationError('Category already exists in this catalog')
 		}
 		
 		// Create new category
@@ -69,6 +70,9 @@ class CategoryService {
 
 	public async linkCategories(parent: ICategory, child: ICategory): Promise<{parent: ICategory, child: ICategory}> {
 		console.log(chalk.magenta(`linkCategories. parent: ${parent.id} child: ${child.id}`))
+		
+		// 
+		
 		await Promise.all([
 			parent.addSubCategory(child._id),
 			child.setParent(parent._id),

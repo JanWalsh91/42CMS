@@ -2,9 +2,9 @@ import * as chai from 'chai'
 chai.should()
 import chalk from 'chalk';
 
-import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs } from './common';
+import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs, logout } from './common';
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
-const { OK, BAD_REQUEST, NOT_FOUND } = ResponseStatusTypes 
+const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes 
 
 import { Catalog } from '../src/models/catalogModel';
 
@@ -17,10 +17,8 @@ const catalogData = {
 
 describe('Catalog', () => {
 	beforeEach(async() => {
-		// Clear database
 		await clearDataBase()
-		// Create user
-		ret = await createUser(userData)
+		await createUser(userData)
 	})
 
 	describe('Create', () => {
@@ -47,9 +45,19 @@ describe('Catalog', () => {
 			ret = await createCatalog(catalogData.id, {isMaster: true})
 			ret.should.have.status(OK)
 		})
-		// describe('Should fail to create a catalog if ...', () => {
-		// 	console.log(chalk.blue('Should fail to create a catalog if ...'))
-		// })
+		describe('Should fail to create a catalog if ...', () => {
+			it('Catalog already exists', async() => {
+				ret = await createCatalog(catalogData.id)
+				ret.should.have.status(OK)
+				ret = await createCatalog(catalogData.id)
+				ret.should.have.status(BAD_REQUEST)
+			})
+			it('User is not authenticated', async() => {
+				await logout()
+				ret = await createCatalog(catalogData.id)
+				ret.should.have.status(UNAUTHORIZED)
+			})
+		})
 	})
 	
 	describe('Get', () => {
@@ -67,6 +75,11 @@ describe('Catalog', () => {
 				ret = await getCatalog(catalogData.id)
 				ret.should.have.status(NOT_FOUND)				
 			})
+			it('User is not authenticated', async() => {
+				await logout()
+				ret = await getCatalog(catalogData.id)
+				ret.should.have.status(UNAUTHORIZED)
+			})
 		})
 	})
 
@@ -78,6 +91,13 @@ describe('Catalog', () => {
 			printret(ret)
 			ret.body.length.should.equal(3)
 			ret.should.have.status(OK)
+		})
+		describe('Should fail if ...', () => {
+			it('User is not authenticated', async() => {
+				await logout()
+				ret = await getAllCatalogs()
+				ret.should.have.status(UNAUTHORIZED)
+			})
 		})
 	})
 

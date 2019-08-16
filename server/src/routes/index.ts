@@ -6,6 +6,7 @@ import logout from './logoutRoute';
 
 import auth from './authRoute';
 import catalogs from './catalogsRoute';
+import authorize from '../middleware/authorize';
 // import products from './productsRoute';
 
 const router: Router = Router({ mergeParams: true });
@@ -21,7 +22,7 @@ router.use('/login', login);
 router.use('/logout', logout);
 
 router.use('/users', users);
-router.use('/catalogs', catalogs);
-// router.use('/products', products);
+router.use('/catalogs', authorize, catalogs);
+// router.use('/products', authorize, products);
 
 export default router;
