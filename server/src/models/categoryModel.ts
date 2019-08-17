@@ -92,8 +92,8 @@ class CategoryClass {
 	async removeSubCategory(this: ICategory, category: ICategory) {
 		console.log(chalk.magenta(`[CategoryModel.removeSubCategory] ${category.id} from ${this.id}`))
 		await this.populate('subCategories').execPopulate()
-		if (this.subCategories.some(cat => cat._id == category._id)) {
-			this.subCategories = this.subCategories.filter(x => x._id !== category._id)
+		if (this.subCategories.some(x => x._id.equals(category._id))) {
+			this.subCategories = this.subCategories.filter(x => !x._id.equals(category._id))
 			this.markModified('subCategories')
 		} else {
 			console.log(chalk.yellow(`[CategoryModel.removeSubCategory] ${category.id} not in ${this.id}`))

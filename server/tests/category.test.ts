@@ -148,20 +148,32 @@ describe('Category', () => {
 	})
 
 	describe('Delete Category', () => {
-		it.only('Should delete the category', async() => {
+		it('Should delete the category', async() => {
 			const catid1 = 'category1'
 			const catid2 = 'category2'
+			const catid3 = 'category3'
 			await createCategory(catalogData.id, catid1)
+			// Add two categories as subcats to cat1
 			await createCategory(catalogData.id, catid2, {parent: catid1})
+			await createCategory(catalogData.id, catid3, {parent: catid1})
 			ret = await deleteCategory(catalogData.id, catid1)
-			printret(ret)
 			ret.status.should.eq(OK)
 
-			let cat: ICategory = await Category.findOne({id: catid1}).exec()
-			expect(cat).to.not.exist
-			cat = await Category.findOne({id: catid2}).exec()
-			console.log({cat})
-			cat.parent.should.be.null
+			// Cat1 should not exist
+			let cat1: ICategory = await Category.findOne({id: catid1}).exec()
+			expect(cat1).to.not.exist
+
+			// Subcats should not have their parent set to Cat1
+			await Promise.all([catid2, catid3].map(async catid => {
+				let cat = await Category.findOne({id: catid}).exec()
+				expect(cat.parent).to.not.exist
+			}))
+	
+			const catalog: ICatalog = await Catalog.findOne({id: catalogData.id}).populate('categories').exec()
+			// Cat1 should not be in Catalog.categories
+			catalog.categories.should.not.include(cat => cat.id == catid1)
+			
+			// TODO: products from that category should not longer be assigned to that category
 		})
 	})
 })

@@ -8,6 +8,7 @@ import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes 
 
 import { Catalog } from '../src/models/catalogModel';
+import { Category } from '../src/models';
 
 let ret: any
 
@@ -16,7 +17,7 @@ const catalogData = {
 	isMaster: true
 }
 
-describe('Catalog', () => {
+describe.only('Catalog', () => {
 	beforeEach(async() => {
 		await clearDataBase()
 		await createUser(userData)
@@ -104,15 +105,25 @@ describe('Catalog', () => {
 		it('Should delete catalog', async() => {
 			const catid1 = 'category1'
 			const catid2 = 'category2'
+			const catid3 = 'category3'
+
 			await createCatalog(catalogData.id)
 			await createCategory(catalogData.id, catid1)
+			// Add two categories as subcats
 			await createCategory(catalogData.id, catid2, {parent: catid1})
-			console.log('delete request ', catalogData.id)
+			await createCategory(catalogData.id, catid3, {parent: catid1})
+			
 			ret = await deleteCatalog(catalogData.id)
 			printret(ret)
 			ret.status.should.eq(OK)
+			
+			// Catalog should no longer exist
 			expect(await Catalog.findOne({id: catalogData.id})).to.not.exist
-			expect(await Catalog.find({id: { $or: [catid1, catid2] }})).length.eq(0)
+
+			// Catalog's categories should no longer exist
+			expect(await Category.find({id: { $in: [catid1, catid2, catid3] }})).length(0)
+
+			// TODO: products should no longer be assigned to that Catalog
 		})
 	})
 });

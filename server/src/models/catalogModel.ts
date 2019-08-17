@@ -62,13 +62,14 @@ class CatalogClass {
 	// }
 
 	async removeCategory(this: ICatalog, category: ICategory): Promise<ICatalog> {
-		console.log(chalk.magenta(`[CatalogModel.removeCategory] ${category.id} from ${this._id}`))
-		if (category._id in this.categories) {
-			this.categories = this.categories.filter(x => x !== category._id)
+		console.log(chalk.magenta(`[CatalogModel.removeCategory] ${category.id} from ${this.id}`))
+		await this.populate('categories').execPopulate()
+		if (this.categories.some(x => x._id.equals(category._id))) {
+			this.categories = this.categories.filter(x => !x._id.equals(category._id))
 			this.markModified('categories')
 			return this.save()
 		} else {
-			console.log(chalk.yellow(`[CatalogModel.removeCategory] ${category.id} not in ${this._id}`))
+			console.log(chalk.yellow(`[CatalogModel.removeCategory] ${category.id} not in ${this.id}`))
 		}
 	}
 
@@ -113,11 +114,11 @@ export interface ICatalog extends Document {
 	// getProduct: (query: object) => Promise<IProduct>
 	
 	// add methods
-	addCategory: (category: ICategory['_id']) => Promise<ICatalog>
+	addCategory: (category: ICategory) => Promise<ICatalog>
 	// addProduct: (product: IProduct['_id'], options: ModelUpdateOptions) => Promise<void>
 
 	// remove methods
-	removeCategory: (category: ICategory['_id']) => Promise<ICatalog>
+	removeCategory: (category: ICategory) => Promise<ICatalog>
 	// removeProduct: (product: IProduct['_id']) => Promise<void>
 
 	wasNew: boolean // internal use

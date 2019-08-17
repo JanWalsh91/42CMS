@@ -61,21 +61,27 @@ class CategoryService {
 	}
 
 	public async delete(category: ICategory): Promise<void> {
-		console.log('[categoryService.delete]', category.id)
-		// Unlink categories
-		console.log(chalk.green('UNLINKING PARENT'))
+		console.log(chalk.magenta('[categoryService.delete]' +  category.id))
+		await category.populate([{path: 'catalog'}, {path: 'parent'}, {path: 'subCategories'}]).execPopulate()
+		// Remove category from catalog
+		// TODO: unless root?
+		if (category.catalog) {
+			await category.catalog.removeCategory(category)
+			await category.catalog.save()
+		}
+		// Unlink category from parent
 		if (category.parent) {
-			console.log(`unlinkning ${category} from parent`)
-			category = await category.populate('parent').execPopulate()
-			console.log({category})
 			const { parent, child } = await this.unlinkCategories(category.parent, category)
 			await parent.save()
 		}
-		console.log(chalk.green('UNLINKING SUBCATEGORIES'))
+		// Unlink category from subCategories
 		if (category.subCategories) {
-			await category.populate('subCategories').execPopulate()
-			await (<ICategory[]>category.subCategories).map(async(subcat: ICategory) => 
-				this.unlinkCategories(category, subcat).then(() => subcat.save()))	
+			await category.subCategories.reduce(async(_: Promise<void>, subcat: ICategory) => {
+				return _.then(async () => {
+					await this.unlinkCategories(category, subcat)
+					await subcat.save()
+				})
+			}, Promise.resolve())
 		}
 		// TODO: remove product assignments
 		await Category.findOneAndDelete({id: category.id})
@@ -88,7 +94,7 @@ class CategoryService {
 
 		await Promise.all([
 			parent.addSubCategory(child),
-			child.setParent(parent),
+			child.setParent(parent)
 		])
 		return { parent, child }
 	}
@@ -98,7 +104,7 @@ class CategoryService {
 		console.log(chalk.magenta(`[CategoryService.unlinkCategories] parent: ${parent.id}, child: ${child.id}`))
 		await Promise.all([
 			parent.removeSubCategory(child),
-			child.setParent(null),
+			child.setParent(null)
 		])
 		return { parent, child }
 	}
