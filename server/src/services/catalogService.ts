@@ -1,6 +1,6 @@
 import { ICatalog, Catalog } from '../models/catalogModel';
 import { ResourceNotFoundError, NotImplementedError, ValidationError } from '../utils/Errors';
-import { ICategory } from '../models';
+import { ICategory, IProduct } from '../models';
 import { categoryService } from '.';
 import chalk from 'chalk';
 
@@ -15,7 +15,7 @@ export class CatalogService {
 		return await new Catalog({
 			id: options.id,
 			name: options.name,
-			isMaster: options.isMaster
+			master: options.master
 		}).save()
 	}
 
@@ -36,7 +36,6 @@ export class CatalogService {
 		await Object.keys(update)
 			.filter(key => update[key] != undefined)
 			.reduce((_, key: string) => {
-				console.log('reducing ', key, update[key])
 				return _.then(() => this[`update_${key}`](catalog, update[key]))
 			}, Promise.resolve())
 		return catalog.save()
@@ -61,20 +60,49 @@ export class CatalogService {
 		await catalog.remove()
 	}
 
-	public async addCategory(catalogid: string, categoryid: string): Promise<void> {
-
+	public async addCategory(catalog: ICatalog, category: ICategory): Promise<void> {
+		await catalog.populate('categories').execPopulate()
+		if (catalog.categories.some(x => x._id.equals(category._id))) {
+			console.log(chalk.yellow('[CatalogService.addCategory] category already in catalog'))
+			return 
+		}
+		await catalog.addCategory(category)
+		await catalog.save()
 	}
 
-	public async removeCategory(catalogid: string, categoryid: string): Promise<void> {
-
+	public async removeCategory(catalog: ICatalog, category: ICategory): Promise<void> {
+		console.log(chalk.magenta(`[CatalogModel.removeCategory] ${category.id} from ${category.id}`))
+		await catalog.populate('categories').execPopulate()
+		if (catalog.categories.some(x => x._id.equals(category._id))) {
+			await catalog.removeCategory(category)
+			await catalog.save()
+		} else {
+			console.log(chalk.yellow(`[CatalogModel.removeCategory] ${category.id} not in ${category.id}`))
+		}
 	}
 
-	public async addProduct(catalogid: string, categoryid: string): Promise<void> {
-
+	public async addProduct(catalog: ICatalog, product: IProduct): Promise<void> {
+		console.log(chalk.magenta(`[CatalogService.addProduct] ${product.id} to ${catalog.id}`))
+		await catalog.populate('products').execPopulate()
+		if (catalog.products.some(x => x._id.equals(product._id))) {
+			console.log(chalk.yellow('[CatalogModel.addProduct] product already in catalog'))
+			return
+		}
+		await catalog.addProduct(product)
+		await catalog.save()
 	}
 
-	public async removeProduct(catalogid: string, categoryid: string): Promise<void> {
-
+	public async removeProduct(catalog: ICatalog, product: IProduct): Promise<void> {
+		console.log(chalk.magenta(`[CatalogService.removeProduct] ${product.id} to ${catalog.id}`))
+		await catalog.populate('products').execPopulate()
+		if (catalog.products.some(x => x._id.equals(product._id))) {
+			await catalog.removeProduct(product)
+			await catalog.save()
+			return 
+		} else {
+			console.log(chalk.yellow('[CatalogModel.removeProduct] product not in catalog'))
+			return
+		}
 	}
 
 	

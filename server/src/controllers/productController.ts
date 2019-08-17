@@ -1,51 +1,67 @@
-// import { Project, IProject } from '../models'
-import { ICatalog, Catalog } from '../models/catalogModel'
-import { Request, Response } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import chalk from 'chalk'
+
+import { productService } from '../services/productService'
 import ResponseStatusTypes from '../utils/ResponseStatusTypes'
-import { IProduct, Product } from '../models/productModel'
-import { ICategory, Category } from '../models/categoryModel'
-import { model } from 'mongoose'
+import { IProduct, Product, ICatalog, Catalog } from '../models'
+import { NotImplementedError, ValidationError, ResourceNotFoundError } from '../utils/Errors';
 
 const { BAD_REQUEST } = ResponseStatusTypes
 
 export class ProductController {
-	public async create(req: Request, res: Response) {
-		console.log(chalk.magenta('[ProductController] create'), req.body)
-		let project: IProject = req.body.project
-		let masterCatalog: ICatalog = req.body.masterCatalog
-		let name: string = req.body.name
-		let id: string = req.body.id
+	public async create(req: Request, res: Response, next: NextFunction): Promise<void> {
+		console.log(chalk.magenta('[ProductController] create'))
+		const { name, id, mastercatalogid: masterCatalog } = req.body
 		
 		try {
-			let product: IProduct = await new Product({
-				project: project._id,
-				masterCatalog: masterCatalog._id,
-				...{name, id}
+			const product: IProduct = await productService.create({
+				name, 
+				id,
+				masterCatalog
 			})
-			product = await product.save()
 			res.send(product)
-		} catch (e) {
-			res.status(BAD_REQUEST)
-			res.end()
-			// TODO: error msg
-		}
+		} catch (e) { next(e) }
 	}
 
-	
-	public async update(req: Request, res: Response) {
-		console.log(chalk.magenta('[ProductController] update'), req.body)
-		let project: IProject = req.body.project
-		let product: IProduct = req.body.product
-		try {
-			await product.updateAttributes({...req.body})
-			console.log('await save in productController')
-			product = await product.save()
-			res.send(product.toJSON()) // TODO: to JSONForUser
-		} catch (e) {
-			console.log('err: ', e)
-		}
+	public async get(req: Request, res: Response, next: NextFunction): Promise<void> {
+		console.log(chalk.magenta('[ProductController.get]'))
+		
+		// TODO: output for front end user
+		res.send(res.locals.product);
+	}
+
+	public async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
+		console.log(chalk.magenta('[ProductController.getAll]'))
+		const products: IProduct[] = await productService.getAll()
+
+		// TODO: output for front end user
+		res.send(products);
+	}		
+
+	public async update(req: Request, res: Response, next: NextFunction): Promise<void> {
+		console.log(chalk.magenta('[ProductController.update]'))
+		// await productService.udpate(res.locals.product)
+		throw new NotImplementedError()
+		// res.end()
+	}
+
+	public async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+		console.log(chalk.magenta('[ProductController.delete]'))
+		await productService.delete(res.locals.product)
 		res.end()
+	}
+
+	public async setProductFromParams(req: Request, res: Response, next: NextFunction): Promise<void> {
+		console.log(chalk.magenta('[ProductController.setProductFromParams]'))
+		if (!req.params.productid) {
+			return next(new ValidationError('Product id not provided'))
+		}
+		const product: IProduct = await productService.getById(req.params.productid)
+		if (!product) {
+			return next(new ResourceNotFoundError('Product', req.params.productid))
+		}
+		res.locals.product = product
+		next()
 	}
 }
 

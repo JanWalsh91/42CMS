@@ -7,14 +7,13 @@ import { clearDataBase, createUser, printret, userData, createCatalog, getCatalo
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes 
 
-import { Catalog, ICatalog } from '../src/models/catalogModel';
-import { Category } from '../src/models';
+import { Catalog, ICatalog, Category } from '../src/models';
 
 let ret: any
 
 const catalogData = {
 	id: 'storefrontCatalog',
-	isMaster: true
+	master: true
 }
 
 describe('Catalog', () => {
@@ -25,17 +24,22 @@ describe('Catalog', () => {
 
 	describe('Create', () => {
 		it('Should create a catalog', async() => {
-			console.log(chalk.blue('Should create a catalog'))
 			ret = await createCatalog(catalogData.id)
 			ret.should.have.status(OK)
 			ret.body.id.should.equal(catalogData.id)
 			// Catalog should be added to database
 			const catalog = await Catalog.findOne({id: catalogData.id})
-			console.log({catalog})
 			catalog.should.exist
 			// Catalog should have a root category which exists in the database
 			catalog.rootCategory.should.exist
-			// note: 'root' category itself is not in categories
+			catalog.master.should.eq(false)
+		})
+		it('Should create a master catalog', async() => {
+			ret = await createCatalog(catalogData.id, { master: true })
+			ret.should.have.status(OK)
+			// Catalog.master should be true
+			const catalog = await Catalog.findOne({id: catalogData.id})
+			catalog.master.should.eq(true)
 		})
 		it('Should create two catalogs', async () => {
 			ret = await createCatalog(catalogData.id)
@@ -44,7 +48,7 @@ describe('Catalog', () => {
 			ret.should.have.status(OK)
 		})
 		it('Should create a master catalog', async () => {
-			ret = await createCatalog(catalogData.id, {isMaster: true})
+			ret = await createCatalog(catalogData.id, {master: true})
 			ret.should.have.status(OK)
 		})
 		describe('Should fail to create a catalog if ...', () => {

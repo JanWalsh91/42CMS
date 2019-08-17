@@ -1,111 +1,63 @@
 import { Schema, Document, Model, model, Query } from 'mongoose'
 
-import { ICategory, Category } from '../models'
-import { IProduct, Product } from './productModel';
-// import { ISite } from './siteModel';
+import { ICategory, Category, IProduct, Product } from '../models'
 
 import chalk from 'chalk';
-import { IUser } from './userModel';
-import { ModelUpdateOptions } from '../utils/ModelUpdateOptions';
 
 class CatalogClass {
 	// define virtuals here
+
+	// ===== Category ======
+	async addCategory(this: ICatalog, category: ICategory): Promise<ICatalog> {
+		console.log(chalk.magenta(`[CatalogModel.addCategory] ${category.id} to ${this.id}`))
+		this.categories.push(category._id)
+		this.markModified('categories')
+		return this
+	}
 
 	async getCategory(this: ICatalog, query: object): Promise<ICategory> {
 		return await Category.findOne({ catalog: this._id, ...query })
 	}
 
-	// async getProduct(this: ICatalog, query: object): Promise<IProduct> {
-	// 	return await Product.findOne({ catalog: this._id, ...query })
-	// }
-
-	// async getRootCategory(this: ICatalog): Promise<ICategory> {
-	// 	await this.populate('rootCategory').execPopulate()
-	// 	return this.rootCategory;
-	// }
-
-	// /**
-	//  * Check if: 
-	//  * - doesn't yet exist in catalog 
-	//  */
-	async addCategory(this: ICatalog, category: ICategory): Promise<ICatalog> {
-		console.log(chalk.magenta(`[CatalogModel.addCategory] ${category.id} to ${this._id}`))
-		if (category._id in this.categories) {
-			console.log(chalk.yellow('[CatalogModel.addCategory] category already in catalog'))
-			return 
-		}
-		this.categories.push(category._id)
-		this.markModified('categories')
-		return this.save()
-	}
-
-	// /**
-	//  * Check if: 
-	//  * - doesn't yet exist in catalog 
-	//  */
-	// async addProduct(this: ICatalog, productId: IProduct['_id'], options: ModelUpdateOptions = {}): Promise<ServerError | void> {
-	// 	console.log(chalk.magenta(`[CatalogModel.addProduct] ${productId} to ${this._id}`))
-	// 	// check if exists ? (needed?)
-	// 	if (!options.skipCheckExists) {
-	// 		// await this.getProject()
-	// 		// const product: IProduct = await this.project.getProduct({ _id: productId })
-	// 		// if (!product) {
-	// 		// 	throw new ServerError(ErrorType.PRODUCT_NOT_FOUND)
-	// 		// }
-	// 	}
-	// 	if (productId in this.products) {
-	// 		console.log(chalk.yellow('[CatalogModel.addProduct] product already in catalog'))
-	// 		return 
-	// 	}
-	// 	this.products.push(productId)
-	// 	this.markModified('products')
-	// }
-
 	async removeCategory(this: ICatalog, category: ICategory): Promise<ICatalog> {
 		console.log(chalk.magenta(`[CatalogModel.removeCategory] ${category.id} from ${this.id}`))
 		await this.populate('categories').execPopulate()
-		if (this.categories.some(x => x._id.equals(category._id))) {
-			this.categories = this.categories.filter(x => !x._id.equals(category._id))
-			this.markModified('categories')
-			return this.save()
-		} else {
-			console.log(chalk.yellow(`[CatalogModel.removeCategory] ${category.id} not in ${this.id}`))
-		}
+		this.categories = this.categories.filter(x => !x._id.equals(category._id))
+		this.markModified('categories')
+		return this
 	}
 
-	// async removeProduct(this: ICatalog, productId: IProduct['_id']) {
-	// 	console.log(chalk.magenta(`[CatalogModel.removeProduct] ${productId} from ${this._id}`))
-	// 	if (productId in this.products) {
-	// 		this.products = this.products.filter(x => x !== productId)
-	// 		this.markModified('products')
-	// 	} else {
-	// 		console.log(chalk.yellow(`[CatalogModel.removeProduct] ${productId} not in ${this._id}`))
-	// 	}
-	// }
+	// ===== Product =====
+	// Adds product regardless of master
+	async addProduct(this: ICatalog, product: IProduct): Promise<ICatalog> {
+		console.log(chalk.magenta(`[CatalogModel.addProduct] ${product.id} to ${this.id}`))
+		await this.populate('products').execPopulate()
+		this.products.push(product._id)
+		this.markModified('products')
+		return this
+	}
 
-	// toJSONfor(this: ICatalog, user: IUser) {
-	// 	return {
-	// 		id: this.id,
-	// 		name: this.name, 
-	// 		categories: this.categories,
-	// 		rootCategory: this.rootCategory,
-	// 		isMaster: this.isMaster,
-	// 	}
-	// }
+	async removeProduct(this: ICatalog, product: IProduct): Promise<ICatalog> {
+		console.log(chalk.magenta(`[CatalogModel.addProduct] ${product.id} to ${this.id}`))
+		await this.populate('products').execPopulate()
+		this.products = this.products.filter(x => !x._id.equals(product._id))
+		this.markModified('products')
+		return this
+	}
 }
 
 export interface ICatalog extends Document {
 	id: string
 	name: string
 	// sitesAssignedTo: ISite['_id'][]
-	rootCategory: ICategory['_id']
-	categories: ICategory['_id'][]
-	// products: IProduct['_id'][]
+	rootCategory: ICategory['_id'] | ICategory
+	categories: (ICategory['_id'] | ICategory)[] 
+	products: (IProduct['_id'] | IProduct)[]
 	/**
 	 * Determines if this catalog owns products, or if products are assigned to it (cannot do both)
 	 * Products can only be owned by one Catalog, but can be assigned to many
 	 */
-	isMaster: boolean
+	master: boolean
 
 	
 	// get methods
@@ -115,11 +67,11 @@ export interface ICatalog extends Document {
 	
 	// add methods
 	addCategory: (category: ICategory) => Promise<ICatalog>
-	// addProduct: (product: IProduct['_id'], options: ModelUpdateOptions) => Promise<void>
+	addProduct: (product: IProduct) => Promise<ICatalog>
 
 	// remove methods
 	removeCategory: (category: ICategory) => Promise<ICatalog>
-	// removeProduct: (product: IProduct['_id']) => Promise<void>
+	removeProduct: (product: IProduct) => Promise<ICatalog>
 
 	wasNew: boolean // internal use
 }
@@ -144,12 +96,12 @@ export const CatalogSchema = new Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Category',
 	}],
-	// products: [{
-	// 	type: Schema.Types.ObjectId,
-	// 	ref: 'Product',
-	// 	default: null
-	// }],
-	isMaster: {
+	products: [{
+		type: Schema.Types.ObjectId,
+		ref: 'Product',
+		default: null
+	}],
+	master: {
 		type: Boolean,
 		required: true,
 		default: false,
@@ -165,13 +117,14 @@ CatalogSchema.pre('save', async function(this: ICatalog, next: any) {
 	next()
 });
 
-// err: MongoError
 CatalogSchema.post('save', async function(this: ICatalog, doc: ICatalog, next: any) {
 	// New Catalog
 	if (this.wasNew) {
 		this.wasNew = false
 		console.log(chalk.magenta('CatalogSchema post save', this.id))
 		// Create 'root' category
+
+		// TODO: use service ? Or move to service
 		const rootCategory: ICategory = await new Category({id: 'root', catalog: this._id})
 		await rootCategory.save()
 

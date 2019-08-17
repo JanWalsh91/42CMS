@@ -21,30 +21,12 @@ class App {
     constructor() {
         this.app = express()
 		this.config()
-		this.app.use(function printQuery(req: Request, res: Response, next: NextFunction) {
-			console.log(chalk.keyword('goldenrod')('=================================='))
-			console.log(`${req.method} : ${req.url}`)
-			new Array('body', 'params', 'query').forEach(x => {
-				if (Object.keys(req[x]).length > 0) {
-					console.log(`\t${x}: `, req[x])
-				}
-			})
-			next()
-		})
+		this.app.use(this.printQuery)
 		this.app.use('/', routes)
-		// Error handler
-		this.app.use(function errorHandler(err: Error | ServerError, req: Request, res: Response, next: NextFunction) {
-			if ((<ServerError>err).httpCode) {
-				console.log(chalk.red(err.stack), '(0)')
-				res.status((<ServerError>err).httpCode).send(err.message)
-			} else {
-				console.log(chalk.red(err.stack), '(1)')
-				res.status(SERVER_ERROR).send('Unexpected Error')
-			}
-		})
+		this.app.use(this.errorHandler)
     }
 
-    private config(): void{
+    private config(): void {
 		this.app.disable('x-powered-by')
 		this.app.use(express.static('public'))
         this.app.use(bodyParser.json())
@@ -103,6 +85,26 @@ class App {
 		next();
 	}
 
+	private errorHandler(err: Error | ServerError, req: Request, res: Response, next: NextFunction) {
+		if ((<ServerError>err).httpCode) {
+			console.log(chalk.red(err.stack), '(0)')
+			res.status((<ServerError>err).httpCode).send(err.message)
+		} else {
+			console.log(chalk.red(err.stack), '(1)')
+			res.status(SERVER_ERROR).send('Unexpected Error')
+		}
+	}
+
+	private printQuery(req: Request, res: Response, next: NextFunction) {
+		console.log(chalk.keyword('goldenrod')('=================================='))
+		console.log(`${req.method} : ${req.url}`)
+		new Array('body', 'params', 'query').forEach(x => {
+			if (Object.keys(req[x]).length > 0) {
+				console.log(`\t${x}: `, req[x])
+			}
+		})
+		next()
+	}
 
 }
 

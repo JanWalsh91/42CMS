@@ -1,18 +1,17 @@
-import { catalogService } from '../services/catalogService'
-
-import { ICatalog } from '../models'
-
 import { Request, Response, NextFunction } from 'express'
 import chalk from 'chalk'
+
+import { catalogService } from '../services/catalogService'
+import { ICatalog } from '../models'
 import { ResourceNotFoundError, ValidationError } from '../utils/Errors'
 
 export class CatalogController {
 	public async create(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[CatalogController.create]'))
-		const { name, id, isMaster }: { name: string, id: string, isMaster: boolean } = req.body; // User acquired from authorization middleware
+		const { name, id, master }: { name: string, id: string, master: boolean } = req.body; // User acquired from authorization middleware
 
 		try {
-			const catalog: ICatalog = await catalogService.create({name, id, isMaster});
+			const catalog: ICatalog = await catalogService.create({name, id, master});
 			
 			// console.log(chalk.magenta('[CatalogController] create END'), catalog);
 			res.send(catalog)

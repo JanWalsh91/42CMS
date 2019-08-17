@@ -4,11 +4,7 @@ import chaiHttp = require('chai-http')
 chai.use(chaiHttp)
 const agent = chai.request.agent(app)
 
-import { User } from '../src/models/userModel'
-import { Catalog, ICatalog } from '../src/models/catalogModel'
-// import { Site } from '../src/models/siteModel'
-import { Category, ICategory } from '../src/models/categoryModel'
-// import { Product } from '../src/models/productModel'
+import { User, IUser, Catalog, ICatalog, Category, ICategory, Product, IProduct  } from '../src/models'
 
 export const userData = {
 	name: 'John Smith',
@@ -38,7 +34,7 @@ export const clearDataBase = async (...models: any) => {
 			Catalog,
 			// Site,
 			Category,
-			// Product
+			Product
 		]
 	}
 	await Promise.all(models.map(model => model.deleteMany({})))
@@ -108,8 +104,14 @@ export const clearDataBase = async (...models: any) => {
 
 // ===== PRODUCTS ====== //
 
-	export const createProduct = (masterCatalogId: string, productid: string, params?: object) => 
-		agent.post(`/products`).send({id: productid, masterCatalogId, ...params})
+	export const createProduct = (mastercatalogid: string, productid: string, params?: object) => 
+		agent.post(`/products`).send({id: productid, mastercatalogid, ...params})
+	
+	export const getProduct = (productid: string) =>
+		agent.get(`/products/${productid}`)
+
+	export const getAllProducts = () =>
+		agent.get(`/products`)
 
 	export const updateProduct = (productid: string, params?: object) => 
 		agent.put(`/products/${productid}`).send(params)
@@ -119,40 +121,6 @@ export const clearDataBase = async (...models: any) => {
 
 // ===== UTILITY ===== //
 
-export const printret = ret => {
-	console.log({status: ret.status, body: ret.body})
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// old project
-
-// // ===== PROJECTS ===== //
-
-// 	export const createProject = (params: {name: string, id: string}) =>
-// 		agent.post('/projects').send(params)
-
-// 	// Gets all projects of user (set by session)
-// 	export const getProjects = () => 
-// 		agent.get('/projects')
-
-// 	// Gets project id of user (set by session)
-// 	export const getProject = (projectid: string) =>
-// 		agent.get(`/projects/${projectid}`)
+	export const printret = ret => {
+		console.log({status: ret.status, body: ret.body})
+	}

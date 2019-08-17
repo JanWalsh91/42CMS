@@ -7,8 +7,7 @@ import { clearDataBase, createUser, printret, userData, createCatalog, getCatalo
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 const { OK, BAD_REQUEST, UNAUTHORIZED, NOT_FOUND } = ResponseStatusTypes
 
-import { ICategory, Category } from '../src/models/categoryModel';
-import { Catalog, ICatalog } from '../src/models/catalogModel';
+import { Catalog, ICatalog, Category, ICategory } from '../src/models';
 
 let ret: any
 

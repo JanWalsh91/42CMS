@@ -3,7 +3,6 @@ import { Schema, Document, Model, model } from 'mongoose'
 import { ICatalog, Catalog } from '../models'
 
 import chalk from 'chalk';
-// import { ModelUpdateOptions } from '../utils/ModelUpdateOptions';
 import { ResourceNotFoundError, ValidationError } from '../utils/Errors';
 
 // Define instance methods

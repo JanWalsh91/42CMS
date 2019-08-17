@@ -1,7 +1,8 @@
+import chalk from "chalk";
+
 import { ICategory, Category, ICatalog, Catalog } from "../models";
 import { ValidationError, ResourceNotFoundError } from "../utils/Errors"
 import { catalogService } from '../services' 
-import chalk from "chalk";
 
 class CategoryService {
 	/**
@@ -28,7 +29,7 @@ class CategoryService {
 		}).save()
 
 		// Add category to catalog
-		await catalog.addCategory(category)
+		await catalogService.addCategory(catalog, category)
 
 		// Link to parent category
 		if (options.id != 'root') {
@@ -58,10 +59,10 @@ class CategoryService {
 
 	public async update(category: ICategory, update: Partial<{name: string, id: string, parentId: string}>): Promise<ICategory> {
 		console.log(chalk.magenta(`[CategoryService.update]`), update)
+		// TODO: do with switch case
 		await Object.keys(update)
 			.filter(key => update[key] != undefined)
 			.reduce((_, key: string) => {
-				console.log('reducing ', key, update[key])
 				return _.then(() => this[`update_${key}`](category, update[key]))
 			}, Promise.resolve())
 		return category.save()
@@ -104,17 +105,18 @@ class CategoryService {
 	public async delete(category: ICategory): Promise<void> {
 		console.log(chalk.magenta('[categoryService.delete]' +  category.id))
 		await category.populate([{path: 'catalog'}, {path: 'parent'}, {path: 'subCategories'}]).execPopulate()
+		
 		// Remove category from catalog
-		// TODO: unless root?
 		if (category.catalog) {
-			await category.catalog.removeCategory(category)
-			await category.catalog.save()
+			await catalogService.removeCategory(category.catalog, category)
 		}
+		
 		// Unlink category from parent
 		if (category.parent) {
 			const { parent, child } = await this.unlinkCategories(category.parent, category)
 			await parent.save()
 		}
+		
 		// Unlink category from subCategories
 		if (category.subCategories) {
 			await category.subCategories.reduce(async(_: Promise<void>, subcat: ICategory) => {
@@ -124,7 +126,10 @@ class CategoryService {
 				})
 			}, Promise.resolve())
 		}
+		
 		// TODO: remove product assignments
+
+		// Delete Category
 		await Category.findOneAndDelete({id: category.id})
 	}
 

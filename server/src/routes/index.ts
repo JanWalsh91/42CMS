@@ -3,11 +3,11 @@ import { Router, Request, Response } from 'express';
 import users from './usersRoute';
 import login from './loginRoute';
 import logout from './logoutRoute';
-
 import auth from './authRoute';
 import catalogs from './catalogsRoute';
+import products from './productsRoute';
+
 import authorize from '../middleware/authorize';
-// import products from './productsRoute';
 
 const router: Router = Router({ mergeParams: true });
 
@@ -23,6 +23,6 @@ router.use('/logout', logout);
 
 router.use('/users', users);
 router.use('/catalogs', authorize, catalogs);
-// router.use('/products', authorize, products);
+router.use('/products', authorize, products);
 
 export default router;

@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import chalk from 'chalk';
 
 import { ICategory, ICatalog } from '../models'
-import { categoryService, catalogService } from '../services';
+import { categoryService } from '../services';
 import ResponseStatusTypes from '../utils/ResponseStatusTypes';
 import { ValidationError, ResourceNotFoundError, NotImplementedError } from '../utils/Errors';
 
@@ -12,13 +12,13 @@ export class CategoryController {
 	
 	public async create(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[CategoryController.create]'));
-		const { name, id, parent } = req.body
+		const { name, id, parent } : { name: string, id: string, parent: string } = req.body
 
 		try {
 			const category: ICategory = await categoryService.create({
 				name,
 				id,
-				catalog: req.params.catalogid, // id instead of _id ?
+				catalog: req.params.catalogid, // handled in service
 				parent
 			})
 			res.send(category)
