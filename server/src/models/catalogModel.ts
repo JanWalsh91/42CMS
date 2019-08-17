@@ -7,28 +7,20 @@ import chalk from 'chalk';
 class CatalogClass {
 	// define virtuals here
 
-	// ===== Category ======
+	// ==== get ====
+	async getCategory(this: ICatalog, query: object): Promise<ICategory> {
+		return await Category.findOne({ catalog: this._id, ...query }).exec()
+	}
+	async getProduct(this: ICatalog, query: object): Promise<IProduct> {
+		return await Product.findOne({ masterCatalog: this._id, ...query }).exec()
+	}
+	// ==== add ====
 	async addCategory(this: ICatalog, category: ICategory): Promise<ICatalog> {
 		console.log(chalk.magenta(`[CatalogModel.addCategory] ${category.id} to ${this.id}`))
 		this.categories.push(category._id)
 		this.markModified('categories')
 		return this
 	}
-
-	async getCategory(this: ICatalog, query: object): Promise<ICategory> {
-		return await Category.findOne({ catalog: this._id, ...query })
-	}
-
-	async removeCategory(this: ICatalog, category: ICategory): Promise<ICatalog> {
-		console.log(chalk.magenta(`[CatalogModel.removeCategory] ${category.id} from ${this.id}`))
-		await this.populate('categories').execPopulate()
-		this.categories = this.categories.filter(x => !x._id.equals(category._id))
-		this.markModified('categories')
-		return this
-	}
-
-	// ===== Product =====
-	// Adds product regardless of master
 	async addProduct(this: ICatalog, product: IProduct): Promise<ICatalog> {
 		console.log(chalk.magenta(`[CatalogModel.addProduct] ${product.id} to ${this.id}`))
 		await this.populate('products').execPopulate()
@@ -36,7 +28,14 @@ class CatalogClass {
 		this.markModified('products')
 		return this
 	}
-
+	// ==== remove ====
+	async removeCategory(this: ICatalog, category: ICategory): Promise<ICatalog> {
+		console.log(chalk.magenta(`[CatalogModel.removeCategory] ${category.id} from ${this.id}`))
+		await this.populate('categories').execPopulate()
+		this.categories = this.categories.filter(x => !x._id.equals(category._id))
+		this.markModified('categories')
+		return this
+	}
 	async removeProduct(this: ICatalog, product: IProduct): Promise<ICatalog> {
 		console.log(chalk.magenta(`[CatalogModel.addProduct] ${product.id} to ${this.id}`))
 		await this.populate('products').execPopulate()
@@ -63,7 +62,7 @@ export interface ICatalog extends Document {
 	// get methods
 	getRootCategory: () => Promise<ICategory>
 	getCategory: (query: object) => Promise<ICategory>
-	// getProduct: (query: object) => Promise<IProduct>
+	getProduct: (query: object) => Promise<IProduct>
 	
 	// add methods
 	addCategory: (category: ICategory) => Promise<ICatalog>
@@ -80,6 +79,7 @@ export const CatalogSchema = new Schema({
 	id: {
 		type: String,
 		required: true,
+		unique: true,
 	},
 	name: {
 		type: String,
@@ -95,11 +95,13 @@ export const CatalogSchema = new Schema({
 	categories: [{
 		type: Schema.Types.ObjectId,
 		ref: 'Category',
+		unique: true,
 	}],
 	products: [{
 		type: Schema.Types.ObjectId,
 		ref: 'Product',
-		default: null
+		default: null,
+		unique: true,
 	}],
 	master: {
 		type: Boolean,

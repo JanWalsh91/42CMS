@@ -62,7 +62,7 @@ export class CatalogService {
 
 	public async addCategory(catalog: ICatalog, category: ICategory): Promise<void> {
 		await catalog.populate('categories').execPopulate()
-		if (catalog.categories.some(x => x._id.equals(category._id))) {
+		if (catalog.categories.some(x => x.id == category.id)) {
 			console.log(chalk.yellow('[CatalogService.addCategory] category already in catalog'))
 			return 
 		}
@@ -73,7 +73,7 @@ export class CatalogService {
 	public async removeCategory(catalog: ICatalog, category: ICategory): Promise<void> {
 		console.log(chalk.magenta(`[CatalogModel.removeCategory] ${category.id} from ${category.id}`))
 		await catalog.populate('categories').execPopulate()
-		if (catalog.categories.some(x => x._id.equals(category._id))) {
+		if (catalog.categories.some(x => x.id == category.id)) {
 			await catalog.removeCategory(category)
 			await catalog.save()
 		} else {
@@ -84,7 +84,7 @@ export class CatalogService {
 	public async addProduct(catalog: ICatalog, product: IProduct): Promise<void> {
 		console.log(chalk.magenta(`[CatalogService.addProduct] ${product.id} to ${catalog.id}`))
 		await catalog.populate('products').execPopulate()
-		if (catalog.products.some(x => x._id.equals(product._id))) {
+		if (catalog.products.some(x => x.id == product.id)) {
 			console.log(chalk.yellow('[CatalogModel.addProduct] product already in catalog'))
 			return
 		}
@@ -95,7 +95,7 @@ export class CatalogService {
 	public async removeProduct(catalog: ICatalog, product: IProduct): Promise<void> {
 		console.log(chalk.magenta(`[CatalogService.removeProduct] ${product.id} to ${catalog.id}`))
 		await catalog.populate('products').execPopulate()
-		if (catalog.products.some(x => x._id.equals(product._id))) {
+		if (catalog.products.some(x => x.id == product.id)) {
 			await catalog.removeProduct(product)
 			await catalog.save()
 			return 

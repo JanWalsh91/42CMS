@@ -46,6 +46,22 @@ describe.only('Product', function() {
 			const catalog: ICatalog = await Catalog.findOne({id: catalogData.id}).populate('products').exec()
 			catalog.products.find(x => x.id == productData.id).should.exist
 		})
+		describe.only('Should fail to create a product if ...', () => {
+			it.only('the product id is not unique', async() => {
+				await createProduct(catalogData.id, productData.id, { name: productData.name })
+				ret = await createProduct(catalogData.id, productData.id, { name: productData.name })
+				ret.status.should.equal(BAD_REQUEST)
+			})
+			it('the catalog does not exist', async() => {
+				ret = await createProduct('mysupercatalog', productData.id, { name: productData.name })
+				ret.status.should.equal(NOT_FOUND)
+			})
+			it('the catalog is not a master catalog', async() => {
+				await createCatalog(catalogData.id, {master: false})
+				ret = await createProduct(catalogData.id, productData.id, { name: productData.name })
+				ret.status.should.equal(BAD_REQUEST)	
+			})
+		})
 	})
 
 	describe('Get Product', () => {

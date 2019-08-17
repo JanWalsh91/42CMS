@@ -14,6 +14,10 @@ export class ProductService {
 		if (!catalog.master) {
 			throw new ValidationError(`Cannot create a product in a non master catalog`)
 		}
+		const existingProduct: IProduct = await catalog.getProduct({id: options.id})
+		if (existingProduct) {
+			throw new ValidationError('Product already exists in this catalog')
+		}
 		
 		// Create new Product
 		const product: IProduct = await new Product({
