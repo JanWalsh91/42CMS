@@ -18,6 +18,7 @@ const UserSchema = new Schema({
 	apiKey: {
 		type: String,
 		required: 'Need an apiKey',
+		immutable: true,
 	},
 	username: {
 		type: String,
@@ -34,7 +35,8 @@ const UserSchema = new Schema({
 	},
     created_date: {
         type: Date,
-        default: Date.now,
+		default: Date.now,
+		immutable: true,
 	},
 	admin: {
 		type: Boolean,

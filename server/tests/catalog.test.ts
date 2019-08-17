@@ -3,11 +3,11 @@ chai.should()
 const expect = require('chai').expect
 import chalk from 'chalk';
 
-import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs, logout, createCategory, categoryData, deleteCatalog } from './common';
+import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs, logout, createCategory, categoryData, deleteCatalog, updateCatalog } from './common';
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes 
 
-import { Catalog } from '../src/models/catalogModel';
+import { Catalog, ICatalog } from '../src/models/catalogModel';
 import { Category } from '../src/models';
 
 let ret: any
@@ -17,7 +17,7 @@ const catalogData = {
 	isMaster: true
 }
 
-describe.only('Catalog', () => {
+describe('Catalog', () => {
 	beforeEach(async() => {
 		await clearDataBase()
 		await createUser(userData)
@@ -124,6 +124,39 @@ describe.only('Catalog', () => {
 			expect(await Category.find({id: { $in: [catid1, catid2, catid3] }})).length(0)
 
 			// TODO: products should no longer be assigned to that Catalog
+		})
+	})
+
+	describe('Update Catalog', () => {
+		const newName: string = 'newName'
+		const newId: string = 'newID'
+
+		it('Should update name', async() => {
+			await createCatalog(catalogData.id)
+
+			ret = await updateCatalog(catalogData.id, {name: newName})
+			ret.status.should.eq(OK)
+
+			// Catalog's name should be updated
+			const catalog: ICatalog = await Catalog.findOne({id: catalogData.id})
+			catalog.name.should.eq(newName)
+		})
+		it('Should update name and id', async() => {
+
+			await createCatalog(catalogData.id)
+
+			ret = await updateCatalog(catalogData.id, {name: newName, id: newId})
+			ret.status.should.eq(OK)
+			
+			// Catalog's name and id should be updated
+			const catalog: ICatalog = await Catalog.findOne({id: newId})
+			catalog.name.should.eq(newName)
+			catalog.id.should.eq(newId)
+		})
+		describe('Should fail if ...', () => {
+			it('User is not authorized')
+			it('Name is invalid')
+			it('Id is not unique')
 		})
 	})
 });

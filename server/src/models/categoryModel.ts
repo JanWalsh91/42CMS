@@ -155,7 +155,8 @@ export const CategorySchema = new Schema({
 	catalog: {
 		type: Schema.Types.ObjectId,
 		ref: 'Catalog',
-		required: true
+		required: true,
+		immutable: true,
 	},
 	parent: {
 		type: Schema.Types.ObjectId,

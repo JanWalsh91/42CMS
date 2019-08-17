@@ -47,10 +47,6 @@ class CategoryService {
 		return await category.save()
 	}
 	
-	public async getById(id: string): Promise<ICategory> {
-		return Category.findOne({id}).exec()
-	}
-
 	public async findAll(query: object): Promise<ICategory[]> {
 		return Category.find(query).exec()
 	}
@@ -58,6 +54,51 @@ class CategoryService {
 	public async getAll(): Promise<ICategory[]> {
 		// TODO: format user object for front end user
 		return Category.find({}).exec()
+	}
+
+	public async update(category: ICategory, update: Partial<{name: string, id: string, parentId: string}>): Promise<ICategory> {
+		console.log(chalk.magenta(`[CategoryService.update]`), update)
+		await Object.keys(update)
+			.filter(key => update[key] != undefined)
+			.reduce((_, key: string) => {
+				console.log('reducing ', key, update[key])
+				return _.then(() => this[`update_${key}`](category, update[key]))
+			}, Promise.resolve())
+		return category.save()
+	}
+
+	public async update_name(category: ICategory, name: string): Promise<ICategory> {
+		console.log(chalk.magenta(`[CategoryService.updateName] ${name}`))
+		category.name = name
+		return category
+	}
+
+	public async update_id(category: ICategory, id: string): Promise<ICategory> {
+		console.log(chalk.magenta(`[CategoryService.updateID] ${id}`))
+		await category.populate('catalog').execPopulate()
+		if (await category.catalog.getCategory({id})) {
+			throw new ValidationError(`Category with id ${id} already exists in this catalog`)
+		}
+		category.id = id
+		return category
+	}
+
+	// Updates and saves parents, does not save category
+	public async update_parentId(category: ICategory, parentId: string): Promise<ICategory> {
+		console.log(chalk.magenta(`[CategoryService.updateParent] ${parentId}`))
+		await category.populate([{path: 'catalog'}, {path: 'parent'}]).execPopulate()
+		
+		const parentCategory: ICategory = await category.catalog.getCategory({id: parentId})
+		if (!parentCategory) {
+			throw new ResourceNotFoundError('Category', parentId)
+		}
+		if (category.parent) {
+			const { parent, child } = await this.unlinkCategories(category.parent, category)
+			await parent.save()
+		}
+		await this.linkCategories(parentCategory, category)
+		await parentCategory.save()
+		return category
 	}
 
 	public async delete(category: ICategory): Promise<void> {
@@ -102,6 +143,7 @@ class CategoryService {
 	// ! does not save
 	public async unlinkCategories(parent: ICategory, child: ICategory): Promise<{parent: ICategory, child: ICategory}> {
 		console.log(chalk.magenta(`[CategoryService.unlinkCategories] parent: ${parent.id}, child: ${child.id}`))
+		
 		await Promise.all([
 			parent.removeSubCategory(child),
 			child.setParent(null)

@@ -5,9 +5,9 @@ chai.use(chaiHttp)
 const agent = chai.request.agent(app)
 
 import { User } from '../src/models/userModel'
-import { Catalog } from '../src/models/catalogModel'
+import { Catalog, ICatalog } from '../src/models/catalogModel'
 // import { Site } from '../src/models/siteModel'
-import { Category } from '../src/models/categoryModel'
+import { Category, ICategory } from '../src/models/categoryModel'
 // import { Product } from '../src/models/productModel'
 
 export const userData = {
@@ -83,6 +83,9 @@ export const clearDataBase = async (...models: any) => {
 	export const getAllCatalogs = () =>
 		agent.get(`/catalogs`)
 
+	export const updateCatalog = (catalogid: string, params: Partial<ICatalog>) =>
+		agent.put(`/catalogs/${catalogid}`).send(params)
+
 	export const deleteCatalog = (catalogid: string) =>
 		agent.delete(`/catalogs/${catalogid}`)
 
@@ -96,6 +99,9 @@ export const clearDataBase = async (...models: any) => {
 
 	export const getAllCategories = (catalogid: string) =>
 		agent.get(`/catalogs/${catalogid}/categories`)
+
+	export const updateCategory = (catalogid: string, categoryid: string, params: Partial<ICategory>) =>
+		agent.put(`/catalogs/${catalogid}/categories/${categoryid}`).send(params)
 
 	export const deleteCategory = (catalogid: string, categoryid: string) =>
 		agent.delete(`/catalogs/${catalogid}/categories/${categoryid}`)

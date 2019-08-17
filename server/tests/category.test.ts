@@ -3,7 +3,7 @@ chai.should()
 const expect = require('chai').expect
 import chalk from 'chalk';
 
-import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs, createCategory, categoryData, catalogData, logout, login, getCategory, getAllCategories, deleteCategory } from './common';
+import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs, createCategory, categoryData, catalogData, logout, login, getCategory, getAllCategories, deleteCategory, updateCategory } from './common';
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 const { OK, BAD_REQUEST, UNAUTHORIZED, NOT_FOUND } = ResponseStatusTypes
 
@@ -174,6 +174,83 @@ describe('Category', () => {
 			catalog.categories.should.not.include(cat => cat.id == catid1)
 			
 			// TODO: products from that category should not longer be assigned to that category
+		})
+	})
+
+	describe('Update Category', () => {
+		const newName: string = 'newName'
+		const newId: string = 'newID'
+		const parentId: string = 'parentId'
+		const newParentId: string = 'newParentId'
+
+		it('Should update name', async() => {
+			await createCategory(catalogData.id, categoryData.id)
+
+			ret = await updateCategory(catalogData.id, categoryData.id, {name: newName})
+			ret.status.should.eq(OK)
+			// Category's name should be updated
+			const category: ICategory = await Category.findOne({id: categoryData.id})
+			category.name.should.eq(newName)
+		})
+		it('Should update name and id', async() => {
+			await createCategory(catalogData.id, categoryData.id)
+
+			ret = await updateCategory(catalogData.id, categoryData.id, {name: newName, id: newId})
+			ret.status.should.eq(OK)
+	
+			// Category's name and id should be updated
+			const cateogry: ICategory = await Category.findOne({id: newId})
+			cateogry.name.should.eq(newName)
+			cateogry.id.should.eq(newId)
+		})
+
+		describe('Update Catalog parent', () => {
+			it('Should link Catalog and parent if no parent was set', async() => {
+				await createCategory(catalogData.id, categoryData.id)
+				await createCategory(catalogData.id, parentId)
+
+				ret = await updateCategory(catalogData.id, categoryData.id, { parent: parentId })
+				ret.status.should.eq(OK)
+
+				// Category.parent should be set
+				const category: ICategory = await Category.findOne({id: categoryData.id}).populate('parent')
+				category.parent.id.should.eq(parentId)
+				// Parent.subcategories should be updated
+				const parentCategory: ICategory = await Category.findOne({id: parentId}).populate('subCategories')
+				parentCategory.subCategories.find((x: ICategory) => x.id == categoryData.id).should.exist
+			})
+			it('Should unlink Catalog with previous parentm and link Catalog with parent', async() => {
+				await createCategory(catalogData.id, categoryData.id)
+				await createCategory(catalogData.id, parentId)
+				await createCategory(catalogData.id, newParentId)
+
+				ret = await updateCategory(catalogData.id, categoryData.id, { parent: parentId })
+				ret = await updateCategory(catalogData.id, categoryData.id, { parent: newParentId })
+				ret.status.should.eq(OK)
+
+				// Category.parent should be set
+				const category: ICategory = await Category.findOne({id: categoryData.id}).populate('parent')
+				category.parent.id.should.eq(newParentId)
+				// Parent.subcategories should be updated
+				const parentCategory: ICategory = await Category.findOne({id: newParentId}).populate('subCategories')
+				parentCategory.subCategories.find((x: ICategory) => x.id == categoryData.id).should.exist
+				// Old parent.subCategories should be updated
+				const oldParentCategory: ICategory = await Category.findOne({id: parentId}).populate('subCategories')
+				expect(oldParentCategory.subCategories.find((x: ICategory) => x.id == categoryData.id)).to.not.exist
+			})
+		})
+
+		describe('Should fail if ...', () => {
+			it('User is not authorized')
+			it('Name is invalid')
+			it('Id is not unique in category', async() => {
+				await createCategory(catalogData.id, categoryData.id)
+				await createCategory(catalogData.id, newId)
+
+				ret = await updateCategory(catalogData.id, categoryData.id, {id: newId})
+				ret.status.should.eq(BAD_REQUEST)
+			})
+			it('Parent does not exist')
 		})
 	})
 })

@@ -35,6 +35,20 @@ export class CategoryController {
 		res.send(res.locals.catalog.categories)
 	}
 
+	public async update(req: Request, res: Response, next: NextFunction): Promise<void> {
+		console.log(chalk.magenta('[CategoryController.update]'))
+		const { name, id, parent } = req.body
+		try {
+			await categoryService.update(res.locals.category, {
+				name,
+				id,
+				parentId: parent
+			})
+		} catch (e) { next(e) }
+	
+		res.end()
+	}
+
 	public async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[CategoryController.delete]'), req.params);
 		await categoryService.delete(res.locals.category)

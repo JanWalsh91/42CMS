@@ -2,6 +2,7 @@ import { ICatalog, Catalog } from '../models/catalogModel';
 import { ResourceNotFoundError, NotImplementedError, ValidationError } from '../utils/Errors';
 import { ICategory } from '../models';
 import { categoryService } from '.';
+import chalk from 'chalk';
 
 export class CatalogService {
 	public async create(options: Partial<ICatalog>): Promise<ICatalog> {
@@ -30,8 +31,27 @@ export class CatalogService {
 		return Catalog.find({}).exec()
 	}
 
-	public async update(): Promise<ICatalog> {
-		throw new NotImplementedError()
+	public async update(catalog: ICatalog, update: Partial<{name: string, id: string}>): Promise<ICatalog> {
+		console.log(chalk.magenta(`[CatalogService.update]`), update)
+		await Object.keys(update)
+			.filter(key => update[key] != undefined)
+			.reduce((_, key: string) => {
+				console.log('reducing ', key, update[key])
+				return _.then(() => this[`update_${key}`](catalog, update[key]))
+			}, Promise.resolve())
+		return catalog.save()
+	}
+
+	public async update_name(catalog: ICatalog, name: string): Promise<ICatalog> {
+		console.log(chalk.magenta(`[CatalogService.updateName] ${name}`))
+		catalog.name = name
+		return catalog
+	}
+
+	public async update_id(catalog: ICatalog, id: string): Promise<ICatalog> {
+		console.log(chalk.magenta(`[CatalogService.updateID] ${id}`))
+		catalog.id = id
+		return catalog
 	}
 
 	public async delete(catalog: ICatalog): Promise<void> {

@@ -37,8 +37,19 @@ export class CatalogController {
 		res.send(catalogs);
 	}
 
+	public async update(req: Request, res: Response, next: NextFunction): Promise<void> {
+		console.log(chalk.magenta('[CatalogController.update]'))
+		const { name, id } = req.body
+
+		try {
+			await catalogService.update(res.locals.catalog, { name, id })
+		} catch (e) { next(e) }
+	
+		res.end()
+	}
+	
 	public async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[CatalogController.delete]'), req.params)
+		console.log(chalk.magenta('[CatalogController.delete]'))
 		await catalogService.delete(res.locals.catalog)
 		res.end()
 	}
@@ -55,6 +66,7 @@ export class CatalogController {
 		res.locals.catalog = catalog
 		next()
 	}
+
 }
 
 export const catalogController: CatalogController = new CatalogController();
