@@ -37,11 +37,12 @@ export class CatalogController {
 	}
 
 	public async update(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[CatalogController.update]'))
-		const { name, id } = req.body
+		console.log(chalk.magenta('[CatalogController.update]'), req.body)
 
 		try {
-			await catalogService.update(res.locals.catalog, { name, id })
+			await catalogService.update(res.locals.catalog, req.body, {
+				catalog: res.locals.catalog
+			})
 		} catch (e) { next(e) }
 	
 		res.end()

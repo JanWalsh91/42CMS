@@ -6,7 +6,7 @@ const router: Router = Router({ mergeParams: true })
 
 router
 	.get('/:categoryid', categoryController.setCategoryFromParams, categoryController.get)
-	.put('/:categoryid', categoryController.setCategoryFromParams, categoryController.update)
+	.patch('/:categoryid', categoryController.setCategoryFromParams, categoryController.update)
 	.delete('/:categoryid', categoryController.setCategoryFromParams, categoryController.delete)	
 	.get('/', categoryController.getAll)
 	.post('/', categoryController.create)

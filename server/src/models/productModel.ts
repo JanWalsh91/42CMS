@@ -2,144 +2,111 @@ import { Schema, Document, Model, model } from 'mongoose'
 import { ICatalog, Catalog, ICategory } from './';
 
 import chalk from 'chalk';
+import { ValidationError } from '../utils';
 
 class ProductClass {
-	// define virtuals here
+	// ==== set ====
 
+	async setPrimaryCategoryByCatalog(this: IProduct, category: ICategory | null, catalog: ICatalog): Promise<void> {
+		console.log(chalk.magenta(`[ProductModel.setPrimaryCategoryByCatalog] ${catalog.id} to ${this.id}`))
+		await this.populate('assignedCatalogs').execPopulate()
+
+		// add assigned catalog if not assigned
+		if (!this.assignedCatalogs.find(x => x.id == catalog.id)) {
+			await this.addAssignedCatalog(catalog)
+		}
+		// add assigned category if not assigned
+		const categoriesForCatalog = this.assignedCategoriesByCatalog.find(x => x.catalog == catalog.id)
+		if (!categoriesForCatalog) {
+			throw new ValidationError(`Product ${this.id} not assigned to catalog ${catalog.id}`)
+		}
+		if (category && !categoriesForCatalog.categories.find(x => x == category.id)) {
+			await this.addAssignedCategoryByCatalog(category, catalog)
+		}
+		let currentPrimaryCategoryByCatalog = this.primaryCategoryByCatalog.find(x => x.catalog == catalog.id)
+		if (!currentPrimaryCategoryByCatalog){
+			currentPrimaryCategoryByCatalog = { catalog: catalog.id, category: category ? category.id : null }
+			this.primaryCategoryByCatalog.push(currentPrimaryCategoryByCatalog)
+		} else {
+			currentPrimaryCategoryByCatalog.category = category ? category.id : null
+		}
+		this.markModified('primaryCategoryByCatalog')
+	}
+
+	// ==== get ====
 	async getMasterCatalog(this: IProduct): Promise<ICatalog> {
 		await this.populate('masterCatalog').execPopulate()
 		return this.masterCatalog
 	}
 
-	// TODO: 
-	// getPrimaryCategoryByCatalog: (query: object) => Promise<>
-	// getAssignedCategoriesByCatalog: (query: object) => Promise<>
+	// ==== add ==== 
+	async addAssignedCatalog(this: IProduct, catalog: ICatalog): Promise<void> {
+		console.log(chalk.magenta(`[ProductModel.addAssignedCatalog] ${catalog.id} to ${this.id}`))
+		// console.log('catalog: ', catalog)
+		await this.populate('assignedCatalogs').execPopulate()
 
-	// set methods
-	// setName(this: IProduct, name: string): void {
-	// 	this.name = name
-	// }
+		if (this.assignedCatalogs.find(x => x._id.equals(catalog._id))) {
+			console.log(chalk.yellow(`Product ${this.id} already assigned to Catalog ${catalog.id}`))
+			return 
+		}
+		this.assignedCatalogs.push(catalog)
+		this.primaryCategoryByCatalog.push({ catalog: catalog.id, category: null })
+		console.log('BEFORE', catalog.id, this.assignedCategoriesByCatalog)
+		this.assignedCategoriesByCatalog.push({ catalog: catalog.id, categories: null })
+		console.log('AFTER', catalog.id, this.assignedCategoriesByCatalog)
+		this.markModified('assignedCatalogs')
+		this.markModified('primaryCategoryByCatalog')
+		this.markModified('assignedCategoriesByCatalog')
+	}
 
-	// async setMasterCatalog(this: IProduct, catalogId: ICatalog['_id'] | null, options?: ModelUpdateOptions): Promise<ServerError | void> {
-	// 	console.log(chalk.magenta(`[ProductModel.setMasterCatalog] ${catalogId} from ${this._id}`))
-	// 	if (!catalogId) {
-	// 		this.masterCatalog = null
-	// 		this.markModified('masterCatalog')
-	// 		// TODO: can you unset? Or is a masterCatalog required?
-	// 	} else {
-	// 		if (!options.skipCheckExists) {
-	// 			await this.getProject()
-	// 			const catalog: ICatalog = await this.project.getCatalog({ _id: catalogId })
-	// 			if (!catalog) {
-	// 				throw new ServerError(ErrorType.CATALOG_NOT_FOUND)
-	// 			}
-	// 		}
-	// 		if (catalogId === this.populated('masterCatalog') ? this.masterCatalog._id : this.masterCatalog) {
-	// 			console.log(chalk.yellow('[ProductModel.setParent] category already is parent'))
-	// 			return 
-	// 		}
-	// 		this.masterCatalog = catalogId
-	// 		this.markModified('masterCatalog')
-	// 	}
-	// }
+	async addAssignedCategoryByCatalog(this: IProduct, category: ICategory, catalog: ICatalog): Promise<void> {
+		console.log(chalk.magenta(`[ProductModel.addAssignedCategoryByCatalog] catalog: ${catalog.id}, category: ${category.id}, product: ${this.id}`))
+		await this.populate('assignedCatalogs').execPopulate()
+		console.log(this)		
+		if (!this.assignedCatalogs.find(x => x.id == catalog.id)) {
+			await this.addAssignedCatalog(catalog)
+		}
+		console.log('assignedCategoriesByCatalog: ', this.assignedCategoriesByCatalog)
+		let categoriesForCatalog = this.assignedCategoriesByCatalog.find(x => x.catalog == catalog.id)		
+		if (!categoriesForCatalog.categories.includes(category.id)) {
+			categoriesForCatalog.categories.push(category.id)
+			this.markModified('assignedCategoriesByCatalog')
+		}
+	}
 
-	// async setPrimaryCategoryInCatalog(this: IProduct, categoryId: ICategory['_id'] | null, catalogId: ICatalog['_id'], options?: ModelUpdateOptions): Promise<ServerError | void> {
-	// 	if (!options.skipCheckExists) {
-	// 		// Check if product is assigned to catalog
-	// 		let assignedCatalog: ICatalog = await this.getAssignedCatalog({ _id: catalogId })
-	// 		if (assignedCatalog) {
-	// 			throw new ServerError(ErrorType.PRODUCT_NOT_ASSIGNED_TO_CATALOG)
-	// 		}
-	// 		// Check if category exists in catalog
-	// 		let newPrimaryCateogory = await assignedCatalog.getCategory({ _id: categoryId })
-	// 		if (!newPrimaryCateogory) {
-	// 			throw new ServerError(ErrorType.CATEGORY_NOT_FOUND)
-	// 		}
-	// 		// TODO: update to type and use as list of type (see type definition)
-	// 		// this.primaryCategoryByCatalog.find((primaryCategoryForCatalog) => primaryCategoryForCatalog.catalog == catalogId)
-	// 	}
-	// }
-	
+	// ==== remove ==== 
+	async removeAssignedCatalog(this: IProduct, catalog: ICatalog): Promise<void> {
+		console.log(chalk.magenta(`[ProductModel.removeAssignedCatalog] ${catalog.id} to ${this.id}`))
+		await this.populate('assignedCatalogs').execPopulate()
+		this.assignedCatalogs = this.assignedCatalogs.filter(x => !x._id.equals(catalog._id))
+		this.primaryCategoryByCatalog = this.primaryCategoryByCatalog.filter(x => x.catalog != catalog.id)
+		this.assignedCategoriesByCatalog = this.assignedCategoriesByCatalog.filter(x => x.catalog != catalog.id)
+		this.markModified('assignedCatalogs')
+		this.markModified('primaryCategoryByCatalog')
+		this.markModified('assignedCategoriesByCatalog')
+	}
 
-
-	// async addAssignedCatalog(this: IProduct, catalogId: ICatalog['_id'], options?: ModelUpdateOptions): Promise<ServerError | void> {
-	// 	console.log(chalk.magenta(`[ProductModel.addAssignedCatalog] ${catalogId} to ${this._id}`))
-	// 	if (!options.skipCheckExists) {
-	// 		// await this.getProject()
-	// 		// await this.project.getCatalogs()
-	// 		// const catalog: ICatalog = await this.project.catalogs({ _id: catalogId })
-	// 		// if (!catalog) {
-	// 		// 	throw new ServerError(ErrorType.CATALOG_NOT_FOUND)
-	// 		// }
-	// 	}
-	// 	if (catalogId in this.assignedCatalogs) {
-	// 		console.log(chalk.yellow('[ProductModel.addSubCategory] catalog already in assignedCatalogs'))
-	// 		return 
-	// 	}
-	// 	this.assignedCatalogs.push(catalogId)
-	// 	this.markModified('assignedCatalogs')
-	// } 
-
-	// TODO: 
-	// async addAssignedCategoryInCatalog(this: IProduct, categoryId: ICategory['_id'], catalogId: ICatalog['_id'], options?: ModelUpdateOptions): Promise<ServerError | void> {
-	// 	console.log(chalk.magenta(`[ProductModel.addAssignedCategoryInCatalog] ${categoryId} in ${catalogId} to ${this._id}`))
-	// }
-
-
-	// async updateAttributes(this: IProduct, attributes: UpdatableAttributes) {
-	// 	let { name, masterCatalog, primaryCategoryByCatalog, assignedCategoriesByCatalog } : UpdatableAttributes = attributes
-	// 	console.log(attributes);
-		
-	// 	// let populateParams: ModelPopulateOptions[] = []
-	// 	let promises = []
-
-	// 	if (name) promises.push(this.updateName(name))
-	// 	if (masterCatalog) promises.push(this.updateMasterCatalog(masterCatalog))
-	// 	if (primaryCategoryByCatalog) promises.push(this.updatePrimaryCategoryByCatalog(primaryCategoryByCatalog))
-	// 	if (assignedCategoriesByCatalog) promises.push(this.updateAssignedCategoriesByCatalog(assignedCategoriesByCatalog))
-
-	// 	return Promise.all(promises)		
-	// }
-
-	// async updateName(this: IProduct, name: string): Promise<any> {
-	// 	console.log('updateName')
-	// 	this.name = name;
-	// }
-
-	// async updateMasterCatalog(this: IProduct, catalogid: string) {
-	// 	console.log('updateMasterCatalog')
-	// 	await this.populate([{path: 'masterCatalog'}]).execPopulate()
-	// 	let newMasterCatalog: ICatalog = await Catalog.findOne({ , id: catalogid })
-	// 	if (!newMasterCatalog) {
-	// 		throw (new ServerError(ErrorType.CATALOG_NOT_FOUND, catalogid))
-	// 	}
-	// 	this.masterCatalog.removeProduct(this)
-	// 	newMasterCatalog.addProduct(this)
-	// 	await Promise.all([
-	// 		this.masterCatalog.save(),
-	// 		newMasterCatalog.save(),
-	// 	])
-	// 	this.masterCatalog = newMasterCatalog._id
-	// }
-
-	// async updatePrimaryCategoryByCatalog(this: IProduct, primaryCategoryByCatalog: PrimaryCategoryByCatalog) {
-	// 	console.log('updatePrimaryCategoryByCatalog')
-	// }
-
-
-	// async updateAssignedCategoriesByCatalog(this: IProduct) {}
-
-
-
+	async removeAssignedCategoryByCatalog(this: IProduct, category: ICategory, catalog: ICatalog): Promise<void> {
+		console.log(chalk.magenta(`[ProductModel.removeAssignedCategoryByCatalog] catalog: ${catalog.id}, category: ${category.id}, product: ${this.id}`))
+		await this.populate('assignedCatalogs').execPopulate()
+		if (!this.assignedCatalogs.find(x => x.id == catalog.id)) {
+			return 
+		}
+		let categoriesForCatalog = this.assignedCategoriesByCatalog.find(x => x.catalog == catalog.id)		
+		if (categoriesForCatalog && categoriesForCatalog.categories.includes(category.id)) {
+			categoriesForCatalog.categories = categoriesForCatalog.categories.filter(x => x != category.id)
+			this.markModified('assignedCategoriesByCatalog')
+		}
+	}
 }
 
 export interface IProduct extends Document {
 	id: string
 	name: string
 	masterCatalog: ICatalog['_id'] | ICatalog
-	// assignedCatalogs: (ICatalog['_id'] | ICatalog)[]
-	// primaryCategoryByCatalog: PrimaryCategoryByCatalog
-	// assignedCategoriesByCatalog: AssignedCategoriesByCatalog
+	assignedCatalogs: (ICatalog['_id'] | ICatalog)[]
+	primaryCategoryByCatalog: { catalog: string, category: string }[]
+	assignedCategoriesByCatalog: { catalog: string, categories: string[] }[]
 
 	// get methods
 	// getMasterCatalog: () => Promise<ICatalog>
@@ -150,15 +117,15 @@ export interface IProduct extends Document {
 	// set methods
 	// setName: (name: string) => void
 	// setMasterCatalog: (catalogId: ICatalog | null) => Promise<void>
-	// setPrimaryCategoryInCatalog: (categoryId: ICategory | null, catalogId: ICatalog) => Promise<void>
+	setPrimaryCategoryByCatalog: (categoryId: ICategory | null, catalogId: ICatalog) => Promise<void>
 
 	// add methods
-	// addAssignedCatalog: (catalogId: ICatalog) => Promise<void>
-	// addAssignedCategoryInCatalog: (categoryId: ICategory, catalogId: ICatalog) => Promise<void>
+	addAssignedCatalog: (catalogId: ICatalog) => Promise<void>
+	addAssignedCategoryByCatalog: (categoryId: ICategory, catalogId: ICatalog) => Promise<void>
 	
 	// remove methods
-	// removeAssignedCatalog: (catalogId: ICatalog) => Promise<void>
-	// removeAssignedCategoryInCatalog: (categoryId: ICategory, catalogId: ICatalog) => Promise<void>
+	removeAssignedCatalog: (catalogId: ICatalog) => Promise<void>
+	removeAssignedCategoryByCatalog: (categoryId: ICategory, catalogId: ICatalog) => Promise<void>
 
 	// methods
 	// updateAttributes(attributed: UpdatableAttributes): Promise<any>
@@ -189,25 +156,24 @@ export const ProductSchema = new Schema({
 		ref: 'Catalog',
 		required: true,
 	},
-	// assignedCatalogs: [{
-	// 	type: Schema.Types.ObjectId,
-	// 	ref: 'Catalog',
-	// }],
-	// primaryCategoryByCatalog: {
-	// 	type: [{
-	// 		catalog: { type: Schema.Types.ObjectId, ref: 'Catalog' },
-	// 		category: { type: Schema.Types.ObjectId, ref: 'Category' }
-	// 	}],
-	// 	default: []
-	// },
-	// assignedCategoriesByCatalog: {
-	// 	type: [{
-	// 		catalog: { type: Schema.Types.ObjectId, ref: 'Catalog' },
-	// 		category: [{ type: Schema.Types.ObjectId, ref: 'Category' }]
-	// 	}],
-	// 	default: []
-	// },
+	assignedCatalogs: {
+		type: [Schema.Types.ObjectId],
+		ref: 'Catalog',
+		default: [],
+	},
+	assignedCategoriesByCatalog: [new Schema({
+		catalog: String,
+		category: String
+	}, {_id: false, minimize: false})],
+	primaryCategoryByCatalog: [new Schema({
+		catalog: String,
+		category: [String]
+	}, {_id: false, minimize: false})]
 }).loadClass(ProductClass)
+
+// console.log(ProductSchema)
+
+// process.exit()
 
 // ProductSchema.virtual('catalogs').get(function(this: IProduct) {
 // 	console.log(chalk.magenta('ProductSchema virtual catalogs '))

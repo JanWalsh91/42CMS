@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import chalk from 'chalk'
 
-import { productService } from '../services/productService'
-import ResponseStatusTypes from '../utils/ResponseStatusTypes'
+import { productService } from '../services'
+import { ResponseStatusTypes } from '../utils'
 import { IProduct, Product, ICatalog, Catalog } from '../models'
 import { NotImplementedError, ValidationError, ResourceNotFoundError } from '../utils/Errors';
 
@@ -40,9 +40,14 @@ export class ProductController {
 
 	public async update(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[ProductController.update]'))
-		// await productService.udpate(res.locals.product)
-		throw new NotImplementedError()
-		// res.end()
+
+		try {
+			await productService.update(res.locals.product, req.body, {
+				product: res.locals.product
+			})
+		} catch (e) { next(e) }
+	
+		res.end()
 	}
 
 	public async delete(req: Request, res: Response, next: NextFunction): Promise<void> {

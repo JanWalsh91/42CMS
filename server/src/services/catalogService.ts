@@ -1,10 +1,29 @@
-import { ICatalog, Catalog } from '../models/catalogModel';
-import { ResourceNotFoundError, NotImplementedError, ValidationError } from '../utils/Errors';
-import { ICategory, IProduct } from '../models';
-import { categoryService } from '.';
 import chalk from 'chalk';
 
-export class CatalogService {
+import { ResourceNotFoundError, NotImplementedError, ValidationError, Patchable, patchAction, patchRequest } from '../utils';
+import { ICategory, IProduct, ICatalog, Catalog } from '../models';
+import { categoryService } from '.';
+
+
+export class CatalogService extends Patchable {
+	patchMap = {
+		id: {
+			$set: async (action: patchAction): Promise<void> => {
+				this.checkRequiredProperties(action, ['value'])
+				const catalog: ICatalog = action.resources.catalog;
+				await catalog.setId(action.value)
+			}
+		},
+		name: {
+			$set: async (action: patchAction): Promise<void> => {
+				this.checkRequiredProperties(action, ['value'])
+				const catalog: ICatalog = action.resources.catalog;
+				
+				await catalog.setName(action.value)
+			}
+		}
+	}
+
 	public async create(options: Partial<ICatalog>): Promise<ICatalog> {
 		// Check if catalog exists
 		let existingCatalogs: ICatalog[] = await Catalog.find({id: options.id})
@@ -31,26 +50,12 @@ export class CatalogService {
 		return Catalog.find({}).exec()
 	}
 
-	public async update(catalog: ICatalog, update: Partial<{name: string, id: string}>): Promise<ICatalog> {
-		console.log(chalk.magenta(`[CatalogService.update]`), update)
-		await Object.keys(update)
-			.filter(key => update[key] != undefined)
-			.reduce((_, key: string) => {
-				return _.then(() => this[`update_${key}`](catalog, update[key]))
-			}, Promise.resolve())
+	public async update(catalog: ICatalog, patchRequest: patchRequest, resources: any): Promise<ICatalog> {
+		console.log(chalk.magenta(`[CatalogService.update]`))
+
+		await this.patch(patchRequest, resources)
+		
 		return catalog.save()
-	}
-
-	public async update_name(catalog: ICatalog, name: string): Promise<ICatalog> {
-		console.log(chalk.magenta(`[CatalogService.updateName] ${name}`))
-		catalog.name = name
-		return catalog
-	}
-
-	public async update_id(catalog: ICatalog, id: string): Promise<ICatalog> {
-		console.log(chalk.magenta(`[CatalogService.updateID] ${id}`))
-		catalog.id = id
-		return catalog
 	}
 
 	public async delete(catalog: ICatalog): Promise<void> {

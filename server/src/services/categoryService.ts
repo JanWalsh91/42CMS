@@ -1,10 +1,34 @@
-import chalk from "chalk";
+import chalk from 'chalk';
 
-import { ICategory, Category, ICatalog, Catalog } from "../models";
-import { ValidationError, ResourceNotFoundError } from "../utils/Errors"
-import { catalogService } from '../services' 
+import { ICategory, Category, ICatalog, Catalog } from '../models';
+import { ValidationError, ResourceNotFoundError, Patchable, patchAction, patchRequest } from '../utils'
+import { catalogService } from '.' 
 
-class CategoryService {
+class CategoryService extends Patchable {
+	patchMap = {
+		id: {
+			$set: async (action: patchAction): Promise<void> => {
+				this.checkRequiredProperties(action, ['value'])
+				const category: ICategory = action.resources.category;
+				await category.setId(action.value)
+			}
+		},
+		name: {
+			$set: async (action: patchAction): Promise<void> => {
+				this.checkRequiredProperties(action, ['value'])
+				const category: ICategory = action.resources.category;
+				await category.setName(action.value)
+			}
+		},
+		parent: {
+			$set: async (action: patchAction): Promise<void> => {
+				this.checkRequiredProperties(action, ['value'])
+				const category: ICategory = action.resources.category;
+				
+				await this.updateParent(category, action.value)
+			}
+		}
+	}
 	/**
 	 * @description Create a category. If options.parent, sets parent category, else sets parent as root, else if root doesn't exist, set 
 	 * @param options 
@@ -57,25 +81,22 @@ class CategoryService {
 		return Category.find({}).exec()
 	}
 
-	public async update(category: ICategory, update: Partial<{name: string, id: string, parentId: string}>): Promise<ICategory> {
-		console.log(chalk.magenta(`[CategoryService.update]`), update)
-		// TODO: do with switch case
-		await Object.keys(update)
-			.filter(key => update[key] != undefined)
-			.reduce((_, key: string) => {
-				return _.then(() => this[`update_${key}`](category, update[key]))
-			}, Promise.resolve())
+	public async update(category: ICategory, patchRequest: patchRequest, resources: any): Promise<ICategory> {
+		console.log(chalk.magenta(`[CategoryService.update]`))
+
+		await this.patch(patchRequest, resources)
+
 		return category.save()
 	}
 
-	public async update_name(category: ICategory, name: string): Promise<ICategory> {
-		console.log(chalk.magenta(`[CategoryService.updateName] ${name}`))
+	public async setName(category: ICategory, name: string): Promise<ICategory> {
+		console.log(chalk.magenta(`[CategoryService.setName] ${name}`))
 		category.name = name
 		return category
 	}
 
-	public async update_id(category: ICategory, id: string): Promise<ICategory> {
-		console.log(chalk.magenta(`[CategoryService.updateID] ${id}`))
+	public async setId(category: ICategory, id: string): Promise<ICategory> {
+		console.log(chalk.magenta(`[CategoryService.setId] ${id}`))
 		await category.populate('catalog').execPopulate()
 		if (await category.catalog.getCategory({id})) {
 			throw new ValidationError(`Category with id ${id} already exists in this catalog`)
@@ -85,7 +106,7 @@ class CategoryService {
 	}
 
 	// Updates and saves parents, does not save category
-	public async update_parentId(category: ICategory, parentId: string): Promise<ICategory> {
+	public async updateParent(category: ICategory, parentId: string): Promise<ICategory> {
 		console.log(chalk.magenta(`[CategoryService.updateParent] ${parentId}`))
 		await category.populate([{path: 'catalog'}, {path: 'parent'}]).execPopulate()
 		

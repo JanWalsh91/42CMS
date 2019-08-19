@@ -185,7 +185,9 @@ describe('Category', () => {
 		it('Should update name', async() => {
 			await createCategory(catalogData.id, categoryData.id)
 
-			ret = await updateCategory(catalogData.id, categoryData.id, {name: newName})
+			ret = await updateCategory(catalogData.id, categoryData.id, {
+				name: { op: '$set', value: newName }
+			})
 			ret.status.should.eq(OK)
 			// Category's name should be updated
 			const category: ICategory = await Category.findOne({id: categoryData.id})
@@ -194,7 +196,10 @@ describe('Category', () => {
 		it('Should update name and id', async() => {
 			await createCategory(catalogData.id, categoryData.id)
 
-			ret = await updateCategory(catalogData.id, categoryData.id, {name: newName, id: newId})
+			ret = await updateCategory(catalogData.id, categoryData.id, {
+				name: { op: '$set', value: newName },
+				id: { op: '$set', value: newId },
+			})
 			ret.status.should.eq(OK)
 	
 			// Category's name and id should be updated
@@ -208,7 +213,9 @@ describe('Category', () => {
 				await createCategory(catalogData.id, categoryData.id)
 				await createCategory(catalogData.id, parentId)
 
-				ret = await updateCategory(catalogData.id, categoryData.id, { parent: parentId })
+				ret = await updateCategory(catalogData.id, categoryData.id, {
+					parent: { op: '$set', value: parentId }
+				})
 				ret.status.should.eq(OK)
 
 				// Category.parent should be set
@@ -223,8 +230,12 @@ describe('Category', () => {
 				await createCategory(catalogData.id, parentId)
 				await createCategory(catalogData.id, newParentId)
 
-				ret = await updateCategory(catalogData.id, categoryData.id, { parent: parentId })
-				ret = await updateCategory(catalogData.id, categoryData.id, { parent: newParentId })
+				ret = await updateCategory(catalogData.id, categoryData.id, {
+					parent: { op: '$set', value: parentId }
+				})
+				ret = await updateCategory(catalogData.id, categoryData.id, {
+					parent: { op: '$set', value: newParentId }
+				})
 				ret.status.should.eq(OK)
 
 				// Category.parent should be set
@@ -246,7 +257,9 @@ describe('Category', () => {
 				await createCategory(catalogData.id, categoryData.id)
 				await createCategory(catalogData.id, newId)
 
-				ret = await updateCategory(catalogData.id, categoryData.id, {id: newId})
+				ret = await updateCategory(catalogData.id, categoryData.id, {
+					id: { op: '$set', value: newId }
+				})
 				ret.status.should.eq(BAD_REQUEST)
 			})
 			it('Parent does not exist')

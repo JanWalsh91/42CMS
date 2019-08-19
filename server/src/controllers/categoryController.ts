@@ -37,12 +37,10 @@ export class CategoryController {
 
 	public async update(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[CategoryController.update]'))
-		const { name, id, parent } = req.body
+		
 		try {
-			await categoryService.update(res.locals.category, {
-				name,
-				id,
-				parentId: parent
+			await categoryService.update(res.locals.category, req.body, {
+				category: res.locals.category
 			})
 		} catch (e) { next(e) }
 	

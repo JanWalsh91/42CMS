@@ -5,6 +5,7 @@ chai.use(chaiHttp)
 const agent = chai.request.agent(app)
 
 import { User, IUser, Catalog, ICatalog, Category, ICategory, Product, IProduct  } from '../src/models'
+import { patchAction, patchRequest } from '../src/utils';
 
 export const userData = {
 	name: 'John Smith',
@@ -79,8 +80,8 @@ export const clearDataBase = async (...models: any) => {
 	export const getAllCatalogs = () =>
 		agent.get(`/catalogs`)
 
-	export const updateCatalog = (catalogid: string, params: Partial<ICatalog>) =>
-		agent.put(`/catalogs/${catalogid}`).send(params)
+	export const updateCatalog = (catalogid: string, patch: patchRequest) =>
+		agent.patch(`/catalogs/${catalogid}`).send(patch)
 
 	export const deleteCatalog = (catalogid: string) =>
 		agent.delete(`/catalogs/${catalogid}`)
@@ -96,8 +97,8 @@ export const clearDataBase = async (...models: any) => {
 	export const getAllCategories = (catalogid: string) =>
 		agent.get(`/catalogs/${catalogid}/categories`)
 
-	export const updateCategory = (catalogid: string, categoryid: string, params: Partial<ICategory>) =>
-		agent.put(`/catalogs/${catalogid}/categories/${categoryid}`).send(params)
+	export const updateCategory = (catalogid: string, categoryid: string, patch: patchRequest) =>
+		agent.patch(`/catalogs/${catalogid}/categories/${categoryid}`).send(patch)
 
 	export const deleteCategory = (catalogid: string, categoryid: string) =>
 		agent.delete(`/catalogs/${catalogid}/categories/${categoryid}`)
@@ -113,8 +114,8 @@ export const clearDataBase = async (...models: any) => {
 	export const getAllProducts = () =>
 		agent.get(`/products`)
 
-	export const updateProduct = (productid: string, params?: object) => 
-		agent.put(`/products/${productid}`).send(params)
+	export const updateProduct = (productid: string, patch: patchRequest) => 
+		agent.patch(`/products/${productid}`).send(patch)
 
 	export const deleteProduct = (productid: string) =>
 		agent.delete(`/products/${productid}`)

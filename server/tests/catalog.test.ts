@@ -135,21 +135,26 @@ describe('Catalog', () => {
 		const newName: string = 'newName'
 		const newId: string = 'newID'
 
-		it('Should update name', async() => {
+		it('Should update is', async() => {
 			await createCatalog(catalogData.id)
 
-			ret = await updateCatalog(catalogData.id, {name: newName})
+			ret = await updateCatalog(catalogData.id, {
+				id: { op: '$set', value: newId }
+			})
 			ret.status.should.eq(OK)
 
 			// Catalog's name should be updated
-			const catalog: ICatalog = await Catalog.findOne({id: catalogData.id})
-			catalog.name.should.eq(newName)
+			const catalog: ICatalog = await Catalog.findOne({id: newId})
+			catalog.id.should.eq(newId)
 		})
 		it('Should update name and id', async() => {
 
 			await createCatalog(catalogData.id)
 
-			ret = await updateCatalog(catalogData.id, {name: newName, id: newId})
+			ret = await updateCatalog(catalogData.id, {
+				id: { op: '$set', value: newId },
+				name: { op: '$set', value: newName },
+			})
 			ret.status.should.eq(OK)
 			
 			// Catalog's name and id should be updated

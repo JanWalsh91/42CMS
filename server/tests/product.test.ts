@@ -14,7 +14,7 @@ let catalog: any = {}
 let category: any = {}
 let product: any = {}
 
-describe.only('Product', function() {
+describe('Product', function() {
 
 	before(async function() {
 		// Clear database
@@ -46,8 +46,8 @@ describe.only('Product', function() {
 			const catalog: ICatalog = await Catalog.findOne({id: catalogData.id}).populate('products').exec()
 			catalog.products.find(x => x.id == productData.id).should.exist
 		})
-		describe.only('Should fail to create a product if ...', () => {
-			it.only('the product id is not unique', async() => {
+		describe('Should fail to create a product if ...', () => {
+			it('the product id is not unique', async() => {
 				await createProduct(catalogData.id, productData.id, { name: productData.name })
 				ret = await createProduct(catalogData.id, productData.id, { name: productData.name })
 				ret.status.should.equal(BAD_REQUEST)
@@ -99,6 +99,126 @@ describe.only('Product', function() {
 				ret = await getAllProducts()
 				ret.should.have.status(UNAUTHORIZED)
 				await login(userData)
+			})
+		})
+	})
+
+	describe('Update Product', () => {
+		const newName: string = 'newProductName'
+		const newId: string = 'newProductId'
+
+		it('Should update Product name and ID', async() => {
+			await createProduct(catalogData.id, productData.id, {...productData})
+	
+			ret = await updateProduct(productData.id, {
+				name: { op: '$set', value: newName },
+				id: { op: '$set', value: newId },
+			})
+			ret.status.should.eq(OK)
+	
+			// Category's name and id should be updated
+			const product: IProduct = await Product.findOne({id: newId})
+			product.name.should.eq(newName)
+			product.id.should.eq(newId)
+		})
+
+		describe('Assign to Catalogs', () => {
+			const catId1 = 'catId1'
+
+			it('Should assign a Product to a Catalog', async() => {
+				await createProduct(catalogData.id, productData.id, {...productData})
+				await createCatalog(catId1)
+				ret = await updateProduct(productData.id, {
+					assignedCatalogs: { op: '$add', value: catId1 }
+				})
+				ret.status.should.eq(OK)
+
+				const product: IProduct = await Product.findOne({id: productData.id}).populate('assignedCatalogs')
+				const catalog: ICatalog = await Catalog.findOne({id: catId1}).populate('products')
+				// Product should have catalog in assignedCatalogs
+				product.assignedCatalogs.find(x => x.id == catId1).should.exist
+				// Catalog should have product in products
+				catalog.products.find(x => x.id == productData.id).should.exist
+			})
+			it('Should unassign a Product from a Catalog', async() => {
+				await createProduct(catalogData.id, productData.id, {...productData})
+				await createCatalog(catId1)
+				await updateProduct(productData.id, {
+					assignedCatalogs: { op: '$add', value: catId1 }
+				})
+				ret = await updateProduct(productData.id, {
+					assignedCatalogs: { op: '$remove', value: catId1 }
+				})
+				ret.status.should.eq(OK)
+
+				const product: IProduct = await Product.findOne({id: productData.id}).populate('assignedCatalogs')
+				const catalog: ICatalog = await Catalog.findOne({id: catId1}).populate('products')
+				// Product should have catalog in assignedCatalogs
+				expect(product.assignedCatalogs.find(x => x.id == catId1)).to.not.exist
+				// Catalog should have product in products
+				expect(catalog.products.find(x => x.id == productData.id)).to.not.exist
+			})
+			describe('Should fail if ...', () => {
+				it('Catalog does not exist')
+				it('Catalog is a master Catalog')
+				it('User is not authenticated')
+			})
+		})
+
+		describe('Assign Categories by Catalog', () => {
+			it.only('Should add a category by Catalog', async() => {
+				await createProduct(catalogData.id, productData.id, {...productData})
+				await createCategory(catalogData.id, categoryData.id)
+				ret = await updateProduct(productData.id, {
+					assignedCategoriesByCatalog: {
+						op: '$add',
+						value: categoryData.id,
+						catalog: catalogData.id,
+					}
+				})
+				ret.status.should.eq(OK)
+				const product: IProduct = await Product.findOne({id: productData.id})
+				product.assignedCategoriesByCatalog.find(x => x.catalog == catalogData.id).categories.find(x => x == categoryData.id).should.exist
+			})
+			it('Should remove a category by Catalog', async() => {
+				await createProduct(catalogData.id, productData.id, {...productData})
+				await createCategory(catalogData.id, categoryData.id)
+				await updateProduct(productData.id, {
+					assignedCategoriesByCatalog: {
+						op: '$add',
+						value: categoryData.id,
+						catalog: catalogData.id,
+					}
+				})
+				ret = await updateProduct(productData.id, {
+					assignedCategoriesByCatalog: {
+						op: '$remove',
+						value: categoryData.id,
+						catalog: catalogData.id,
+					}
+				})
+				ret.status.should.eq(OK)
+				const product: IProduct = await Product.findOne({id: productData.id})
+				expect(product.assignedCategoriesByCatalog.find(x => x.catalog == catalogData.id).categories.find(x => x == categoryData.id)).to.not.exist
+			})
+		})
+
+		describe('Set Primary Category by Catalog', () => {
+			it('Should set a primary category for a catalog', async() => {
+				await createProduct(catalogData.id, productData.id, {...productData})
+				await createCategory(catalogData.id, categoryData.id)
+				ret = await updateProduct(productData.id, {
+					primaryCategoryByCatalog: {
+						op: '$set',
+						value: categoryData.id,
+						catalog: catalogData.id,
+					}
+				})
+				ret.status.should.eq(OK)
+
+				// Product should have primary Category by Catalog set correctly
+				const product: IProduct = await Product.findOne({id: productData.id})
+				expect(product.primaryCategoryByCatalog.find(x => x.catalog == catalogData.id).category).eq(categoryData.id)
 			})
 		})
 	})

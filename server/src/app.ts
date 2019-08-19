@@ -88,9 +88,11 @@ class App {
 	private errorHandler(err: Error | ServerError, req: Request, res: Response, next: NextFunction) {
 		if ((<ServerError>err).httpCode) {
 			console.log(chalk.red(err.stack), '(0)')
+			console.log(err, '(0)')
 			res.status((<ServerError>err).httpCode).send(err.message)
 		} else {
 			console.log(chalk.red(err.stack), '(1)')
+			console.log(err, '(1)')
 			res.status(SERVER_ERROR).send('Unexpected Error')
 		}
 	}

@@ -1,39 +1,57 @@
 import { Schema, Document, Model, model } from 'mongoose'
-
-import { ICatalog, Catalog } from '../models'
-
 import chalk from 'chalk';
-import { ResourceNotFoundError, ValidationError } from '../utils/Errors';
+
+import { ICatalog, Catalog, IProduct, Product } from '.'
+import { ResourceNotFoundError, ValidationError } from '../utils';
 
 // Define instance methods
 class CategoryClass {
-	// define virtuals here
+	// ==== set ====
+	async setId(this: ICategory, id: string): Promise<ICategory> {
+		this.id = id
+		return this
+	}
+	async setName(this: ICategory, name: string): Promise<ICategory> {
+		this.name = name
+		return this
+	}
+	async setParent(this: ICategory, category: ICategory | null): Promise<void> {
+		console.log(chalk.magenta(`[CategoryModel.setParent] ${category ? category.id : null} from ${this.id}`))
+		if (category === null) {
+			this.parent = null
+			this.markModified('parent')
+		} else {
+			if (!category) {
+				throw new ResourceNotFoundError('Category', '')
+			}
+			if (category._id === (this.populated('parent') ? this.parent._id : this.parent)) {
+				console.log(chalk.yellow('[CategoryModel.setParent] category already is parent'))
+				return 
+			}
+			this.parent = category._id
+			this.markModified('parent')
+		}
+	}
 
+	// ==== get ====
 	async getParent(this: ICategory): Promise<ICategory> {
 		await this.populate('parent').execPopulate()
 		return this.parent
 	}
-
 	async getCatalog(this: ICategory): Promise<ICatalog> {
 		await this.populate('catalog').execPopulate()
 		return this.catalog
 	}
-
 	async getSubCategory(this: ICategory, query: object): Promise<ICategory> {
 		return await Category.findOne({ catalog: this.populated('catalog') ? this.catalog._id : this.catalog, parent: this._id, ...query })
 	}
+	async getProduct(this: ICategory, query: object): Promise<IProduct> {
+		await this.populate('catalog').execPopulate()
+		return await Product.findOne({ catalog: this.catalog._id, category: this._id, ...query })
+	}
 
-	// async getProduct(this: ICategory, query: object): Promise<IProduct> {
-	// 	return await Product.findOne({ catalog: this.populated('catalog') ? this.catalog._id : this.catalog, category: this._id, ...query })
-	// }
-
-	/**
-	 * Check if:
-	 * - category in catalog
-	 * - doesn't yet exists in category
-	 * - TODO: does not loop
-	 */
-	async addSubCategory(this: ICategory, category: ICategory) {
+	// ==== add ====
+	async addSubCategory(this: ICategory, category: ICategory): Promise<void> {
 		console.log(chalk.magenta(`[CategoryModel.addSubCategory] ${category.id} to ${this.id}`))
 		if (!category) {
 			throw new ResourceNotFoundError('Category', '')
@@ -69,25 +87,9 @@ class CategoryClass {
 	// }
 
 
-	async setParent(this: ICategory, category: ICategory | null): Promise<void> {
-		console.log(chalk.magenta(`[CategoryModel.setParent] ${category ? category.id : null} from ${this.id}`))
-		if (category === null) {
-			this.parent = null
-			this.markModified('parent')
-		} else {
-			if (!category) {
-				throw new ResourceNotFoundError('Category', '')
-			}
-			if (category._id === (this.populated('parent') ? this.parent._id : this.parent)) {
-				console.log(chalk.yellow('[CategoryModel.setParent] category already is parent'))
-				return 
-			}
-			this.parent = category._id
-			this.markModified('parent')
-		}
-	}
 
 
+	// ==== remove ====
 	async removeSubCategory(this: ICategory, category: ICategory) {
 		console.log(chalk.magenta(`[CategoryModel.removeSubCategory] ${category.id} from ${this.id}`))
 		await this.populate('subCategories').execPopulate()
@@ -109,9 +111,6 @@ class CategoryClass {
 	// 	}
 	// }
 
-	// Move to service
-
-
 }
 
 export interface ICategory extends Document {
@@ -122,6 +121,10 @@ export interface ICategory extends Document {
 	subCategories: (ICategory['_id'] | ICategory)[]
 	// products: IProduct['_id'][]
 
+	// set methods
+	setId: (id: string) => Promise<ICategory>
+	setName: (name: string) => Promise<ICategory>
+
 	// get methods
 	getParent: () => Promise<ICategory>
 	getCatalog: () => Promise<ICatalog>
@@ -130,14 +133,14 @@ export interface ICategory extends Document {
 
 	// add methods
 	addSubCategory: (category: ICategory) => Promise<void>
-	// addProduct: (productId: IProduct['_id']) => Promise<ServerError | void>
+	addProduct: (productId: IProduct) => Promise<void>
 
 	// set methods
 	setParent: (category: ICategory | null) => Promise<void>
 
 	// remove methods
 	removeSubCategory: (category: ICategory) => Promise<void>
-	// removeProduct: (productId: IProduct['_id']) => Promise<void>
+	removeProduct: (productId: IProduct) => Promise<void>
 
 	// internal
 	wasNew: boolean
@@ -172,7 +175,10 @@ export const CategorySchema = new Schema({
 	// 	ref: 'Product',
 	// 	default: null
 	// }],
-}).loadClass(CategoryClass)	
+}, {id: false}).loadClass(CategoryClass)	
+
+// console.log(CategorySchema)
+// process.exit()
 
 /**
  * 'On create' middleware
