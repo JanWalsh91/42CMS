@@ -22,22 +22,16 @@ export type patchMap = {
 export abstract class Patchable {
 	protected abstract patchMap: patchMap
 	protected async patch(patch: patchRequest, resources: object): Promise<void> {
-		console.log('======== PATCH =======')
-		console.log(this)
-		
 		// Parses the patchRequest and calls on update functions
-		console.log('==== parse ====')
 		for (let [key, value] of Object.entries(patch)) {
-			console.log(`key: ${key}, value: `, value)
+			console.log(chalk.keyword('salmon')(`\n========== PATCH: ${key} ==========\n`), value)
 			if (!this.patchMap.hasOwnProperty(key)) {
 				throw `invalid property [${key}]: property not in patchMap`
 			}
 			if (isPatchAction(value)) {
-				console.log(chalk.green('is patchAction: '), value)
 				await this.executeAction(key, {...value, resources})
 			} else if (isArrayOfPatchActions(value)) {
-				console.log(chalk.green('is patchAction[]: '), value)
-				await (value as patchAction[]).reduce((_, value: patchAction) => _.then(() => this.executeAction(key, {...value, resources})), Promise.resolve())
+				await value.reduce((_, value: patchAction) => _.then(() => this.executeAction(key, {...value, resources})), Promise.resolve())
 			} else {
 				console.log(chalk.red('Bad value: '), value)
 				// Ignore, unless implement deeper stuff later
@@ -46,7 +40,6 @@ export abstract class Patchable {
 	}
 
 	private async executeAction(key: string, action: patchAction) {
-		console.log('executeAction', key, action)
 		if (!this.patchMap[key].hasOwnProperty(action.op)) {
 			throw `action ${action.op} for ${key} is not available`
 		}

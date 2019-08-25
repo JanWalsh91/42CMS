@@ -134,7 +134,6 @@ CatalogSchema.post('save', async function(this: ICatalog, doc: ICatalog, next: a
 	// New Catalog
 	if (this.wasNew) {
 		this.wasNew = false
-		console.log(chalk.magenta('CatalogSchema post save', this.id))
 		// Create 'root' category
 
 		// TODO: use service ? Or move to service
@@ -146,7 +145,6 @@ CatalogSchema.post('save', async function(this: ICatalog, doc: ICatalog, next: a
 		this.markModified('categories')
 
 		await this.save()
-		console.log(chalk.magenta('CatalogSchema post save END'))
 	}
 	next()
 })

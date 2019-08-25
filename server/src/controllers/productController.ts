@@ -52,7 +52,9 @@ export class ProductController {
 
 	public async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[ProductController.delete]'))
-		await productService.delete(res.locals.product)
+		try {
+			await productService.delete(res.locals.product)
+		} catch (e) { next(e) }
 		res.end()
 	}
 

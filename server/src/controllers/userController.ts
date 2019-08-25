@@ -12,8 +12,6 @@ export const userController = {
 		console.log(chalk.magenta('[UserContoller.create]'))
 		const { username, password, name } = req.body
 		
-		console.log({ username, password, name })
-
 		if (!username) {
 			return next(new ValidationError('Username not provided'))
 		}

@@ -51,46 +51,38 @@ class CategoryClass {
 	}
 
 	// ==== add ====
-	async addSubCategory(this: ICategory, category: ICategory): Promise<void> {
+	async addSubCategory(this: ICategory, category: ICategory): Promise<ICategory> {
 		console.log(chalk.magenta(`[CategoryModel.addSubCategory] ${category.id} to ${this.id}`))
 		if (!category) {
 			throw new ResourceNotFoundError('Category', '')
 		}
 		if (category._id in this.subCategories) {
 			console.log(chalk.yellow('[CategoryModel.addSubCategory] category already in subCategories'))
-			return 
+			return this
 		}
 		this.subCategories.push(category._id)
 		this.markModified('subCategories')
+		return this
 	}
 
-	/**
-	 * Check if:
-	 * - product is in category's catalog
-	 * - doesn't already exist in category
-	 */
-	// async addProduct(this: ICategory, productId: IProduct['_id'], options: ModelUpdateOptions = {}): Promise<ServerError | void> {
-	// 	console.log(chalk.magenta(`[CategoryModel.addProduct] ${productId} to ${this._id}`))
-	// 	if (!options.skipCheckExists) {
-	// 		await this.getCatalog()
-	// 		const product: IProduct = await this.catalog.getProduct({ _id: productId })
-	// 		if (!product) {
-	// 			throw new ResourceNotFoundError('Product', productId)
-	// 		}
-	// 	}
-	// 	if (productId in this.products) {
-	// 		console.log(chalk.yellow('[CategoryModel.addProduct] product already in category'))
-	// 		return 
-	// 	}
-	// 	this.products.push(productId)
-	// 	this.markModified('products')
-	// }
-
-
-
+	async addProduct(this: ICategory, product: IProduct): Promise<ICategory> {
+		console.log(chalk.magenta(`[CategoryModel.addProduct] product: ${product.id} to category: ${this.id}`))
+		await this.populate([{path: 'catalog', populate: {path: 'products'}}, {path: 'products'}]).execPopulate()
+		if (this.products.find(x => x.id == product.id)) {
+			console.log(chalk.yellow('[CategoryModel.addProduct] product already in category'))
+			return this
+		}
+		if (this.catalog.products.find(x => x.id == product.id)) {
+			this.products.push(product)
+			this.markModified('products')
+		} else {
+			throw new ResourceNotFoundError('Product', product.id)
+		}
+		return this
+	}
 
 	// ==== remove ====
-	async removeSubCategory(this: ICategory, category: ICategory) {
+	async removeSubCategory(this: ICategory, category: ICategory): Promise<ICategory> {
 		console.log(chalk.magenta(`[CategoryModel.removeSubCategory] ${category.id} from ${this.id}`))
 		await this.populate('subCategories').execPopulate()
 		if (this.subCategories.some(x => x._id.equals(category._id))) {
@@ -99,17 +91,20 @@ class CategoryClass {
 		} else {
 			console.log(chalk.yellow(`[CategoryModel.removeSubCategory] ${category.id} not in ${this.id}`))
 		}
+		return this
 	}
 
-	// async removeProduct(this: ICategory, productId: IProduct['_id']) {
-	// 	console.log(chalk.magenta(`[CategoryModel.removeProduct] ${productId} from ${this._id}`))
-	// 	if (productId in this.products) {
-	// 		this.products = this.products.filter(x => x !== productId)
-	// 		this.markModified('products')
-	// 	} else {
-	// 		console.log(chalk.yellow(`[CategoryModel.removeProduct] ${productId} not in ${this._id}`))
-	// 	}
-	// }
+	async removeProduct(this: ICategory, product: IProduct): Promise<ICategory> {
+		console.log(chalk.magenta(`[CategoryModel.removeProduct] product: ${product.id}, from category ${this.id}`))
+		await this.populate('products').execPopulate()
+		if (this.products.find(x=> x.id == product.id)) {
+			this.products = this.products.filter(x => x.id !== product.id)
+			this.markModified('products')
+		} else {
+			console.log(chalk.yellow(`[CategoryModel.removeProduct] ${product.id} not in ${this.id}`))
+		}
+		return this
+	}
 
 }
 
@@ -119,7 +114,7 @@ export interface ICategory extends Document {
 	catalog: ICatalog['_id'] | ICatalog
 	parent: ICategory['_id'] | ICategory
 	subCategories: (ICategory['_id'] | ICategory)[]
-	// products: IProduct['_id'][]
+	products: IProduct['_id'][]
 
 	// set methods
 	setId: (id: string) => Promise<ICategory>
@@ -132,15 +127,15 @@ export interface ICategory extends Document {
 	// getProduct: (query: object) => Promise<IProduct>
 
 	// add methods
-	addSubCategory: (category: ICategory) => Promise<void>
-	addProduct: (productId: IProduct) => Promise<void>
+	addSubCategory: (category: ICategory) => Promise<ICategory>
+	addProduct: (productId: IProduct) => Promise<ICategory>
 
 	// set methods
 	setParent: (category: ICategory | null) => Promise<void>
 
 	// remove methods
-	removeSubCategory: (category: ICategory) => Promise<void>
-	removeProduct: (productId: IProduct) => Promise<void>
+	removeSubCategory: (category: ICategory) => Promise<ICategory>
+	removeProduct: (product: IProduct) => Promise<ICategory>
 
 	// internal
 	wasNew: boolean
@@ -165,16 +160,20 @@ export const CategorySchema = new Schema({
 		ref: 'Category',
 		default: null,
 	},
-	subCategories: [{
-		type: Schema.Types.ObjectId,
-		ref: 'Category',
-		default: null
-	}],
-	// products: [{
-	// 	type: Schema.Types.ObjectId,
-	// 	ref: 'Product',
-	// 	default: null
-	// }],
+	subCategories: {
+		type: [{
+			type: Schema.Types.ObjectId,
+			ref: 'Category',
+		}],
+		default: []
+	},
+	products: {
+		type: [{
+			type: Schema.Types.ObjectId,
+			ref: 'Product',
+		}],
+		default: []
+	},
 }, {id: false}).loadClass(CategoryClass)	
 
 // console.log(CategorySchema)
