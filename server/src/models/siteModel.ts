@@ -2,12 +2,6 @@ import { Schema, Document, Model, model } from 'mongoose'
 
 import { ICatalog } from './catalogModel'
 
-
-class SiteClass {
-	// define virtuals here
-	getAssignedCatalog() {}
-}
-
 export interface ISite extends Document {
 	id: string,
 	name: string,
@@ -16,7 +10,7 @@ export interface ISite extends Document {
 	getAssignedCatalog: (this: ISite, query: object) => ICatalog,
 }
 
-export const SiteSchema = new Schema({
+const SiteSchema = new Schema({
 	id: {
 		type: String,
 		required: true
@@ -30,6 +24,10 @@ export const SiteSchema = new Schema({
 		ref: 'Catalog',
 		default: null
 	}]
-}).loadClass(SiteClass)
+})
+
+SiteSchema.methods = {
+	
+}
 
 export const Site: Model<ISite> = model('Site', SiteSchema)

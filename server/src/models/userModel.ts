@@ -1,9 +1,5 @@
 import { Schema, Document, Model, model}  from 'mongoose';
 
-class UserClass {
-
-}
-
 export interface IUser extends Document {
 	_id: string,
 	apiKey: string,
@@ -43,6 +39,10 @@ const UserSchema = new Schema({
 		default: false,
 		required: true
 	}
-}).loadClass(UserClass)	
+})
+
+UserSchema.methods = {
+
+}
 
 export const User: Model<IUser> = model('User', UserSchema)

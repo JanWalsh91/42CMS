@@ -3,57 +3,6 @@ import chalk from 'chalk';
 
 import { ICategory, Category, IProduct, Product } from '.'
 
-class CatalogClass {
-	// ==== set ====
-	async setId(this: ICatalog, id: string): Promise<ICatalog> {
-		this.id = id
-		return this
-	}
-	async setName(this: ICatalog, name: string): Promise<ICatalog> {
-		this.name = name
-		return this
-	}
-
-	// ==== get ====
-	async getCategory(this: ICatalog, query: object): Promise<ICategory> {
-		return await Category.findOne({ catalog: this._id, ...query }).exec()
-	}
-	async getProduct(this: ICatalog, query: object): Promise<IProduct> {
-		return await Product.findOne({ masterCatalog: this._id, ...query }).exec()
-	}
-
-	// ==== add ====
-	async addCategory(this: ICatalog, category: ICategory): Promise<ICatalog> {
-		console.log(chalk.magenta(`[CatalogModel.addCategory] ${category.id} to ${this.id}`))
-		this.categories.push(category._id)
-		this.markModified('categories')
-		return this
-	}
-	async addProduct(this: ICatalog, product: IProduct): Promise<ICatalog> {
-		console.log(chalk.magenta(`[CatalogModel.addProduct] ${product.id} to ${this.id}`))
-		await this.populate('products').execPopulate()
-		this.products.push(product._id)
-		this.markModified('products')
-		return this
-	}
-
-	// ==== remove ====
-	async removeCategory(this: ICatalog, category: ICategory): Promise<ICatalog> {
-		console.log(chalk.magenta(`[CatalogModel.removeCategory] ${category.id} from ${this.id}`))
-		await this.populate('categories').execPopulate()
-		this.categories = this.categories.filter(x => !x._id.equals(category._id))
-		this.markModified('categories')
-		return this
-	}
-	async removeProduct(this: ICatalog, product: IProduct): Promise<ICatalog> {
-		console.log(chalk.magenta(`[CatalogModel.addProduct] ${product.id} to ${this.id}`))
-		await this.populate('products').execPopulate()
-		this.products = this.products.filter(x => !x._id.equals(product._id))
-		this.markModified('products')
-		return this
-	}
-}
-
 export interface ICatalog extends Document {
 	id: string
 	name: string
@@ -87,7 +36,7 @@ export interface ICatalog extends Document {
 	wasNew: boolean // internal use
 }
 
-export const CatalogSchema = new Schema({
+const CatalogSchema = new Schema({
 	id: {
 		type: String,
 		required: true,
@@ -120,7 +69,58 @@ export const CatalogSchema = new Schema({
 		required: true,
 		default: false,
 	},
-}, {id: false}).loadClass(CatalogClass)
+}, {id: false})
+
+CatalogSchema.methods = {
+	// ==== set ====
+	async setId(this: ICatalog, id: string): Promise<ICatalog> {
+		this.id = id
+		return this
+	},
+	async setName(this: ICatalog, name: string): Promise<ICatalog> {
+		this.name = name
+		return this
+	},
+
+	// ==== get ====
+	async getCategory(this: ICatalog, query: object): Promise<ICategory> {
+		return await Category.findOne({ catalog: this._id, ...query }).exec()
+	},
+	async getProduct(this: ICatalog, query: object): Promise<IProduct> {
+		return await Product.findOne({ masterCatalog: this._id, ...query }).exec()
+	},
+
+	// ==== add ====
+	async addCategory(this: ICatalog, category: ICategory): Promise<ICatalog> {
+		console.log(chalk.magenta(`[CatalogModel.addCategory] ${category.id} to ${this.id}`))
+		this.categories.push(category._id)
+		this.markModified('categories')
+		return this
+	},
+	async addProduct(this: ICatalog, product: IProduct): Promise<ICatalog> {
+		console.log(chalk.magenta(`[CatalogModel.addProduct] ${product.id} to ${this.id}`))
+		await this.populate('products').execPopulate()
+		this.products.push(product._id)
+		this.markModified('products')
+		return this
+	},
+
+	// ==== remove ====
+	async removeCategory(this: ICatalog, category: ICategory): Promise<ICatalog> {
+		console.log(chalk.magenta(`[CatalogModel.removeCategory] ${category.id} from ${this.id}`))
+		await this.populate('categories').execPopulate()
+		this.categories = this.categories.filter(x => !x._id.equals(category._id))
+		this.markModified('categories')
+		return this
+	},
+	async removeProduct(this: ICatalog, product: IProduct): Promise<ICatalog> {
+		console.log(chalk.magenta(`[CatalogModel.addProduct] ${product.id} to ${this.id}`))
+		await this.populate('products').execPopulate()
+		this.products = this.products.filter(x => !x._id.equals(product._id))
+		this.markModified('products')
+		return this
+	},
+}
 
 // 'On create' middleware
 CatalogSchema.pre('save', async function(this: ICatalog, next: any) {
