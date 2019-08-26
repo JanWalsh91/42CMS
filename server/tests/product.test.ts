@@ -252,11 +252,6 @@ describe('Product', function() {
 					{path: 'primaryCategoryByCatalog.catalog'},
 					{path: 'primaryCategoryByCatalog.category'},
 				])
-				console.log('======================')
-				for (let i in product.primaryCategoryByCatalog) {
-					console.log(product.primaryCategoryByCatalog[i])
-				}
-				console.log('======================')
 				expect(product.primaryCategoryByCatalog.find(x => x.catalog.id == catalogData.id).category.id).eq(categoryData.id)
 			})
 		})

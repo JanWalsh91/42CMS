@@ -1,8 +1,8 @@
 import { Schema, Document, Model, model } from 'mongoose'
-import { ICatalog, Catalog, ICategory } from './';
-
 import chalk from 'chalk';
-import { ValidationError, InternalError } from '../utils';
+
+import { ICatalog, Catalog, ICategory } from './';
+import { InternalError } from '../utils';
 
 class ProductClass {
 	// ==== set ====
@@ -34,13 +34,6 @@ class ProductClass {
 		await this.populate('masterCatalog').execPopulate()
 		return this.masterCatalog
 	}
-	// async getAssignedCategories(this:IProduct): Promise<ICategory[]> {
-	// 	return this.assignedCategoriesByCatalog.reduce(async(list: ICategory[], categoryForCatalog) => {
-	// 		const catalog: ICatalog = await Catalog.findOne({id: categoryForCatalog.catalog})
-	// 		list.push(...categoryForCatalog.categories)
-	// 		return list
-	// 	}, [])
-	// }
 
 	// ==== add ==== 
 	async addAssignedCatalog(this: IProduct, catalog: ICatalog): Promise<void> {
@@ -132,13 +125,6 @@ export interface IProduct extends Document {
 		categories: (ICategory['_id'] | ICategory)[]
 	}[]
 
-	// get methods
-	// getAssignedCategories: () => Promise<ICategory[]>
-	// getMasterCatalog: () => Promise<ICatalog>
-	// getAssignedCatalog: (query: object) => Promise<ICatalog>
-	// getPrimaryCategoryByCatalog: (query: object) => Promise<>
-	// getAssignedCategoriesByCatalog: (query: object) => Promise<>
-
 	// set methods
 	setPrimaryCategoryByCatalog: (categoryId: ICategory | null, catalogId: ICatalog) => Promise<void>
 
@@ -150,21 +136,11 @@ export interface IProduct extends Document {
 	removeAssignedCatalog: (catalogId: ICatalog) => Promise<void>
 	removeAssignedCategoryByCatalog: (categoryId: ICategory, catalogId: ICatalog) => Promise<void>
 
-	// methods
-	// updateAttributes(attributed: UpdatableAttributes): Promise<any>
-	// updateName(name: string): Promise<any>
-	// updateMasterCatalog(catalogid: string): Promise<any>
-	// updateAssignedCategoriesByCatalog(assignedCategoriesByCatalog: AssignedCategoriesByCatalog): Promise<any>
-	// updatePrimaryCategoryByCatalog(primaryCategoryByCatalog: PrimaryCategoryByCatalog): Promise<any>
-
-	// virtuals
-	// catalogs: ICatalog[]
-
 	// internal attributes
 	wasNew: boolean
 }
 
-export const ProductSchema = new Schema({
+const ProductSchema = new Schema({
 	id: {
 		type: String,
 		required: true,
