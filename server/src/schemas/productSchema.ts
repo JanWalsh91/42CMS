@@ -17,7 +17,7 @@ const productSchema = new Schema({
 	masterCatalog: {
 		type: Schema.Types.ObjectId,
 		ref: 'Catalog',
-		required: true,
+		// required: true,
 	},
 	assignedCatalogs: {
 		type: [{

@@ -1,13 +1,13 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "pretty": true,
-        "sourceMap": true,
-        "target": "es6",
-        "outDir": "./dist",
-		"removeComments": true,
-		"incremental": true
+        // "module": "commonjs",
+        // "moduleResolution": "node",
+        // "pretty": true,
+        // "sourceMap": true,
+        // "target": "es6",
+        // "outDir": "./dist",
+		// "removeComments": true,
+		// "incremental": true,
     },
     "include": [
 		"./src/**/*"

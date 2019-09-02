@@ -1,7 +1,7 @@
 import { User } from './userModel'
 import { Catalog } from './catalogModel'
 import { Category } from './categoryModel'
-import { Product } from './productModel'
+import { Product, ProductVariant, ProductMaster } from './productModels'
 import { Site } from './siteModel'
 
 export {
@@ -9,5 +9,7 @@ export {
 	Catalog,
 	Category,
 	Product,
+	ProductVariant,
+	ProductMaster,
 	Site,
 }
