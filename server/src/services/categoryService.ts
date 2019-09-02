@@ -1,6 +1,7 @@
-import chalk from 'chalk';
+import chalk from 'chalk'
 
-import { ICategory, Category, ICatalog, Catalog } from '../models';
+import { Category, Catalog } from '../models'
+import { ICategory, ICatalog } from '../interfaces'
 import { ValidationError, ResourceNotFoundError, Patchable, patchAction, patchRequest } from '../utils'
 import { catalogService } from '.' 
 

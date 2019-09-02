@@ -5,7 +5,8 @@ import chalk from 'chalk';
 
 import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct, getProduct, logout, login, getAllProducts, deleteProduct  } from './common';
 
-import { User, Category, Catalog, Product, IProduct, ICatalog, ICategory } from '../src/models'
+import { User, Category, Catalog, Product } from '../src/models'
+import { IUser, IProduct, ICatalog, ICategory } from '../src/interfaces'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes 
 

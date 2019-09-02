@@ -4,7 +4,8 @@ import chaiHttp = require('chai-http')
 chai.use(chaiHttp)
 const agent = chai.request.agent(app)
 
-import { User, IUser, Catalog, ICatalog, Category, ICategory, Product, IProduct  } from '../src/models'
+import { User, Catalog, Category, Product } from '../src/models'
+// import { IUser, IProduct, ICatalog, ICategory } from '../src/interfaces'
 import { patchAction, patchRequest } from '../src/utils';
 
 export const userData = {

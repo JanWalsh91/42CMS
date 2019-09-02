@@ -1,13 +1,13 @@
-import { IUser, User } from './userModel'
-import { ICatalog, Catalog } from './catalogModel'
-import { ICategory, Category } from './categoryModel'
-import { IProduct, Product } from './productModel'
-// import { ISite, Site } from './siteModel'
+import { User } from './userModel'
+import { Catalog } from './catalogModel'
+import { Category } from './categoryModel'
+import { Product } from './productModel'
+import { Site } from './siteModel'
 
 export {
-	IUser, User,
-	ICatalog, Catalog,
-	ICategory, Category,
-	IProduct, Product,
-	// ISite, Site,
+	User,
+	Catalog,
+	Category,
+	Product,
+	Site,
 }

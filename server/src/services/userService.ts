@@ -1,6 +1,7 @@
-import { IUser, User } from "../models";
-import { ValidationError, ResourceNotFoundError, ServerError, UnauthorizedError } from "../utils/Errors";
-import { uuid } from "../utils/uuid";
+import { User } from '../models'
+import { IUser } from '../interfaces'
+import { ValidationError, ResourceNotFoundError, ServerError, UnauthorizedError } from '../utils/Errors'
+import { uuid } from '../utils/uuid'
 
 class UserService {
 	public async create(options: Partial<IUser>): Promise<IUser> {
@@ -9,7 +10,7 @@ class UserService {
 		if (existingUsers.length > 0) {
 			throw new ValidationError('User already exists')
 		}
-		
+	
 		// First user created is admin
 		const isFirstUser: boolean = (await User.count({}).exec()) == 0
 

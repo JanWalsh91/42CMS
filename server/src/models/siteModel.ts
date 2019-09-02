@@ -1,14 +1,6 @@
-import { Schema, Document, Model, model } from 'mongoose'
+import { Schema, Model, model } from 'mongoose'
 
-import { ICatalog } from './catalogModel'
-
-export interface ISite extends Document {
-	id: string,
-	name: string,
-	assignedCatalogs: [ICatalog['_id']],
-
-	getAssignedCatalog: (this: ISite, query: object) => ICatalog,
-}
+import { ISite } from '../interfaces'
 
 const SiteSchema = new Schema({
 	id: {

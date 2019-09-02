@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import chalk from 'chalk'
 
-import { User, IUser } from '../models/userModel'
+import { User } from '../models'
+import { IUser } from '../interfaces'
 import { userService } from '../services'
 
 import { ValidationError, UnauthorizedError, LoginError, ResourceNotFoundError, NotImplementedError } from '../utils/Errors'

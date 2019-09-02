@@ -1,39 +1,8 @@
-import { Schema, Document, Model, model } from 'mongoose'
+import { Schema, Model, model } from 'mongoose'
 import chalk from 'chalk';
 
-import { ICatalog, Catalog, ICategory } from './';
+import { IProduct, ICatalog, ICategory } from '../interfaces/' 
 import { InternalError } from '../utils';
-
-
-
-export interface IProduct extends Document {
-	id: string
-	name: string
-	masterCatalog: ICatalog['_id'] | ICatalog
-	assignedCatalogs: (ICatalog['_id'] | ICatalog)[]
-	primaryCategoryByCatalog: {
-		catalog: ICatalog['_id'] | ICatalog,
-		category: ICategory['_id'] | ICategory
-	}[]
-	assignedCategoriesByCatalog: {
-		catalog: ICatalog['_id'] | ICatalog,
-		categories: (ICategory['_id'] | ICategory)[]
-	}[]
-
-	// set methods
-	setPrimaryCategoryByCatalog: (categoryId: ICategory | null, catalogId: ICatalog) => Promise<void>
-
-	// add methods
-	addAssignedCatalog: (catalogId: ICatalog) => Promise<void>
-	addAssignedCategoryByCatalog: (categoryId: ICategory, catalogId: ICatalog) => Promise<void>
-	
-	// remove methods
-	removeAssignedCatalog: (catalogId: ICatalog) => Promise<void>
-	removeAssignedCategoryByCatalog: (categoryId: ICategory, catalogId: ICatalog) => Promise<void>
-
-	// internal attributes
-	wasNew: boolean
-}
 
 const ProductSchema = new Schema({
 	id: {

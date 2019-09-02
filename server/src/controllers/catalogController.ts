@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import chalk from 'chalk'
 
 import { catalogService } from '../services/catalogService'
-import { ICatalog } from '../models'
+import { ICatalog } from '../interfaces'
 import { ResourceNotFoundError, ValidationError } from '../utils/Errors'
 
 export class CatalogController {

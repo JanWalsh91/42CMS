@@ -2,11 +2,10 @@ import { Request, Response, NextFunction } from 'express'
 import chalk from 'chalk'
 
 import { productService } from '../services'
-import { ResponseStatusTypes } from '../utils'
-import { IProduct, Product, ICatalog, Catalog } from '../models'
-import { NotImplementedError, ValidationError, ResourceNotFoundError } from '../utils/Errors';
-
-const { BAD_REQUEST } = ResponseStatusTypes
+// import { ResponseStatusTypes } from '../utils'
+// import { Product, Catalog } from '../models'
+import { IProduct } from '../interfaces'
+import { ValidationError, ResourceNotFoundError } from '../utils/Errors';
 
 export class ProductController {
 	public async create(req: Request, res: Response, next: NextFunction): Promise<void> {

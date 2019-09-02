@@ -1,14 +1,6 @@
-import { Schema, Document, Model, model}  from 'mongoose';
+import { Schema, Model, model }  from 'mongoose';
 
-export interface IUser extends Document {
-	_id: string,
-	apiKey: string,
-	username: string,
-	name: string,
-	password: string,
-	created_date: Date,
-	admin: boolean
-}
+import { IUser } from '../interfaces' 
 
 const UserSchema = new Schema({
 	apiKey: {

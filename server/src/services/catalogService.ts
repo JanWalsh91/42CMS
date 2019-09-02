@@ -1,8 +1,9 @@
-import chalk from 'chalk';
+import chalk from 'chalk'
 
-import { ResourceNotFoundError, NotImplementedError, ValidationError, Patchable, patchAction, patchRequest } from '../utils';
-import { ICategory, IProduct, ICatalog, Catalog } from '../models';
-import { categoryService } from '.';
+import { ResourceNotFoundError, NotImplementedError, ValidationError, Patchable, patchAction, patchRequest } from '../utils'
+import { Catalog } from '../models'
+import { ICatalog, ICategory, IProduct } from '../interfaces'
+import { categoryService } from '.'
 
 
 export class CatalogService extends Patchable {

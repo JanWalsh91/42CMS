@@ -1,13 +1,14 @@
 import * as chai from 'chai'
 chai.should()
 const expect = require('chai').expect
-import chalk from 'chalk';
+import chalk from 'chalk'
 
-import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs, logout, createCategory, categoryData, deleteCatalog, updateCatalog } from './common';
+import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs, logout, createCategory, categoryData, deleteCatalog, updateCatalog } from './common'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes 
 
-import { Catalog, ICatalog, Category } from '../src/models';
+import { Catalog, Category } from '../src/models'
+import { ICatalog } from '../src/interfaces'
 
 let ret: any
 

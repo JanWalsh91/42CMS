@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import chalk from 'chalk';
 
-import { ICategory, ICatalog } from '../models'
+import { ICategory } from '../interfaces'
 import { categoryService } from '../services';
 import ResponseStatusTypes from '../utils/ResponseStatusTypes';
 import { ValidationError, ResourceNotFoundError, NotImplementedError } from '../utils/Errors';
