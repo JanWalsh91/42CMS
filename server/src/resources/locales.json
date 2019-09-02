@@ -1,5 +1,11 @@
 [
 	{
+		"id": "defualt",
+		"language": "en",
+		"country": null,
+		"fallback": null
+	},
+	{
 		"id": "en",
 		"language": "en",
 		"country": null,

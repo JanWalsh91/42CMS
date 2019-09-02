@@ -4,7 +4,7 @@ import chalk from 'chalk'
 import { localeSettingsSchema } from './'
 
 const globalSettingsSchema = new Schema({
-	locale: localeSettingsSchema
+	locale: localeSettingsSchema,
 })
 
 export {

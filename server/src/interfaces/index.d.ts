@@ -7,6 +7,7 @@ import { ICategory } from './ICategory'
 import { ISite } from './ISite'
 import { ILocale } from './ILocale'
 import { ILocaleSettings } from './ILocaleSettings'
+import { IGlobalSettings } from './IGlobalSettings'
 
 export {
 	IUser,
@@ -18,6 +19,7 @@ export {
 	ISite,
 	ILocale,
 	ILocaleSettings,
+	IGlobalSettings,
 }
 
 import { Document } from 'mongoose'
@@ -50,10 +52,6 @@ export interface ICustomAttribute {
 	value: CustomAttributeType
 }
 
-
-export interface IGlobalSettings extends Document, IExtensibleObject {
-	locale: ILocaleSettings,
-}
 
 export interface ISiteSettings extends Document, IExtensibleObject {
 	locale: ILocaleSettings,

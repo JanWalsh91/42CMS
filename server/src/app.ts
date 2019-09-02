@@ -10,6 +10,8 @@ import chalk from 'chalk'
 import ResponseStatusTypes from "./utils/ResponseStatusTypes"
 const { SERVER_ERROR } = ResponseStatusTypes
 
+import { globalSettingsService } from './services'
+
 import routes from './routes'
 import { ServerError } from './utils/Errors';
 
@@ -17,6 +19,7 @@ class App {
 
 	public app: express.Application
 	private static salt: string = "$2b$05$PD21LwJzPhCGI8XjSPcHzO"
+	public ready: boolean
 
     constructor() {
         this.app = express()
@@ -25,6 +28,10 @@ class App {
 		this.app.use('/', routes)
 		this.app.use(this.errorHandler)
     }
+
+	public async init(): Promise<void> {
+		await globalSettingsService.init()
+	}
 
     private config(): void {
 		this.app.disable('x-powered-by')

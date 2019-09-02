@@ -3,6 +3,7 @@ import { Catalog } from './catalogModel'
 import { Category } from './categoryModel'
 import { Product, ProductVariant, ProductMaster } from './productModels'
 import { Site } from './siteModel'
+import { GlobalSettings } from './globalSettingsModel'
 
 export {
 	User,
@@ -12,4 +13,5 @@ export {
 	ProductVariant,
 	ProductMaster,
 	Site,
+	GlobalSettings,
 }
