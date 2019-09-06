@@ -11,15 +11,15 @@ export class CatalogService extends Patchable {
 		id: {
 			$set: async (action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
-				const catalog: ICatalog = action.resources.catalog;
+				const catalog: ICatalog = action.resources.catalog
+				// TODO: inconsistent with productService
 				await catalog.setId(action.value)
 			}
 		},
 		name: {
 			$set: async (action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
-				const catalog: ICatalog = action.resources.catalog;
-				
+				const catalog: ICatalog = action.resources.catalog
 				await catalog.setName(action.value)
 			}
 		}

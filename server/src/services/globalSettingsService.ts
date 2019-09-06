@@ -1,9 +1,10 @@
-import { IGlobalSettings, ILocaleSettings } from '../interfaces'
+import { IGlobalSettings, ILocaleSettings, ILocale } from '../interfaces'
 
 import { GlobalSettings } from '../models'
 import chalk from 'chalk'
 import { Patchable, patchAction, ValidationError, patchRequest } from '../utils';
 import { async } from 'q';
+import { localeService } from '.';
 
 class GlobalSettingsService extends Patchable {
 	patchMap = {
@@ -72,7 +73,8 @@ class GlobalSettingsService extends Patchable {
 		}
 		console.log('localeISAvailable: ', localeSettings.localeIsAvailable(value))
 		if (!localeSettings.localeIsAvailable(value)) {
-			await localeSettings.addLocale(value)
+			const locale: ILocale = await localeService.getById(value)
+			await localeSettings.addAvailableLocale(value)
 		} else {
 			console.log('already added')
 		}
@@ -86,7 +88,7 @@ class GlobalSettingsService extends Patchable {
 			throw new ValidationError(value + ' is an invalid locale')
 		}
 		if (localeSettings.localeIsAvailable(value)) {
-			await localeSettings.removeLocale(value)
+			await localeSettings.removeAvailableLocale(value)
 		}
 	}
 }

@@ -3,6 +3,7 @@ import { productService } from './productService'
 import { catalogService } from './catalogService'
 import { categoryService } from './categoryService'
 import { globalSettingsService } from './globalSettingsService'
+import { localeService } from './localeService'
 
 export {
 	userService,
@@ -10,4 +11,5 @@ export {
 	categoryService,
 	catalogService,
 	globalSettingsService,
+	localeService,
 }

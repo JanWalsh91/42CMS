@@ -13,7 +13,8 @@ const { SERVER_ERROR } = ResponseStatusTypes
 import { globalSettingsService } from './services'
 
 import routes from './routes'
-import { ServerError } from './utils/Errors';
+import { ServerError } from './utils/Errors'
+import { LocaleService } from './services/localeservice'
 
 class App {
 
@@ -42,7 +43,8 @@ class App {
 		this.ready = (async(): Promise<void> => {
 			
 			await globalSettingsService.init()
-			
+			await LocaleService.init()
+
 			this._ready = true
 			console.log(chalk.green('[app.init] READY'))
 		})()

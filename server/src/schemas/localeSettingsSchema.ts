@@ -5,8 +5,9 @@ import { ILocale, ILocaleSettings } from '../interfaces'
 import { Locale } from '../models'
 import { jsonLocale } from '../types'
 import { ValidationError } from '../utils';
+import { localeService } from '../services';
 
-const locales: { default: jsonLocale[], all: jsonLocale[] } = require('../resources/locales.json')
+// const locales: { default: jsonLocale[], all: jsonLocale[] } = require('../resources/locales.json')
 
 const localeSettingsSchema = new Schema({
 	availableLocales: [{
@@ -16,34 +17,16 @@ const localeSettingsSchema = new Schema({
 })
 
 localeSettingsSchema.methods = {
-	getAllLocales: (): jsonLocale[] => locales.all,
-	getDefaultLocales: (): jsonLocale[] => locales.default,
+	// TODO: grabs default locales which were already created in localeService
 	reset: async function (this: ILocaleSettings): Promise<void> {
 		// console.log(chalk.red('[localSettingsSchema.reset]'))
-		// reset Locale Collection
-		await Locale.deleteMany({})
-		let defaultLocales = this.getDefaultLocales()
-		// create and save default locales
-		let locales: ILocale[] = await Promise.all(defaultLocales.map(async (config: jsonLocale): Promise<ILocale> => {
-			let locale: ILocale = new Locale ({
-				id: config.id,
-				language: config.language,
-				country: config.country
-			})
-			await locale.save()
-			return locale
-		}))
-
-		await Promise.all(defaultLocales.map(async(config: jsonLocale) => {
-			if (config.fallback) {
-				let locale = locales.find(x => x.id == config.id)
-				let fallback: ILocale = locales.find(x => x.id == config.fallback)
-				if (fallback) {
-					locale.fallback = fallback
-					return locale.save()
-				}
-			}
-		}))
+		
+		const locales: ILocale[] = await Promise.all(
+			localeService
+				.getDefaultLocales()
+				.map(x => x.id)
+				.map(async (id: string): Promise<ILocale> => Locale.findById(id))
+		)
 		this.availableLocales = locales
 		this.markModified('availableLocales')
 	},
@@ -51,10 +34,7 @@ localeSettingsSchema.methods = {
 		// console.log(chalk.magenta(`[localeSettingsSchema.localeIsAvailable] ` + id))
 		return this.availableLocales.some(x => x.id == id)
 	},
-	localeIsValid: function (this: ILocaleSettings, id: string): boolean {
-		return this.getAllLocales().some(x => x.id == id)
-	},
-	addLocale: async function (this: ILocaleSettings, id: string): Promise<void> {
+	addAvailableLocale: async function (this: ILocaleSettings, id: string): Promise<void> {
 		console.log(chalk.magenta(`[localeSettingsSchema.addLocale] ` + id))
 		// await this.populate('availableLocales').execPopulate()
 		let config: jsonLocale = this.getAllLocales().find(x => x.id == id)
@@ -78,7 +58,7 @@ localeSettingsSchema.methods = {
 		this.availableLocales.push(locale)
 		this.markModified('availableLocales')
 	},
-	removeLocale: async function (this: ILocaleSettings, id: string): Promise<void> {
+	removeAvailableLocale: async function (this: ILocaleSettings, id: string): Promise<void> {
 		console.log(chalk.magenta(`[localeSettingsSchema.removeLocale]` + id))
 		// await this.populate({path: 'availableLocales', populate: {path: 'fallback'}}).execPopulate()
 		if (this.availableLocales.some(x => x.fallback && x.fallback.id == id )) {
