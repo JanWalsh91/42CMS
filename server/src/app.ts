@@ -19,10 +19,16 @@ class App {
 
 	public app: express.Application
 	private static salt: string = "$2b$05$PD21LwJzPhCGI8XjSPcHzO"
-	public ready: boolean
+	public ready: Promise<void>
+	private _ready: boolean = false
 
     constructor() {
-        this.app = express()
+		this.app = express()
+		this.ready = this.init()
+		this.app.use(async (req: Request, res: Response, next:Function) => {
+			await this.ready
+			next()
+		})
 		this.config()
 		this.app.use(this.printQuery)
 		this.app.use('/', routes)
@@ -30,7 +36,14 @@ class App {
     }
 
 	public async init(): Promise<void> {
+		console.log(chalk.yellow('[app.init]'))
 		await globalSettingsService.init()
+		this._ready = true
+		console.log(chalk.green('[app.init] READY'))
+	}
+
+	public isReady(): boolean {
+		return this._ready
 	}
 
     private config(): void {
@@ -45,7 +58,7 @@ class App {
 		}))
 
 		mongoose.set('useFindAndModify', false)
-		
+		mongoose.set('useCreateIndex', true)
 		mongoose.connect('mongodb://127.0.0.1:27017/MYDB', { useNewUrlParser: true })
 		let db = mongoose.connection
 		// mongoose.set('debug', true)
@@ -117,4 +130,4 @@ class App {
 
 }
 
-export default new App().app;
+export default new App();

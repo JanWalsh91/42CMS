@@ -26,6 +26,7 @@ export class CatalogService extends Patchable {
 	}
 
 	public async create(options: Partial<ICatalog>): Promise<ICatalog> {
+		console.log(chalk.magenta('[CatalogService.create]'), options)
 		// Check if catalog exists
 		let existingCatalogs: ICatalog[] = await Catalog.find({id: options.id})
 		if (existingCatalogs.length > 0) {
@@ -35,7 +36,7 @@ export class CatalogService extends Patchable {
 		return await new Catalog({
 			id: options.id,
 			name: options.name,
-			master: options.master
+			master: !!options.master
 		}).save()
 	}
 

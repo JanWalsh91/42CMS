@@ -24,7 +24,7 @@ const catalogSchema = new Schema({
 	categories: [{
 		type: Schema.Types.ObjectId,
 		ref: 'Category',
-		unique: true,
+		// unique: true,
 	}],
 	products: [{
 		type: Schema.Types.ObjectId,
@@ -37,7 +37,7 @@ const catalogSchema = new Schema({
 		required: true,
 		default: false,
 	},
-}, {id: false})
+})
 
 catalogSchema.methods = {
 	// ==== set ====

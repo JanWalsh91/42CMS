@@ -23,7 +23,6 @@ const productSchema = new Schema({
 		type: [{
 			type: Schema.Types.ObjectId,
 			ref: 'Catalog',
-			unique: true,
 		}],
 		default: [],
 	},
@@ -35,7 +34,6 @@ const productSchema = new Schema({
 		categories: [{
 			type: Schema.Types.ObjectId,
 			ref: 'Category',
-			unique: true,
 		}]
 	}, {_id: false, minimize: false})],
 	primaryCategoryByCatalog: [new Schema({

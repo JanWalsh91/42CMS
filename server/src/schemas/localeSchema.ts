@@ -1,10 +1,23 @@
 import { Schema } from 'mongoose'
 
 const localeSchema = new Schema({
-	id: String,
-	language: String,
-	country: String,
-	fallback: String,
+	id: {
+		type: String,
+		required: true,
+	},
+	language: {
+		type: String,
+		required: true,
+	},
+	country: {
+		type: String,
+		default: null,
+	},
+	fallback: {
+		type: Schema.Types.ObjectId,
+		ref: 'Locale',
+		default: null,
+	},
 })
 
 export {

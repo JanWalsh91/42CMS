@@ -1,6 +1,8 @@
-export interface ILocale {
+import { Document, Schema } from 'mongoose'
+
+export interface ILocale extends Document {
 	id: string,
 	language: string,
 	country: string,
-	fallback: String,
+	fallback: ILocale['_id'] | ILocale,
 }

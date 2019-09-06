@@ -2,11 +2,12 @@ import app from '../src/app'
 import * as chai from 'chai'
 import chaiHttp = require('chai-http')
 chai.use(chaiHttp)
-const agent = chai.request.agent(app)
+const agent = chai.request.agent(app.app)
 
-import { User, Catalog, Category, Product } from '../src/models'
+import { User, Catalog, Category, Product, Site, Locale, GlobalSettings } from '../src/models'
 // import { IUser, IProduct, ICatalog, ICategory } from '../src/interfaces'
 import { patchAction, patchRequest } from '../src/utils';
+import chalk from 'chalk';
 
 export const userData = {
 	name: 'John Smith',
@@ -30,13 +31,16 @@ export const productData = {
 }
 
 export const clearDataBase = async (...models: any) => {
+	console.log(chalk.red('[clearDatabase]'))
 	if (!models.length) {
 		models = [
 			User,
 			Catalog,
-			// Site,
+			Site,
 			Category,
-			Product
+			Product,
+			Locale,
+			GlobalSettings,
 		]
 	}
 	await Promise.all(models.map(model => model.deleteMany({})))

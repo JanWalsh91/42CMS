@@ -1,25 +1,6 @@
-import { Schema, Model, model } from 'mongoose'
+import { model, Model } from 'mongoose'
 
 import { ISite } from '../interfaces'
+import { siteSchema } from '../schemas'
 
-const SiteSchema = new Schema({
-	id: {
-		type: String,
-		required: true
-	},
-	name: {
-		type: String,
-		required: true,
-	},
-	assignedCatalogs: [{
-		type: Schema.Types.ObjectId,
-		ref: 'Catalog',
-		default: null
-	}]
-})
-
-SiteSchema.methods = {
-	
-}
-
-export const Site: Model<ISite> = model('Site', SiteSchema)
+export const Site: Model<ISite> = model('Site', siteSchema)

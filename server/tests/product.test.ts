@@ -8,6 +8,7 @@ import { clearDataBase, createUser, printret, userData, createCatalog, catalogDa
 import { User, Category, Catalog, Product } from '../src/models'
 import { IUser, IProduct, ICatalog, ICategory } from '../src/interfaces'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
+import app from '../src/app'
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes 
 
 let ret: any;
@@ -16,6 +17,9 @@ let category: any = {}
 let product: any = {}
 
 describe('Product', function() {
+	before(async () => {
+		await app.ready
+	})
 
 	before(async function() {
 		// Clear database
@@ -72,8 +76,8 @@ describe('Product', function() {
 				ret.status.should.equal(NOT_FOUND)
 			})
 			it('the catalog is not a master catalog', async() => {
-				await createCatalog(catalogData.id, {master: false})
-				ret = await createProduct(catalogData.id, productData.id, { name: productData.name })
+				await createCatalog(catalogData.id + '2', {master: false})
+				ret = await createProduct(catalogData.id + '2', productData.id, { name: productData.name })
 				ret.status.should.equal(BAD_REQUEST)	
 			})
 		})
@@ -103,7 +107,9 @@ describe('Product', function() {
 
 	describe('Get all Products', () => {
 		it('Should get all Products', async() => {
-			await Promise.all([1, 2, 3].map(id => createProduct(catalogData.id, `id${id}`, { name: `name${id}`})))
+			await createProduct(catalogData.id, 'id1', { name: 'name1' })
+			await createProduct(catalogData.id, 'id2', { name: 'name2' })
+			await createProduct(catalogData.id, 'id3', { name: 'name3' })
 			ret = await getAllProducts()
 			ret.body.length.should.equal(3)
 			ret.should.have.status(OK)
@@ -281,7 +287,7 @@ describe('Product', function() {
 	})
 
 	describe('Delete product', () => {
-		it.only('Should delete the product', async() => {
+		it('Should delete the product', async() => {
 			const catid2: string = 'catid2';
 			await createProduct(catalogData.id, productData.id, {name: productData.name})
 			await createCategory(catalogData.id, catid2)

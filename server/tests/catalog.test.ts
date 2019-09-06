@@ -9,6 +9,7 @@ const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes
 
 import { Catalog, Category } from '../src/models'
 import { ICatalog } from '../src/interfaces'
+import app from '../src/app';
 
 let ret: any
 
@@ -18,6 +19,10 @@ const catalogData = {
 }
 
 describe('Catalog', () => {
+	before(async () => {
+		await app.ready
+	})
+
 	beforeEach(async() => {
 		await clearDataBase()
 		await createUser(userData)
@@ -92,7 +97,10 @@ describe('Catalog', () => {
 
 	describe('Get all Catalogs', () => {
 		it('Should get all Catalogs', async() => {
-			await Promise.all(['matser', 'china', 'international'].map(id => createCatalog(id)))
+			await createCatalog('fr')
+			await createCatalog('china')
+			await createCatalog('international')
+			// await Promise.all(['fr', 'china', 'international'].map(id => createCatalog(id)))
 			ret = await getAllCatalogs()
 			ret.body.length.should.equal(3)
 			ret.should.have.status(OK)

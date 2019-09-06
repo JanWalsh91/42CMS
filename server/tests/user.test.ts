@@ -8,11 +8,16 @@ import { authUser, login, logout, clearDataBase, userData, getUser, getAllUsers,
 import { User } from '../src/models'
 import { IUser } from '../src/interfaces'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
+import app from '../src/app'
 const { OK, BAD_REQUEST, UNAUTHORIZED, NOT_FOUND } = ResponseStatusTypes 
 
 let ret: any
 
 describe('User', () => {
+	before(async () => {
+		await app.ready
+	})
+
 	beforeEach(async () => await clearDataBase())
 
 	describe('Create', () => {

@@ -1,32 +1,59 @@
-[
-	{
-		"id": "defualt",
-		"language": "en",
-		"country": null,
-		"fallback": null
-	},
-	{
-		"id": "en",
-		"language": "en",
-		"country": null,
-		"fallback": "default"
-	},
-	{
-		"id": "fr",
-		"language": "fr",
-		"country": null,
-		"fallback": "default"
-	},
-	{
-		"id": "en_US",
-		"language": "en",
-		"country": "US",
-		"fallback": "en"
-	},
-	{
-		"id": "fr_FR",
-		"language": "fr",
-		"country": "FR",
-		"fallback": "fr"
-	}
-]
+
+{
+	"default": 	[
+		{
+			"id": "default",
+			"language": "en"
+		},
+		{
+			"id": "en",
+			"language": "en",
+			"fallback": "default"
+		},
+		{
+			"id": "fr",
+			"language": "fr",
+			"fallback": "default"
+		},
+		{
+			"id": "en_US",
+			"language": "en",
+			"country": "US",
+			"fallback": "en"
+		},
+		{
+			"id": "fr_FR",
+			"language": "fr",
+			"country": "FR",
+			"fallback": "fr"
+		}
+	],
+	"all": [
+		{
+			"id": "default",
+			"language": "en"
+		},
+		{
+			"id": "en",
+			"language": "en",
+			"fallback": "default"
+		},
+		{
+			"id": "fr",
+			"language": "fr",
+			"fallback": "default"
+		},
+		{
+			"id": "en_US",
+			"language": "en",
+			"country": "US",
+			"fallback": "en"
+		},
+		{
+			"id": "fr_FR",
+			"language": "fr",
+			"country": "FR",
+			"fallback": "fr"
+		}
+	]
+}

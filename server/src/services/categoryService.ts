@@ -11,6 +11,11 @@ class CategoryService extends Patchable {
 			$set: async (action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
 				const category: ICategory = action.resources.category;
+				await category.populate('catalog').execPopulate()
+				const existingCategory: ICategory = await await category.catalog.getCategory({id: action.value})
+				if (existingCategory) {
+					throw new ValidationError('Category already exists in this catalog')
+				}
 				await category.setId(action.value)
 			}
 		},

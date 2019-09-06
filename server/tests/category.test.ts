@@ -9,10 +9,15 @@ const { OK, BAD_REQUEST, UNAUTHORIZED, NOT_FOUND } = ResponseStatusTypes
 
 import { Catalog, Category } from '../src/models';
 import { ICatalog, ICategory } from '../src/interfaces'
+import app from '../src/app';
 
 let ret: any
 
 describe('Category', () => {
+	before(async () => {
+		await app.ready
+	})
+
 	let catalog: any = {}
 
 	before(async() => {

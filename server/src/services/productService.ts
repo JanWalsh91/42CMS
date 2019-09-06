@@ -11,7 +11,6 @@ export class ProductService extends Patchable {
 			$set: async(action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
 				const product: IProduct = action.resources.product
-				
 				await this.setId(product, action.value)
 			},
 		},
@@ -143,7 +142,7 @@ export class ProductService extends Patchable {
 
 				// Assign product to Catalog if not in Catalog
 				if (!catalog.products.find(x => x.id == product.id)) {
-					console.log(chalk.green('[ProductService.assignedCategoriesByCatalog.$add]NOT IN CATALOG'))
+					console.log(chalk.green('[ProductService.assignedCategoriesByCatalog.$add] NOT IN CATALOG'))
 					await Promise.all([
 						catalog.addProduct(product),
 						product.addAssignedCatalog(catalog),
@@ -152,7 +151,7 @@ export class ProductService extends Patchable {
 
 				await Promise.all([
 					product.addAssignedCategoryByCatalog(category, catalog),
-					// category.addProduct(product),
+					category.addProduct(product),
 				])
 
 				// TODO: validate
