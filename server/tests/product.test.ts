@@ -7,8 +7,8 @@ import { clearDataBase, createUser, printret, userData, createCatalog, catalogDa
 
 import { User, Category, Catalog, Product } from '../src/models'
 import { IUser, IProduct, ICatalog, ICategory } from '../src/interfaces'
-import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 import app from '../src/app'
+import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes 
 
 let ret: any;

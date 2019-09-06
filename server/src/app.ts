@@ -24,7 +24,7 @@ class App {
 
     constructor() {
 		this.app = express()
-		this.ready = this.init()
+		this.init()
 		this.app.use(async (req: Request, res: Response, next:Function) => {
 			await this.ready
 			next()
@@ -37,9 +37,15 @@ class App {
 
 	public async init(): Promise<void> {
 		console.log(chalk.yellow('[app.init]'))
-		await globalSettingsService.init()
-		this._ready = true
-		console.log(chalk.green('[app.init] READY'))
+		this._ready = false
+		
+		this.ready = (async(): Promise<void> => {
+			
+			await globalSettingsService.init()
+			
+			this._ready = true
+			console.log(chalk.green('[app.init] READY'))
+		})()
 	}
 
 	public isReady(): boolean {

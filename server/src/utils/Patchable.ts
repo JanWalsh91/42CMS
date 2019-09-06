@@ -10,7 +10,7 @@ export type patchAction = {
 }
 
 export type patchRequest = {
-	[key: string]: patchAction | patchAction[]
+	[key: string]: patchAction | patchAction[] // | patchRequest | patchRequest[]
 }
 
 export type patchFunction = (action: patchAction) => Promise<void> | void

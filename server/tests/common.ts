@@ -8,6 +8,7 @@ import { User, Catalog, Category, Product, Site, Locale, GlobalSettings } from '
 // import { IUser, IProduct, ICatalog, ICategory } from '../src/interfaces'
 import { patchAction, patchRequest } from '../src/utils';
 import chalk from 'chalk';
+import { Model } from 'mongoose';
 
 export const userData = {
 	name: 'John Smith',
@@ -30,7 +31,7 @@ export const productData = {
 	id: 'missdior'
 }
 
-export const clearDataBase = async (...models: any) => {
+export const clearDataBase = async (...models: Model<any>[]) => {
 	console.log(chalk.red('[clearDatabase]'))
 	if (!models.length) {
 		models = [
@@ -44,6 +45,9 @@ export const clearDataBase = async (...models: any) => {
 		]
 	}
 	await Promise.all(models.map(model => model.deleteMany({})))
+	if (models.some(x => x.modelName == 'GlobalSettings')) {
+		await app.init()
+	}
 }
 
 // ===== USERS ===== //
@@ -124,6 +128,14 @@ export const clearDataBase = async (...models: any) => {
 
 	export const deleteProduct = (productid: string) =>
 		agent.delete(`/products/${productid}`)
+
+// ===== GLOBAL SETTINGS ===== //
+
+	export const getGlobalSettings = () =>
+		agent.get(`/globalsettings`)
+	
+	export const updateGlobalSettings = (patch: patchRequest) => 
+		agent.patch(`/globalsettings`).send(patch)
 
 // ===== UTILITY ===== //
 

@@ -11,21 +11,10 @@
 			"fallback": "default"
 		},
 		{
-			"id": "fr",
-			"language": "fr",
-			"fallback": "default"
-		},
-		{
 			"id": "en_US",
 			"language": "en",
 			"country": "US",
 			"fallback": "en"
-		},
-		{
-			"id": "fr_FR",
-			"language": "fr",
-			"country": "FR",
-			"fallback": "fr"
 		}
 	],
 	"all": [

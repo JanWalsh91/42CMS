@@ -1,7 +1,7 @@
 import { Response, Request, NextFunction } from 'express';
 import chalk from 'chalk';
 import ResponseStatusTypes from '../utils/ResponseStatusTypes';
-import { User } from '../models/userModel';
+import { User } from '../models';
 
 /**
  * Authorizes a user based on apiKey in cookie in header.

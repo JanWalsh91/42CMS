@@ -1,9 +1,9 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router } from 'express'
 
-import { userController } from '../controllers/userController';
-import authorize from '../middleware/authorize';
+import { userController } from '../controllers/userController'
+import authorize from '../middleware/authorize'
 
-const router: Router = Router({ mergeParams: true });
+const router: Router = Router({ mergeParams: true })
 
 router
 	.post('/', userController.create)
@@ -13,4 +13,4 @@ router
 	.delete('/:username', authorize, userController.delete)
 	.delete('/', authorize, userController.delete)
 
-export default router;
+export default router

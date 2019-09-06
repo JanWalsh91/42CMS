@@ -1,6 +1,6 @@
 import { Router } from 'express'
 
-import { catalogController } from '../controllers/catalogController'
+import { catalogController } from '../controllers'
 import categories from './categoriesRoute'
 
 const router: Router = Router({ mergeParams: true })
