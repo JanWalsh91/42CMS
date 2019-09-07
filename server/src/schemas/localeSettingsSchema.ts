@@ -17,10 +17,8 @@ const localeSettingsSchema = new Schema({
 })
 
 localeSettingsSchema.methods = {
-	// TODO: grabs default locales which were already created in localeService
 	reset: async function (this: ILocaleSettings): Promise<void> {
 		// console.log(chalk.red('[localSettingsSchema.reset]'))
-		
 		const locales: ILocale[] = await Promise.all(
 			localeService
 				.getDefaultLocaleConfigs()
@@ -47,7 +45,6 @@ localeSettingsSchema.methods = {
 			throw new ValidationError('Cannot remove locale it is being used as a fallback')
 		}
 		this.availableLocales = this.availableLocales.filter(x => x.id != locale.id)
-		// this.markModified('availableLocales' // ??
 	}
 }
 

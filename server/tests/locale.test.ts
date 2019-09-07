@@ -13,7 +13,7 @@ import { ILocale } from '../src/interfaces'
 
 let ret: any
 
-describe.only('Locale', () => {
+describe('Locale', () => {
 	before(async () => {
 		await app.ready
 		await clearDataBase()

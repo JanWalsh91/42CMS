@@ -30,7 +30,7 @@ describe('Global Setting', function() {
 		ret.status.should.equal(OK)
 	})
 
-	describe('Global Setting - Locale - patch', () => {
+	describe.only('Global Setting - Locale - patch', () => {
 		describe('Add locale', () => {
 			it('Should add a locale to available locales', async () => {
 				ret = await updateGlobalSettings({
@@ -46,10 +46,22 @@ describe('Global Setting', function() {
 				localeSettings.availableLocales.find(x => x.id == 'fr_FR').should.exist
 			})
 			describe('Should fail if ...', () => {
-				it('Locale is invalid')
+				it.only('Locale is invalid', async() => {
+					ret = await updateGlobalSettings({
+						locale: { op: '$add', value: 'invalid' }
+					})
+					ret.status.should.eq(NOT_FOUND)
+					let localeSettings: ILocaleSettings = (await GlobalSettings.findOne({}).populate({
+						path: 'locale.availableLocales',
+						populate: {
+							path: 'fallback'
+						}
+					})).locale
+					expect(localeSettings.availableLocales.find(x => x.id == 'fr_FR')).to.not.exist
+				})
 			})
 		})
-		describe('Remove locale', () => {
+		describe('Remove locale from available locales', () => {
 			it('Should remove a locale from the available locales', async () => {
 				ret = await updateGlobalSettings({
 					locale: { op: '$add', value: 'fr_FR' }
@@ -66,12 +78,6 @@ describe('Global Setting', function() {
 				})).locale
 				expect(localeSettings.availableLocales.find(x => x.id == 'fr_FR')).to.not.exist
 			})
-		})
-		describe('Set fallback locale', () => {
-			it('Should set a fallback to a locale')
-		})
-		describe('Unset fallback locale', () => {
-			it('Should unset (set to default) a fallback of a locale')
 		})
 	})
 })

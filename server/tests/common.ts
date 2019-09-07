@@ -5,7 +5,6 @@ chai.use(chaiHttp)
 const agent = chai.request.agent(app.app)
 
 import { User, Catalog, Category, Product, Site, Locale, GlobalSettings } from '../src/models'
-// import { IUser, IProduct, ICatalog, ICategory } from '../src/interfaces'
 import { patchAction, patchRequest } from '../src/utils';
 import chalk from 'chalk';
 import { Model } from 'mongoose';
@@ -32,7 +31,7 @@ export const productData = {
 }
 
 export const clearDataBase = async (...models: Model<any>[]) => {
-	console.log(chalk.red('[clearDatabase]'))
+	console.log(chalk.red('[clearDatabase]: ' + (models.length ? models.map(model => model.modelName).join(', ') : 'all models')))
 	if (!models.length) {
 		models = [
 			User,

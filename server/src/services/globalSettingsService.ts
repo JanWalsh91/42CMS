@@ -2,7 +2,7 @@ import { IGlobalSettings, ILocaleSettings, ILocale } from '../interfaces'
 
 import { GlobalSettings } from '../models'
 import chalk from 'chalk'
-import { Patchable, patchAction, ValidationError, patchRequest } from '../utils';
+import { Patchable, patchAction, ValidationError, patchRequest, ResourceNotFoundError } from '../utils';
 import { async } from 'q';
 import { localeService } from '.';
 
@@ -69,28 +69,24 @@ class GlobalSettingsService extends Patchable {
 	private async addLocale(globalSettings: IGlobalSettings, value: string): Promise<void> {
 		console.log(chalk.magenta(`[GlobalSettingsService.addLocale]`))
 		const localeSettings: ILocaleSettings = globalSettings.locale
-		if (!localeSettings.localeIsValid(value)) {
-			throw new ValidationError(value + ' is an invalid locale')
-		}
-		console.log('localeISAvailable: ', localeSettings.localeIsAvailable(value))
 		if (!localeSettings.localeIsAvailable(value)) {
 			const locale: ILocale = await localeService.getById(value)
-			if (locale)
-			await localeSettings.addAvailableLocale(value)
-		} else {
-			console.log('already added')
+			if (!locale) {
+				throw new ResourceNotFoundError('Locale', value)
+			}
+			await localeSettings.addAvailableLocale(locale)
 		}
 	}
 
 	private async removeLocale(globalSettings: IGlobalSettings, value: string): Promise<void> {
 		console.log(chalk.magenta(`[GlobalSettingsService.removeLocale]`))
 		const localeSettings: ILocaleSettings = globalSettings.locale
-		if (!localeSettings.localeIsValid(value)) {
-			console.log('is invalid')
-			throw new ValidationError(value + ' is an invalid locale')
-		}
 		if (localeSettings.localeIsAvailable(value)) {
-			await localeSettings.removeAvailableLocale(value)
+			const locale: ILocale = await localeService.getById(value)
+			if (!locale) {
+				throw new ResourceNotFoundError('Locale', value)
+			}
+			await localeSettings.removeAvailableLocale(locale)
 		}
 	}
 }
