@@ -42,9 +42,9 @@ export class CategoryController {
 			await categoryService.update(res.locals.category, req.body, {
 				category: res.locals.category
 			})
+			res.end()
 		} catch (e) { next(e) }
 	
-		res.end()
 	}
 
 	public async delete(req: Request, res: Response, next: NextFunction): Promise<void> {

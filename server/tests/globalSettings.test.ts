@@ -12,12 +12,12 @@ const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes
 
 let ret: any;
 
-describe.only('Global Setting', function() {
+describe('Global Setting', function() {
 	before(async () => {
 		await app.ready
 	})
 
-	before(async function() {
+	beforeEach(async function() {
 		// Clear database
 		await clearDataBase()
 		// Create user
@@ -50,7 +50,7 @@ describe.only('Global Setting', function() {
 			})
 		})
 		describe('Remove locale', () => {
-			it.only('Should remove a locale from the available locales', async () => {
+			it('Should remove a locale from the available locales', async () => {
 				ret = await updateGlobalSettings({
 					locale: { op: '$add', value: 'fr_FR' }
 				})

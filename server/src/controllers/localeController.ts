@@ -8,11 +8,23 @@ export const localeController = {
 	
 	async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[localeController.getAll]'))
-
+		const locales: ILocale[] = await localeService.getAll()
+	
+		res.send(
+			await Promise.all(
+				locales.map((locale: ILocale) => locale.toJsonForUser(res.locals.user))
+			)
+		)
 	},
 
 	async update(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[localeController.update]'))
+		try {
+			await localeService.update(res.locals.locale, req.body, {
+				locale: res.locals.locale
+			})
+			res.end()
+		} catch (e) { next(e) }
 	
 	},
 	

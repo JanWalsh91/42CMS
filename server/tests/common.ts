@@ -45,7 +45,7 @@ export const clearDataBase = async (...models: Model<any>[]) => {
 		]
 	}
 	await Promise.all(models.map(model => model.deleteMany({})))
-	if (models.some(x => x.modelName == 'GlobalSettings')) {
+	if (models.some(model => ['GlobalSettings', 'Locale'].includes(model.modelName))) {
 		await app.init()
 	}
 }
@@ -136,6 +136,14 @@ export const clearDataBase = async (...models: Model<any>[]) => {
 	
 	export const updateGlobalSettings = (patch: patchRequest) => 
 		agent.patch(`/globalsettings`).send(patch)
+
+// ===== LOCALES ===== //
+
+	export const getAllLocales = () =>
+		agent.get(`/locales`)
+
+	export const updateLocale = (localeid: string, patch: patchRequest) =>
+		agent.patch(`/locales/${localeid}`).send(patch)
 
 // ===== UTILITY ===== //
 

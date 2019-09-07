@@ -1,13 +1,13 @@
 import chalk from 'chalk'
 
-import { Patchable, patchAction } from '../utils'
+import { Patchable, patchAction, patchRequest, ValidationError, ResourceNotFoundError } from '../utils'
 import { ILocale } from '../interfaces'
 import { Locale } from '../models'
 import { jsonLocale } from '../types'
 
 const locales: { default: jsonLocale[], all: jsonLocale[] } = require('../resources/locales.json')
 
-export class LocaleService extends Patchable {
+class LocaleService extends Patchable {
 	patchMap = {
 		fallback: {
 			$set: async (action: patchAction): Promise<void> => {
@@ -28,11 +28,18 @@ export class LocaleService extends Patchable {
 
 	private async setFallback(locale: ILocale, id: string) {
 		console.log(chalk.magenta(`[LocaleService.setFallback] ${id}`))
+		let fallbackLocale: ILocale = await this.getById(id)
+		if (!fallbackLocale) {
+			throw new ResourceNotFoundError('Locale', `${id}`)
+		}
+		locale.fallback = fallbackLocale
 	}
 
 	public async init(): Promise<void> {
+		console.log(chalk.magenta('[LocaleService.init]'))
+
 		await Locale.deleteMany({})
-		const localeConfigs = this.getAllLocales()
+		const localeConfigs = this.getAllLocaleConfigs()
 
 		// Create and save locales
 		const locales: ILocale[] = await Promise.all(localeConfigs.map(async (config: jsonLocale): Promise<ILocale> => {
@@ -60,14 +67,26 @@ export class LocaleService extends Patchable {
 
 	public reset = this.init
 
-	public getAllLocales (): jsonLocale[] {
+	public async getAll(): Promise<ILocale[]> {
+		return Locale.find({}).exec()
+	}
+
+	public async update(locale: ILocale, patchRequest: patchRequest, resources: any): Promise<ILocale> {
+		console.log(chalk.magenta(`[LocaleService.update]`))
+
+		await this.patch(patchRequest, resources)
+
+		return locale.save()
+	}
+
+	public getAllLocaleConfigs(): jsonLocale[] {
 		return locales.all
 	}
-	public getDefaultLocales (): jsonLocale[] {
+	public getDefaultLocaleConfigs(): jsonLocale[] {
 		return locales.default
 	}
-	public localeIsValid (id: string): boolean {
-		return this.getAllLocales().some(x => x.id == id)
+	public localeIsValid(id: string): boolean {
+		return this.getAllLocaleConfigs().some(x => x.id == id)
 	}
 
 }

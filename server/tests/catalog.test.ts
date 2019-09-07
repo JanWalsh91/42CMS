@@ -9,7 +9,7 @@ const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes
 
 import { Catalog, Category } from '../src/models'
 import { ICatalog } from '../src/interfaces'
-import app from '../src/app';
+import app from '../src/app'
 
 let ret: any
 

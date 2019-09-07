@@ -5,7 +5,7 @@ import { IProduct, ICatalog, ICategory } from '../interfaces'
 import { ResourceNotFoundError, ValidationError, patchRequest, Patchable, patchAction, NotImplementedError } from '../utils';
 import { catalogService, categoryService } from '.';
 
-export class ProductService extends Patchable {
+class ProductService extends Patchable {
 	patchMap = {
 		id: {
 			$set: async(action: patchAction): Promise<void> => {

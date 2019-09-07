@@ -42,17 +42,17 @@ export const productController = {
 			await productService.update(res.locals.product, req.body, {
 				product: res.locals.product
 			})
+			res.end()
 		} catch (e) { next(e) }
 	
-		res.end()
 	},
 
 	async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[ProductController.delete]'))
 		try {
 			await productService.delete(res.locals.product)
+			res.end()
 		} catch (e) { next(e) }
-		res.end()
 	},
 
 	async setProductFromParams(req: Request, res: Response, next: NextFunction): Promise<void> {

@@ -46,6 +46,7 @@ class GlobalSettingsService extends Patchable {
 		}
 		await globalSettings.locale.reset()
 		await globalSettings.save()
+		console.log(chalk.magenta('[GlobalSettingsService.reset] -- end'))
 	}
 
 	/**
@@ -74,6 +75,7 @@ class GlobalSettingsService extends Patchable {
 		console.log('localeISAvailable: ', localeSettings.localeIsAvailable(value))
 		if (!localeSettings.localeIsAvailable(value)) {
 			const locale: ILocale = await localeService.getById(value)
+			if (locale)
 			await localeSettings.addAvailableLocale(value)
 		} else {
 			console.log('already added')

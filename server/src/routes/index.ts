@@ -7,6 +7,7 @@ import auth from './authRoute'
 import catalogs from './catalogsRoute'
 import products from './productsRoute'
 import globalSettings from './globalSettingsRoute'
+import locales from './localesRoute'
 
 import authorize from '../middleware/authorize'
 
@@ -26,5 +27,7 @@ router.use('/users', users)
 router.use('/catalogs', authorize, catalogs)
 router.use('/products', authorize, products)
 router.use('/globalsettings', authorize, globalSettings)
+router.use('/locales', authorize, locales)
+
 
 export default router

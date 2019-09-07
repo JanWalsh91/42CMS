@@ -21,9 +21,9 @@ export class GlobalSettingsController {
 			await globalSettingsService.update(globalSettings, req.body, {
 				globalSettings
 			})
+			res.end()
 		} catch (e) { next(e) }
 	
-		res.end()
 	}
 
 }

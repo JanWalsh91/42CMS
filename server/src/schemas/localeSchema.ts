@@ -1,4 +1,5 @@
 import { Schema } from 'mongoose'
+import { IUser, ILocale } from '../interfaces';
 
 const localeSchema = new Schema({
 	id: {
@@ -19,6 +20,14 @@ const localeSchema = new Schema({
 		default: null,
 	},
 })
+
+localeSchema.methods = {
+	toJsonForUser: async function(this: ILocale, user: IUser): Promise<any> {
+		await this.populate('fallback').execPopulate()
+		let res = (({id, language, country, fallback}) => (({id, language, country, fallback: fallback ? fallback.id : null })))(this)
+		return res
+	}
+}
 
 export {
 	localeSchema,

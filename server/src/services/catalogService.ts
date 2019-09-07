@@ -6,7 +6,7 @@ import { ICatalog, ICategory, IProduct } from '../interfaces'
 import { categoryService } from '.'
 
 
-export class CatalogService extends Patchable {
+class CatalogService extends Patchable {
 	patchMap = {
 		id: {
 			$set: async (action: patchAction): Promise<void> => {

@@ -14,7 +14,7 @@ import { globalSettingsService } from './services'
 
 import routes from './routes'
 import { ServerError } from './utils/Errors'
-import { LocaleService } from './services/localeservice'
+import { localeService } from './services/localeservice'
 
 class App {
 
@@ -42,8 +42,8 @@ class App {
 		
 		this.ready = (async(): Promise<void> => {
 			
+			await localeService.init()
 			await globalSettingsService.init()
-			await LocaleService.init()
 
 			this._ready = true
 			console.log(chalk.green('[app.init] READY'))
