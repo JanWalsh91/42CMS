@@ -30,7 +30,7 @@ describe('Global Setting', function() {
 		ret.status.should.equal(OK)
 	})
 
-	describe.only('Global Setting - Locale - patch', () => {
+	describe('Global Setting - Locale - patch', () => {
 		describe('Add locale', () => {
 			it('Should add a locale to available locales', async () => {
 				ret = await updateGlobalSettings({
@@ -46,7 +46,7 @@ describe('Global Setting', function() {
 				localeSettings.availableLocales.find(x => x.id == 'fr_FR').should.exist
 			})
 			describe('Should fail if ...', () => {
-				it.only('Locale is invalid', async() => {
+				it('Locale is invalid', async() => {
 					ret = await updateGlobalSettings({
 						locale: { op: '$add', value: 'invalid' }
 					})

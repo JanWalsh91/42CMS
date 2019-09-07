@@ -3,6 +3,7 @@ import chalk from 'chalk'
 
 import { ICatalog, ICategory, IProduct } from '../interfaces'
 import { InternalError } from '../utils'
+import { localizableAttributeSchema } from '.';
 
 const productSchema = new Schema({
 	id: {
@@ -45,7 +46,11 @@ const productSchema = new Schema({
 			type: Schema.Types.ObjectId,
 			ref: 'Category'
 		}
-	}, {_id: false, minimize: false})]
+	}, {_id: false, minimize: false})],
+	description: {
+		type: localizableAttributeSchema,
+		default: {},
+	},
 })
 
 productSchema.methods = {

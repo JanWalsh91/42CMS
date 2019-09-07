@@ -1,6 +1,7 @@
 import { Document } from 'mongoose'
 
 import { ICatalog, ICategory } from '../interfaces'
+import { ILocalizableAttribute } from './ILocalizableAttribute';
 
 export interface IProduct extends Document {
 	id: string
@@ -15,6 +16,8 @@ export interface IProduct extends Document {
 		catalog: ICatalog['_id'] | ICatalog,
 		categories: (ICategory['_id'] | ICategory)[]
 	}[]
+	description: ILocalizableAttribute
+
 
 	// set methods
 	setPrimaryCategoryByCatalog: (categoryId: ICategory | null, catalogId: ICatalog) => Promise<void>

@@ -1,3 +1,4 @@
+import { localizableAttributeSchema } from './localizableAttributeSchema'
 import { userSchema } from './userSchema'
 import { siteSchema } from './siteSchema'
 import { catalogSchema } from './catalogSchema'
@@ -10,6 +11,7 @@ import { localeSettingsSchema } from './localeSettingsSchema'
 import { globalSettingsSchema } from './globalSettingsSchema'
 
 export {
+	localizableAttributeSchema,
 	userSchema,
 	siteSchema,
 	catalogSchema,

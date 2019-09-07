@@ -18,6 +18,7 @@ let product: any = {}
 
 describe('Product', function() {
 	before(async () => {
+		console.log('before -------')
 		await app.ready
 	})
 
@@ -282,6 +283,24 @@ describe('Product', function() {
 						catalog: catalogData.id,
 					}
 				})
+			})
+		})
+
+		describe.only('Update description', () => {
+			it('Should $set description', async() => {
+				console.log('start test')
+				const locale: string = 'en'
+				const newDescription: string = 'This product is amazing'
+				await createProduct(catalogData.id, productData.id, {...productData})
+				
+				ret = await updateProduct(productData.id, {
+					description: { op: '$set', value: newDescription, locale },
+				})
+				ret.status.should.eq(OK)
+
+				// Product description should be updated
+				const product: IProduct = await Product.findOne({id: productData.id})
+				product.description.values[locale].should.eq(newDescription)
 			})
 		})
 	})
