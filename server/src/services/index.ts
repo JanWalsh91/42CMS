@@ -4,6 +4,7 @@ import { catalogService } from './catalogService'
 import { categoryService } from './categoryService'
 import { globalSettingsService } from './globalSettingsService'
 import { localeService } from './localeService'
+import { objectTypeDefinitionService } from './objectTypeDefinitionService'
 
 export {
 	userService,
@@ -12,4 +13,5 @@ export {
 	catalogService,
 	globalSettingsService,
 	localeService,
+	objectTypeDefinitionService,
 }

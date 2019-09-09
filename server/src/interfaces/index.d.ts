@@ -8,6 +8,9 @@ import { ISite } from './ISite'
 import { ILocale } from './ILocale'
 import { ILocaleSettings } from './ILocaleSettings'
 import { IGlobalSettings } from './IGlobalSettings'
+import { IAttribute, ILocalizedAttribute } from './IAttribute'
+import { IObjectTypeDefinition } from './IObjectTypeDefinition'
+import { IObjectAttributeDefinition } from './IObjectAttributeDefinition'
 
 export {
 	IUser,
@@ -20,13 +23,13 @@ export {
 	ILocale,
 	ILocaleSettings,
 	IGlobalSettings,
+	IAttribute,
+	ILocalizedAttribute,
+	IObjectTypeDefinition,
+	IObjectAttributeDefinition,
 }
 
 import { Document } from 'mongoose'
-
-export interface IAttribute {
-
-}
 
 /**
  * Extensible objects:
@@ -39,31 +42,31 @@ export interface IAttribute {
  * - user
  *  
  * */ 
-export interface IExtensibleObject {
-	custom: ICustomAttribute[]
+// export interface IExtensibleObject {
+// 	custom: ICustomAttribute[]
 
-	getCustom: () => ICustomAttribute[]
-}
+// 	getCustom: () => ICustomAttribute[]
+// }
 
-type CustomAttributeType = string | Number // ...
+// type CustomAttributeType = string | Number // ...
 
-export interface ICustomAttribute {
-	type: 'string' | 'number' // ...
-	value: CustomAttributeType
-}
+// export interface ICustomAttribute {
+// 	type: 'string' | 'number' // ...
+// 	value: CustomAttributeType
+// }
 
 
-export interface ISiteSettings extends Document, IExtensibleObject {
-	locale: ILocaleSettings,
-}
+// export interface ISiteSettings extends Document, IExtensibleObject {
+// 	locale: ILocaleSettings,
+// }
 
-export interface IUserSettings extends Document, IExtensibleObject {
+// export interface IUserSettings extends Document, IExtensibleObject {
 
-}
+// }
 
-// todo: specify accepted values and 'default'
-type LocaleCode = string
+// // todo: specify accepted values and 'default'
+// type LocaleCode = string
 
-export interface ILocalizableAttribute<T> {
-	valueByLocale: Record<LocaleCode, T>
-}
+// export interface ILocalizableAttribute<T> {
+// 	valueByLocale: Record<LocaleCode, T>
+// }

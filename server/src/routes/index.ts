@@ -8,6 +8,7 @@ import catalogs from './catalogsRoute'
 import products from './productsRoute'
 import globalSettings from './globalSettingsRoute'
 import locales from './localesRoute'
+import objectTypeDefintions from './objectTypeDefinitionsRoute'
 
 import authorize from '../middleware/authorize'
 
@@ -28,6 +29,6 @@ router.use('/catalogs', authorize, catalogs)
 router.use('/products', authorize, products)
 router.use('/globalsettings', authorize, globalSettings)
 router.use('/locales', authorize, locales)
-
+router.use('/objecttypedefintions', authorize, objectTypeDefintions)
 
 export default router

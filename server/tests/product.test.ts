@@ -9,6 +9,7 @@ import { User, Category, Catalog, Product } from '../src/models'
 import { IUser, IProduct, ICatalog, ICategory } from '../src/interfaces'
 import app from '../src/app'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
+import { localeCode } from '../src/types';
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes 
 
 let ret: any;
@@ -18,15 +19,12 @@ let product: any = {}
 
 describe('Product', function() {
 	before(async () => {
-		console.log('before -------')
+		// wait for server to init async tasks
 		await app.ready
-	})
-
-	before(async function() {
 		// Clear database
 		await clearDataBase()
 		// Create user
-		ret = await createUser(userData)
+		await createUser(userData)
 	})
 
 	beforeEach(async function() {
@@ -286,10 +284,10 @@ describe('Product', function() {
 			})
 		})
 
-		describe.only('Update description', () => {
-			it('Should $set description', async() => {
+		describe('Update description', () => {
+			it('Should $set description when you pass a locale', async() => {
 				console.log('start test')
-				const locale: string = 'en'
+				const locale: localeCode = 'en'
 				const newDescription: string = 'This product is amazing'
 				await createProduct(catalogData.id, productData.id, {...productData})
 				
@@ -300,7 +298,27 @@ describe('Product', function() {
 
 				// Product description should be updated
 				const product: IProduct = await Product.findOne({id: productData.id})
-				product.description.values[locale].should.eq(newDescription)
+				console.log('description: ', product.description)
+				product.description._value.get(locale).should.eq(newDescription)
+			})
+
+			it('Should $set description on default when you pass no locale', async() => {
+				console.log('start test')
+				const newDescription: string = 'This product is amazing'
+				await createProduct(catalogData.id, productData.id, {...productData})
+				
+				ret = await updateProduct(productData.id, {
+					description: { op: '$set', value: newDescription },
+				})
+				ret.status.should.eq(OK)
+
+				// Product description should be updated
+				const product: IProduct = await Product.findOne({id: productData.id})
+				console.log('description: ', product.description)
+				product.description._value.default.should.eq(newDescription)
+				console.log('typeof description: ', typeof product.description)
+				console.log('typeof description.values: ', typeof product.description._value)
+				console.log('typeof description._value.get("default"): ', typeof product.description._value.default)
 			})
 		})
 	})

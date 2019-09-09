@@ -1,4 +1,4 @@
-import { localizableAttributeSchema } from './localizableAttributeSchema'
+import { attributeSchema } from './attributeSchema'
 import { userSchema } from './userSchema'
 import { siteSchema } from './siteSchema'
 import { catalogSchema } from './catalogSchema'
@@ -9,9 +9,11 @@ import { productVariantSchema } from './productVariantSchema'
 import { localeSchema } from './localeSchema'
 import { localeSettingsSchema } from './localeSettingsSchema'
 import { globalSettingsSchema } from './globalSettingsSchema'
+import { objectAttributeDefinitionSchema  } from './objectAttributeDefinitionSchema'
+import { objectTypeDefinitionSchema  } from './objectTypeDefinitionSchema'
 
 export {
-	localizableAttributeSchema,
+	attributeSchema,
 	userSchema,
 	siteSchema,
 	catalogSchema,
@@ -22,4 +24,6 @@ export {
 	globalSettingsSchema,
 	localeSettingsSchema,
 	localeSchema,
+	objectTypeDefinitionSchema,
+	objectAttributeDefinitionSchema,
 }

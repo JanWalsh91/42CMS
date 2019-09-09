@@ -146,6 +146,11 @@ export const clearDataBase = async (...models: Model<any>[]) => {
 
 // ===== UTILITY ===== //
 
+	export const getObjectTypeAttributeDefinition = (objecttype: string) =>
+		agent.patch(`objecttypedefintions/${objecttype}`)
+
+// ===== UTILITY ===== //
+
 	export const printret = ret => {
 		console.log({status: ret.status, body: ret.body})
 	}

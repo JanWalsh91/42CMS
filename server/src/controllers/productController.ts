@@ -44,7 +44,6 @@ export const productController = {
 			})
 			res.end()
 		} catch (e) { next(e) }
-	
 	},
 
 	async delete(req: Request, res: Response, next: NextFunction): Promise<void> {

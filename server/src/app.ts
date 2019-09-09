@@ -44,6 +44,7 @@ class App {
 			
 			await localeService.init()
 			await globalSettingsService.init()
+			await objectAttributeDefinitionsService.init()
 
 			this._ready = true
 			console.log(chalk.green('[app.init] READY'))
