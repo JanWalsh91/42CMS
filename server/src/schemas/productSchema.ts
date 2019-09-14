@@ -3,7 +3,8 @@ import chalk from 'chalk'
 
 import { ICatalog, ICategory, IProduct } from '../interfaces'
 import { InternalError } from '../utils'
-import { attributeSchema } from '.';
+import { localizableAttributeSchema } from '.';
+import { localizableAttributeService } from '../services/localizableAttributeSerevice';
 
 const productSchema = new Schema({
 	id: {
@@ -12,8 +13,10 @@ const productSchema = new Schema({
 		unique: true,
 	},
 	name: {
-		type: String,
-		required: true
+		type: Schema.Types.ObjectId,
+		ref: 'LocalizableAttributeSchema',
+		autopopulate: true,
+		defaultType: 'string', // used to initialize the ObjectTypeDefinition
 	},
 	masterCatalog: {
 		type: Schema.Types.ObjectId,
@@ -48,12 +51,18 @@ const productSchema = new Schema({
 		}
 	}, {_id: false, minimize: false})],
 	description: {
-		type: attributeSchema,
-		default: {}
+		type: Schema.Types.ObjectId,
+		ref: 'LocalizableAttributeSchema',
+		autopopulate: true,
+		defaultType: 'string',
 	},
 	custom: {
 		type: Map,
-		of: {}, // can really be almost anything ... will be validated elsewhere
+		of: {
+			type: Schema.Types.ObjectId,
+			ref: 'LocalizableAttributeSchema',
+		},
+		autopopulate: true,	
 	}
 })
 

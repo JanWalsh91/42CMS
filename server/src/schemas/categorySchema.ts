@@ -38,7 +38,7 @@ const categorySchema = new Schema({
 		}],
 		default: []
 	},
-}, {id: false})	
+})	
 
 categorySchema.methods = {
 	// ==== set ====

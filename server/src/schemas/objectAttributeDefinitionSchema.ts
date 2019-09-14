@@ -1,8 +1,15 @@
 import { Schema } from 'mongoose'
 
-const attributeTypes: string[] = require('../src/resources/')
+import attributeTypes from '../resources/attributeTypes'
+import { IObjectAttributeDefinition } from '../interfaces';
+import { ValidationError } from '../utils';
+import { attributeType } from '../types';
 
 const objectAttributeDefinitionSchema = new Schema({
+	path: {
+		type: String,
+		require: true,
+	},
 	type: {
 		type: String,
 		validate: (x) => attributeTypes.includes(x),
@@ -15,15 +22,18 @@ const objectAttributeDefinitionSchema = new Schema({
 		type: Boolean,
 		default: true,
 	},
-	objectTypeDefinition: {
-		type: Schema.Types.ObjectId,
-		ref: 'ObjectTypeDefinition',
-		required: true,
-	}
-})
+}, {_id: false})
 
 objectAttributeDefinitionSchema.methods = {
-
+	setType: function (this: IObjectAttributeDefinition, type: attributeType) {
+		if (!attributeTypes.includes(type)) {
+			throw new ValidationError(`Invalid type ${type}`)
+		}
+		this.type = type
+	},
+	setLocalizable: function (this: IObjectAttributeDefinition, localizable: boolean) {
+		this.localizable = localizable
+	},
 }
 
 export {

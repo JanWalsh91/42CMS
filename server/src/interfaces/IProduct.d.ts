@@ -1,11 +1,14 @@
 import { Document } from 'mongoose'
 
 import { ICatalog, ICategory } from '../interfaces'
-import { IAttribute } from './IAttribute';
+import { ILocalizableAttribute } from './ILocalizableAttribute';
 
 export interface IProduct extends Document {
 	id: string
-	name: string
+	
+	name: ILocalizableAttribute['_id']
+	description: ILocalizableAttribute
+
 	masterCatalog: ICatalog['_id'] | ICatalog
 	assignedCatalogs: (ICatalog['_id'] | ICatalog)[]
 	primaryCategoryByCatalog: {
@@ -16,7 +19,7 @@ export interface IProduct extends Document {
 		catalog: ICatalog['_id'] | ICatalog,
 		categories: (ICategory['_id'] | ICategory)[]
 	}[]
-	description: IAttribute
+	
 	custom: Record<string, any>
 
 	// set methods

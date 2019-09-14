@@ -8,4 +8,6 @@ import { IObjectAttributeDefinition } from '.'
 export interface IObjectTypeDefinition extends Document {
 	objectAttributeDefinitions: IObjectAttributeDefinition[]	
 	objectName: 'Product'
+
+	addObjectAttributeDefinition: (OAD) => void
 }

@@ -1,4 +1,4 @@
-import { attributeSchema } from './attributeSchema'
+import { localizableAttributeSchema } from './localizableAttributeSchema'
 import { userSchema } from './userSchema'
 import { siteSchema } from './siteSchema'
 import { catalogSchema } from './catalogSchema'
@@ -13,7 +13,7 @@ import { objectAttributeDefinitionSchema  } from './objectAttributeDefinitionSch
 import { objectTypeDefinitionSchema  } from './objectTypeDefinitionSchema'
 
 export {
-	attributeSchema,
+	localizableAttributeSchema,
 	userSchema,
 	siteSchema,
 	catalogSchema,

@@ -10,7 +10,7 @@ import chalk from 'chalk'
 import ResponseStatusTypes from "./utils/ResponseStatusTypes"
 const { SERVER_ERROR } = ResponseStatusTypes
 
-import { globalSettingsService } from './services'
+import { globalSettingsService, objectTypeDefinitionService } from './services'
 
 import routes from './routes'
 import { ServerError } from './utils/Errors'
@@ -44,11 +44,16 @@ class App {
 			
 			await localeService.init()
 			await globalSettingsService.init()
-			await objectAttributeDefinitionsService.init()
+
+			// for testing
+			await objectTypeDefinitionService.reset()
+
+			await objectTypeDefinitionService.init()
 
 			this._ready = true
 			console.log(chalk.green('[app.init] READY'))
 		})()
+		return this.ready
 	}
 
 	public isReady(): boolean {

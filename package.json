@@ -51,6 +51,7 @@
 		"express-session": "^1.16.2",
 		"immutability-helper": "^3.0.1",
 		"mongoose": "^5.5.12",
+		"mongoose-autopopulate": "^0.9.1",
 		"react": "^16.8.6",
 		"react-dom": "^16.8.6",
 		"react-router-dom": "^5.0.1",

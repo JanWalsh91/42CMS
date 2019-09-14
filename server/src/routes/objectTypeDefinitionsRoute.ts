@@ -8,10 +8,13 @@ router
 	.get('/:objecttype',
 		objectTypeDefinitionController.setObjectTypeDefinitionFromParams,
 		objectTypeDefinitionController.get)
-	// .get('/', objectTypeDefinitionController.getAll)
-	// .patch('/:objecttype/:attribute',
-	// 	objectTypeDefinitionController.setObjectTypeDefinitionFromParams,
-	// 	objectTypeDefinitionController.validateObjectAttributeFromParams,
-	// 	objectTypeDefinitionController.update)
+	.patch('/:objecttype/:path',
+		objectTypeDefinitionController.setObjectTypeDefinitionFromParams,
+		objectTypeDefinitionController.setObjectAttributeDefinitionFromParams,
+		objectTypeDefinitionController.update)
+	.patch('/:objecttype',
+		objectTypeDefinitionController.setObjectTypeDefinitionFromParams,
+		objectTypeDefinitionController.update)
+
 
 export default router

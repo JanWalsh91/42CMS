@@ -6,8 +6,8 @@ import chalk from 'chalk'
 import app from '../src/app'
 import { clearDataBase, createUser, printret, userData, getGlobalSettings, updateGlobalSettings } from './common';
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
-import { GlobalSettings } from '../src/models';
-import { ILocaleSettings } from '../src/interfaces';
+import { GlobalSettings } from '../src/models'
+import { ILocaleSettings } from '../src/interfaces'
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes 
 
 let ret: any;

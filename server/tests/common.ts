@@ -4,7 +4,7 @@ import chaiHttp = require('chai-http')
 chai.use(chaiHttp)
 const agent = chai.request.agent(app.app)
 
-import { User, Catalog, Category, Product, Site, Locale, GlobalSettings } from '../src/models'
+import { User, Catalog, Category, Product, Site, Locale, GlobalSettings, ObjectTypeDefinition } from '../src/models'
 import { patchAction, patchRequest } from '../src/utils';
 import chalk from 'chalk';
 import { Model } from 'mongoose';
@@ -41,10 +41,11 @@ export const clearDataBase = async (...models: Model<any>[]) => {
 			Product,
 			Locale,
 			GlobalSettings,
+			ObjectTypeDefinition,
 		]
 	}
 	await Promise.all(models.map(model => model.deleteMany({})))
-	if (models.some(model => ['GlobalSettings', 'Locale'].includes(model.modelName))) {
+	if (models.some(model => ['GlobalSettings', 'Locale', 'ObjectTypeDefinition'].includes(model.modelName))) {
 		await app.init()
 	}
 }
@@ -146,8 +147,15 @@ export const clearDataBase = async (...models: Model<any>[]) => {
 
 // ===== UTILITY ===== //
 
-	export const getObjectTypeAttributeDefinition = (objecttype: string) =>
-		agent.patch(`objecttypedefintions/${objecttype}`)
+	export const getObjectTypeDefinition = (objecttype: string) =>
+		agent.get(`/objecttypedefintions/${objecttype}`)
+
+	export const updateObjectTypeDefinition = (objecttype: string, patch: patchRequest) =>
+		agent.patch(`/objecttypedefintions/${objecttype}`).send(patch)
+
+	export const updateObjectAttributeDefinition = (objecttype: string, path: string, patch: patchRequest) =>
+		agent.patch(`/objecttypedefintions/${objecttype}/${path}`).send(patch)
+
 
 // ===== UTILITY ===== //
 

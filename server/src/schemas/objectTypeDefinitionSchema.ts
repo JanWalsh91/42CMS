@@ -1,5 +1,6 @@
 import { Schema } from 'mongoose'
 import { objectAttributeDefinitionSchema } from '.';
+import { IObjectTypeDefinition, IObjectAttributeDefinition } from '../interfaces';
 
 const objectTypeDefinitionSchema = new Schema({
 	objectName: {
@@ -14,7 +15,9 @@ const objectTypeDefinitionSchema = new Schema({
 })
 
 objectTypeDefinitionSchema.methods = {
-
+	addObjectAttributeDefinition: function (this: IObjectTypeDefinition, OAD) : void {
+		this.objectAttributeDefinitions.push(OAD)
+	}
 }
 
 export { 

@@ -299,7 +299,7 @@ describe('Product', function() {
 				// Product description should be updated
 				const product: IProduct = await Product.findOne({id: productData.id})
 				console.log('description: ', product.description)
-				product.description._value.get(locale).should.eq(newDescription)
+				product.description.value.get(locale).should.eq(newDescription)
 			})
 
 			it('Should $set description on default when you pass no locale', async() => {
@@ -315,10 +315,10 @@ describe('Product', function() {
 				// Product description should be updated
 				const product: IProduct = await Product.findOne({id: productData.id})
 				console.log('description: ', product.description)
-				product.description._value.default.should.eq(newDescription)
+				product.description.value['default'].should.eq(newDescription)
 				console.log('typeof description: ', typeof product.description)
-				console.log('typeof description.values: ', typeof product.description._value)
-				console.log('typeof description._value.get("default"): ', typeof product.description._value.default)
+				console.log('typeof description.values: ', typeof product.description.value)
+				console.log('typeof description.value.get("[default]"): ', typeof product.description.value['default'])
 			})
 		})
 	})

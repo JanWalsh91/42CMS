@@ -23,17 +23,12 @@ class GlobalSettingsService extends Patchable {
 	}
 
 	public async get(): Promise<IGlobalSettings> {
-		// console.log('GEEEEEEET')
-		// let y = await GlobalSettings.findOne();
-		// console.log('y:', y)
 		return await GlobalSettings.findOne().populate({
 			path: 'locale.availableLocales',
 			populate: {
 				path: 'fallback'
 			}
 		})
-		// console.log('x:', x)
-		// return x
 	}
 
 	public async reset(): Promise<void> {

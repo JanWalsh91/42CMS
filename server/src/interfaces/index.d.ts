@@ -8,7 +8,7 @@ import { ISite } from './ISite'
 import { ILocale } from './ILocale'
 import { ILocaleSettings } from './ILocaleSettings'
 import { IGlobalSettings } from './IGlobalSettings'
-import { IAttribute, ILocalizedAttribute } from './IAttribute'
+import { ILocalizableAttribute } from './ILocalizableAttribute'
 import { IObjectTypeDefinition } from './IObjectTypeDefinition'
 import { IObjectAttributeDefinition } from './IObjectAttributeDefinition'
 
@@ -23,50 +23,9 @@ export {
 	ILocale,
 	ILocaleSettings,
 	IGlobalSettings,
-	IAttribute,
-	ILocalizedAttribute,
+	ILocalizableAttribute,
 	IObjectTypeDefinition,
 	IObjectAttributeDefinition,
 }
 
 import { Document } from 'mongoose'
-
-/**
- * Extensible objects:
- * - product
- * - catalog
- * - category
- * 
- * Non extensible objects:
- * - site
- * - user
- *  
- * */ 
-// export interface IExtensibleObject {
-// 	custom: ICustomAttribute[]
-
-// 	getCustom: () => ICustomAttribute[]
-// }
-
-// type CustomAttributeType = string | Number // ...
-
-// export interface ICustomAttribute {
-// 	type: 'string' | 'number' // ...
-// 	value: CustomAttributeType
-// }
-
-
-// export interface ISiteSettings extends Document, IExtensibleObject {
-// 	locale: ILocaleSettings,
-// }
-
-// export interface IUserSettings extends Document, IExtensibleObject {
-
-// }
-
-// // todo: specify accepted values and 'default'
-// type LocaleCode = string
-
-// export interface ILocalizableAttribute<T> {
-// 	valueByLocale: Record<LocaleCode, T>
-// }
