@@ -26,6 +26,8 @@ export abstract class Patchable {
 		for (let [key, value] of Object.entries(patch)) {
 			console.log(chalk.keyword('salmon')(`\n========== PATCH: ${key} ==========\n`), value)
 			if (!this.patchMap.hasOwnProperty(key)) {
+				// Get ObjectAttributeDefinition
+				// Check for path
 				throw `invalid property [${key}]: property not in patchMap`
 			}
 			if (isPatchAction(value)) {

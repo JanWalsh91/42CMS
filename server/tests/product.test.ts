@@ -39,7 +39,7 @@ describe('Product', function() {
 
 	describe('Create', () => {
 		it('Should create a product', async() => {
-			ret = await createProduct(catalogData.id, productData.id, { name: productData.name })
+			ret = await createProduct(catalogData.id, productData.id)
 			ret.status.should.equal(OK)
 
 			// Product should exist
@@ -66,25 +66,25 @@ describe('Product', function() {
 		})
 		describe('Should fail to create a product if ...', () => {
 			it('the product id is not unique', async() => {
-				await createProduct(catalogData.id, productData.id, { name: productData.name })
-				ret = await createProduct(catalogData.id, productData.id, { name: productData.name })
+				await createProduct(catalogData.id, productData.id)
+				ret = await createProduct(catalogData.id, productData.id)
 				ret.status.should.equal(BAD_REQUEST)
 			})
 			it('the catalog does not exist', async() => {
-				ret = await createProduct('mysupercatalog', productData.id, { name: productData.name })
+				ret = await createProduct('mysupercatalog', productData.id)
 				ret.status.should.equal(NOT_FOUND)
 			})
 			it('the catalog is not a master catalog', async() => {
 				await createCatalog(catalogData.id + '2', {master: false})
-				ret = await createProduct(catalogData.id + '2', productData.id, { name: productData.name })
+				ret = await createProduct(catalogData.id + '2', productData.id)
 				ret.status.should.equal(BAD_REQUEST)	
 			})
 		})
 	})
 
-	describe('Get Product', () => {
+	describe.only('Get Product', () => {
 		it('Should get a product', async() => {
-			ret = await createProduct(catalogData.id, productData.id, {name: productData.name})
+			ret = await createProduct(catalogData.id, productData.id)
 			ret.should.have.status(OK)
 			ret = await getProduct(productData.id)
 			ret.should.have.status(OK)
@@ -127,8 +127,8 @@ describe('Product', function() {
 		const newName: string = 'newProductName'
 		const newId: string = 'newProductId'
 
-		it('Should update Product name and ID', async() => {
-			await createProduct(catalogData.id, productData.id, {...productData})
+		it.only('Should update Product name and ID', async() => {
+			await createProduct(catalogData.id, productData.id)
 	
 			ret = await updateProduct(productData.id, {
 				name: { op: '$set', value: newName },
@@ -146,7 +146,7 @@ describe('Product', function() {
 			const catId1 = 'catId1'
 
 			it('Should assign a Product to a Catalog', async() => {
-				await createProduct(catalogData.id, productData.id, {...productData})
+				await createProduct(catalogData.id, productData.id)
 				await createCatalog(catId1)
 				ret = await updateProduct(productData.id, {
 					assignedCatalogs: { op: '$add', value: catId1 }
@@ -161,7 +161,7 @@ describe('Product', function() {
 				catalog.products.find(x => x.id == productData.id).should.exist
 			})
 			it('Should unassign a Product from a Catalog', async() => {
-				await createProduct(catalogData.id, productData.id, {...productData})
+				await createProduct(catalogData.id, productData.id)
 				await createCatalog(catId1)
 				await updateProduct(productData.id, {
 					assignedCatalogs: { op: '$add', value: catId1 }
@@ -187,7 +187,7 @@ describe('Product', function() {
 
 		describe('Assign Categories by Catalog', () => {
 			it('Should add a category by Catalog', async() => {
-				await createProduct(catalogData.id, productData.id, {...productData})
+				await createProduct(catalogData.id, productData.id)
 				ret = await updateProduct(productData.id, {
 					assignedCategoriesByCatalog: {
 						op: '$add',
@@ -210,7 +210,7 @@ describe('Product', function() {
 				category.products.find(x => x.id == product.id).should.exist
 			})
 			it('Should remove a category by Catalog', async() => {
-				await createProduct(catalogData.id, productData.id, {...productData})
+				await createProduct(catalogData.id, productData.id)
 				await updateProduct(productData.id, {
 					assignedCategoriesByCatalog: {
 						op: '$add',
@@ -243,7 +243,7 @@ describe('Product', function() {
 
 		describe('Set Primary Category by Catalog', () => {
 			it('Should set a primary category for a catalog', async() => {
-				await createProduct(catalogData.id, productData.id, {...productData})
+				await createProduct(catalogData.id, productData.id)
 				ret = await updateProduct(productData.id, {
 					primaryCategoryByCatalog: {
 						op: '$set',
@@ -265,7 +265,7 @@ describe('Product', function() {
 		// done in order sent
 		describe.skip('Check order of udpates', () => {
 			it('==', async() => {
-				await createProduct(catalogData.id, productData.id, {...productData})
+				await createProduct(catalogData.id, productData.id)
 				ret = await updateProduct(productData.id, {
 					name: {
 						op: '$set',
@@ -289,7 +289,7 @@ describe('Product', function() {
 				console.log('start test')
 				const locale: localeCode = 'en'
 				const newDescription: string = 'This product is amazing'
-				await createProduct(catalogData.id, productData.id, {...productData})
+				await createProduct(catalogData.id, productData.id)
 				
 				ret = await updateProduct(productData.id, {
 					description: { op: '$set', value: newDescription, locale },
@@ -305,7 +305,7 @@ describe('Product', function() {
 			it('Should $set description on default when you pass no locale', async() => {
 				console.log('start test')
 				const newDescription: string = 'This product is amazing'
-				await createProduct(catalogData.id, productData.id, {...productData})
+				await createProduct(catalogData.id, productData.id)
 				
 				ret = await updateProduct(productData.id, {
 					description: { op: '$set', value: newDescription },
@@ -326,7 +326,7 @@ describe('Product', function() {
 	describe('Delete product', () => {
 		it('Should delete the product', async() => {
 			const catid2: string = 'catid2';
-			await createProduct(catalogData.id, productData.id, {name: productData.name})
+			await createProduct(catalogData.id, productData.id)
 			await createCategory(catalogData.id, catid2)
 			
 			ret = await updateProduct(productData.id, {

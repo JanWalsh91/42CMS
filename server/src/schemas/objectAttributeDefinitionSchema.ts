@@ -1,9 +1,9 @@
 import { Schema } from 'mongoose'
 
 import attributeTypes from '../resources/attributeTypes'
-import { IObjectAttributeDefinition } from '../interfaces';
-import { ValidationError } from '../utils';
-import { attributeType } from '../types';
+import { IObjectAttributeDefinition } from '../interfaces'
+import { ValidationError } from '../utils'
+import { attributeType } from '../types'
 
 const objectAttributeDefinitionSchema = new Schema({
 	path: {

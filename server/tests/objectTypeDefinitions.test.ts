@@ -75,7 +75,7 @@ describe('Object Type Definitions', () => {
 			const OAD: IObjectAttributeDefinition = ret.body.objectAttributeDefinitions.find(x => x.path == path)
 			OAD.type.should.eq(newType)
 		})
-		it.only('Should update attribute definition localizable', async () => {
+		it('Should update attribute definition localizable', async () => {
 			const path: string = 'test'
 			ret = await updateObjectTypeDefinition('Product', {
 				objectAttributeDefinitions: { op: '$add', path: path, type: 'string', localizable: true }
@@ -92,7 +92,17 @@ describe('Object Type Definitions', () => {
 
 	describe('Delete custom attribute definition', () => {
 		it('Should delete custom attribute definition', async() => {
-
+			const path: string = 'test'
+			ret = await updateObjectTypeDefinition('Product', {
+				objectAttributeDefinitions: { op: '$add', path: path, type: 'string', localizable: true }
+			})
+			ret.status.should.eq(OK)
+			ret = await updateObjectTypeDefinition('Product', {
+				objectAttributeDefinitions: { op: '$remove', path: path }
+			})
+			ret.status.should.eq(OK)
+			ret = await getObjectTypeDefinition('Product')
+			expect(ret.body.objectAttributeDefinitions.find(x => x.path == path)).to.not.exist
 		})
 	})
 

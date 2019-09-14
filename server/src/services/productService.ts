@@ -14,14 +14,14 @@ class ProductService extends Patchable {
 				await this.setId(product, action.value)
 			},
 		},
-		name: {
-			$set: async(action: patchAction): Promise<void> => {
-				this.checkRequiredProperties(action, ['value'])
-				const product: IProduct = action.resources.product
+		// name: {
+		// 	$set: async(action: patchAction): Promise<void> => {
+		// 		this.checkRequiredProperties(action, ['value'])
+		// 		const product: IProduct = action.resources.product
 
-				await this.setName(product, action.value)
-			},
-		},
+		// 		await this.setName(product, action.value)
+		// 	},
+		// },
 		assignedCatalogs: {
 			$add: async(action: patchAction): Promise<void> => {
 				console.log(chalk.keyword('goldenrod')('[ProductService.assignedCatalogs.$add]'))
@@ -193,26 +193,26 @@ class ProductService extends Patchable {
 				])
 			},
 		},
-		description: {
-			$set: async(action: patchAction): Promise<void> => {
-				console.log(chalk.keyword('goldenrod')('[ProductService.description.$set]'))
-				console.log('patchAction: ', action)
-				this.checkRequiredProperties(action, ['value'])
-				const product: IProduct = action.resources.product
-				if (!action.locale) {
-					action.locale = 'default'
-				}
-				const globalSettings: IGlobalSettings = await globalSettingsService.get()
-				if (!globalSettings.locale.localeIsAvailable(action.locale)) {
-					console.log(chalk.red(`Locale ${action.locale} is not available`))
-				} else {
-					console.log('setting value of ', product.description)
-					await product.description.setValue(action.value, action.locale)
-					product.markModified('description')
-					console.log('set     value of ', product.description)
-				}
-			}
-		}
+		// description: {
+		// 	$set: async(action: patchAction): Promise<void> => {
+		// 		console.log(chalk.keyword('goldenrod')('[ProductService.description.$set]'))
+		// 		console.log('patchAction: ', action)
+		// 		this.checkRequiredProperties(action, ['value'])
+		// 		const product: IProduct = action.resources.product
+		// 		if (!action.locale) {
+		// 			action.locale = 'default'
+		// 		}
+		// 		const globalSettings: IGlobalSettings = await globalSettingsService.get()
+		// 		if (!globalSettings.locale.localeIsAvailable(action.locale)) {
+		// 			console.log(chalk.red(`Locale ${action.locale} is not available`))
+		// 		} else {
+		// 			console.log('setting value of ', product.description)
+		// 			await product.description.setValue(action.value, action.locale)
+		// 			product.markModified('description')
+		// 			console.log('set     value of ', product.description)
+		// 		}
+		// 	}
+		// }
 	}
 
 	public async create(options: Partial<IProduct>): Promise<IProduct> {
@@ -232,7 +232,6 @@ class ProductService extends Patchable {
 		// Create new Product
 		const product: IProduct = await new Product({
 			id: options.id,
-			name: options.name,
 			masterCatalog: catalog
 		}).save();
 
