@@ -3,30 +3,24 @@ import chalk from 'chalk';
 import { Product, Catalog, Category } from '../models';
 import { IProduct, ICatalog, ICategory, IGlobalSettings } from '../interfaces'
 import { ResourceNotFoundError, ValidationError, patchRequest, Patchable, patchAction, NotImplementedError } from '../utils';
-import { catalogService, categoryService, globalSettingsService } from '.';
+import { catalogService, categoryService, globalSettingsService, objectTypeDefinitionService } from '.';
 
-class ProductService extends Patchable {
+class ProductService extends Patchable<IProduct> {
+	hasObjectTypeDefinition = true
+	protected async getObjectTypeDefinition() {
+		return objectTypeDefinitionService.getById('Product')
+	}
 	patchMap = {
 		id: {
-			$set: async(action: patchAction): Promise<void> => {
+			$set: async(product: IProduct, action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
-				const product: IProduct = action.resources.product
 				await this.setId(product, action.value)
 			},
 		},
-		// name: {
-		// 	$set: async(action: patchAction): Promise<void> => {
-		// 		this.checkRequiredProperties(action, ['value'])
-		// 		const product: IProduct = action.resources.product
-
-		// 		await this.setName(product, action.value)
-		// 	},
-		// },
 		assignedCatalogs: {
-			$add: async(action: patchAction): Promise<void> => {
+			$add: async(product: IProduct, action: patchAction): Promise<void> => {
 				console.log(chalk.keyword('goldenrod')('[ProductService.assignedCatalogs.$add]'))
 				this.checkRequiredProperties(action, ['value'])
-				const product: IProduct = action.resources.product
 				const catalog: ICatalog = await Catalog.findOne({id: action.value})
 				if (!catalog) {
 					throw new ResourceNotFoundError('Catalog', action.value)
@@ -44,10 +38,9 @@ class ProductService extends Patchable {
 					catalog.save(),
 				])
 			},
-			$remove: async(action: patchAction): Promise<void> => {
+			$remove: async(product: IProduct, action: patchAction): Promise<void> => {
 				console.log(chalk.keyword('goldenrod')('[ProductService.assignedCatalogs.$remove]'))
 				this.checkRequiredProperties(action, ['value'])
-				const product: IProduct = action.resources.product
 				const catalog: ICatalog = await Catalog.findOne({id: action.value})
 				if (!catalog) {
 					throw new ResourceNotFoundError('Catalog', action.value)
@@ -67,10 +60,9 @@ class ProductService extends Patchable {
 			},
 		},
 		primaryCategoryByCatalog: {
-			$set: async(action: patchAction): Promise<void> => {
+			$set: async(product: IProduct, action: patchAction): Promise<void> => {
 				console.log(chalk.keyword('goldenrod')('[ProductService.primaryCategoryByCatalog.$set]'))
 				this.checkRequiredProperties(action, ['value', 'catalog'])
-				const product: IProduct = action.resources.product
 				
 				const catalog: ICatalog = await Catalog.findOne({id: action.catalog}).populate('products').exec()
 				if (!catalog) {
@@ -110,10 +102,9 @@ class ProductService extends Patchable {
 					category.save(),
 				])
 			},
-			$unset: async(action: patchAction): Promise<void> => {
+			$unset: async(product: IProduct, action: patchAction): Promise<void> => {
 				console.log(chalk.keyword('goldenrod')('[ProductService.primaryCategoryByCatalog.$unset]'))
 				this.checkRequiredProperties(action, ['catalog'])
-				const product: IProduct = action.resources.product
 				const catalog: ICatalog = await Catalog.findOne({id: action.catalog})
 				if (!catalog) {
 					throw new ResourceNotFoundError('Catalog', action.catalog)
@@ -124,11 +115,10 @@ class ProductService extends Patchable {
 			},
 		},
 		assignedCategoriesByCatalog: {
-			$add: async(action: patchAction): Promise<void> => {
+			$add: async(product: IProduct, action: patchAction): Promise<void> => {
 				console.log(chalk.keyword('goldenrod')('[ProductService.assignedCategoriesByCatalog.$add]'))
 				this.checkRequiredProperties(action, ['value', 'catalog'])
 	
-				const product: IProduct = action.resources.product
 	
 				const catalog: ICatalog = await Catalog.findOne({id: action.catalog}).populate('products').exec()
 	
@@ -162,10 +152,9 @@ class ProductService extends Patchable {
 					catalog.save(),
 				])
 			},
-			$remove: async(action: patchAction): Promise<void> => {
+			$remove: async(product: IProduct, action: patchAction): Promise<void> => {
 				console.log(chalk.keyword('goldenrod')('[ProductService.assignedCategoriesByCatalog.$remove]'))
 				this.checkRequiredProperties(action, ['value', 'catalog'])
-				const product: IProduct = action.resources.product
 				const catalog: ICatalog = await Catalog.findOne({id: action.catalog}).populate('products')
 				if (!catalog) {
 					throw new ResourceNotFoundError('Catalog', action.catalog)
@@ -193,26 +182,6 @@ class ProductService extends Patchable {
 				])
 			},
 		},
-		// description: {
-		// 	$set: async(action: patchAction): Promise<void> => {
-		// 		console.log(chalk.keyword('goldenrod')('[ProductService.description.$set]'))
-		// 		console.log('patchAction: ', action)
-		// 		this.checkRequiredProperties(action, ['value'])
-		// 		const product: IProduct = action.resources.product
-		// 		if (!action.locale) {
-		// 			action.locale = 'default'
-		// 		}
-		// 		const globalSettings: IGlobalSettings = await globalSettingsService.get()
-		// 		if (!globalSettings.locale.localeIsAvailable(action.locale)) {
-		// 			console.log(chalk.red(`Locale ${action.locale} is not available`))
-		// 		} else {
-		// 			console.log('setting value of ', product.description)
-		// 			await product.description.setValue(action.value, action.locale)
-		// 			product.markModified('description')
-		// 			console.log('set     value of ', product.description)
-		// 		}
-		// 	}
-		// }
 	}
 
 	public async create(options: Partial<IProduct>): Promise<IProduct> {
@@ -260,9 +229,9 @@ class ProductService extends Patchable {
 	}
 
 	public async update(product: IProduct, patchRequest: patchRequest, resources: any): Promise<IProduct> {
-		console.log(chalk.magenta(`[ProductService.update]`))
+		console.log(chalk.magenta(`[ProductService.update]`), product)
 
-		await this.patch(patchRequest, resources)
+		await this.patch(product, patchRequest, resources)
 		console.log('done patching', product)
 		return product.save()
 	}
@@ -272,13 +241,7 @@ class ProductService extends Patchable {
 		product.id = id
 		return product
 	}
-
-	private async setName(product: IProduct, name: string): Promise<IProduct> {
-		console.log(chalk.magenta(`[ProductService.setName] ${name}`))
-		product.name = name
-		return product
-	}
-
+	
 	public async delete(product: IProduct): Promise<void> {
 		console.log(chalk.magenta('[productService.delete] ' +  product.id))
 		await product.populate([

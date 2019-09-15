@@ -6,18 +6,20 @@ import { Patchable, patchAction, ValidationError, patchRequest, ResourceNotFound
 import { async } from 'q';
 import { localeService } from '.';
 
-class GlobalSettingsService extends Patchable {
+class GlobalSettingsService extends Patchable<IGlobalSettings> {
+	hasObjectTypeDefinition = false
+	protected async getObjectTypeDefinition() { return null }
 	patchMap = {
 		locale: {
-			$add: async(action: patchAction): Promise<void> => {
+			$add: async(globalSettings: IGlobalSettings, action: patchAction): Promise<void> => {
 				console.log(chalk.keyword('goldenrod')('[GlobalSettingsService.locale.$add]'))
 				this.checkRequiredProperties(action, ['value'])
-				await this.addLocale(action.resources.globalSettings, action.value)
+				await this.addLocale(globalSettings, action.value)
 			},
-			$remove: async(action: patchAction): Promise<void> => {
+			$remove: async(globalSettings: IGlobalSettings, action: patchAction): Promise<void> => {
 				console.log(chalk.keyword('goldenrod')('[GlobalSettingsService.locale.$remove]'))
 				this.checkRequiredProperties(action, ['value'])
-				await this.removeLocale(action.resources.globalSettings, action.value)
+				await this.removeLocale(globalSettings, action.value)
 			}
 		}
 	}
@@ -56,7 +58,7 @@ class GlobalSettingsService extends Patchable {
 	public async update(globalSettings: IGlobalSettings, patchRequest: patchRequest, resources: any): Promise<void> {
 		console.log(chalk.magenta(`[GlobalSettingsService.update]`))
 
-		await this.patch(patchRequest, resources)
+		await this.patch(globalSettings, patchRequest, resources)
 
 		await globalSettings.save()
 	}

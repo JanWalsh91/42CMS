@@ -3,8 +3,8 @@ import chalk from 'chalk'
 
 import { ICatalog, ICategory, IProduct } from '../interfaces'
 import { InternalError } from '../utils'
-import { localizableAttributeSchema } from '.';
-import { localizableAttributeService } from '../services/localizableAttributeSerevice';
+import { localizableAttributeService } from '../services'
+import { LocalizableAttribute } from '../models'
 
 const productSchema = new Schema({
 	id: {
@@ -14,9 +14,9 @@ const productSchema = new Schema({
 	},
 	name: {
 		type: Schema.Types.ObjectId,
-		ref: 'LocalizableAttributeSchema',
+		ref: 'LocalizableAttribute',
 		autopopulate: true,
-		defaultType: 'string', // used to initialize the ObjectTypeDefinition
+		defaultType: 'string', // used to initialize the ObjectTypeDefinition,
 	},
 	masterCatalog: {
 		type: Schema.Types.ObjectId,
@@ -52,7 +52,7 @@ const productSchema = new Schema({
 	}, {_id: false, minimize: false})],
 	description: {
 		type: Schema.Types.ObjectId,
-		ref: 'LocalizableAttributeSchema',
+		ref: 'LocalizableAttribute',
 		autopopulate: true,
 		defaultType: 'string',
 	},
@@ -60,9 +60,20 @@ const productSchema = new Schema({
 		type: Map,
 		of: {
 			type: Schema.Types.ObjectId,
-			ref: 'LocalizableAttributeSchema',
+			ref: 'LocalizableAttribute',
 		},
 		autopopulate: true,	
+		default: {},
+	}
+})
+
+productSchema.pre('save', async function(this: IProduct) {
+	if (this.isNew) {
+		await ['name', 'description'].reduce((_: Promise<any>, path: string) =>
+			_.then(async() => {
+				this[path] = await new LocalizableAttribute().save()
+			}
+		), Promise.resolve())
 	}
 })
 
@@ -172,6 +183,8 @@ productSchema.methods = {
 		// console.log(chalk.magenta(`[ProductModel.removeAssignedCategoryByCatalog] catalog: ${catalog.id}, category: ${category.id}, product: ${this.id} END`))
 	},
 }
+
+productSchema.plugin(require('mongoose-autopopulate'))
 
 export {
 	productSchema,

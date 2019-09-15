@@ -17,8 +17,14 @@ const objectTypeDefinitionSchema = new Schema({
 objectTypeDefinitionSchema.methods = {
 	addObjectAttributeDefinition: function (this: IObjectTypeDefinition, OAD) : void {
 		this.objectAttributeDefinitions.push(OAD)
+	},
+
+	getAttribute: function (this: IObjectTypeDefinition, path: string): IObjectAttributeDefinition {
+		return this.objectAttributeDefinitions.find(x => x.path == path) 
 	}
 }
+
+objectTypeDefinitionSchema.plugin(require('mongoose-autopopulate'))
 
 export { 
 	objectTypeDefinitionSchema,

@@ -5,12 +5,13 @@ import { ICategory, ICatalog } from '../interfaces'
 import { ValidationError, ResourceNotFoundError, Patchable, patchAction, patchRequest } from '../utils'
 import { catalogService } from '.' 
 
-class CategoryService extends Patchable {
+class CategoryService extends Patchable<ICategory> {
+	hasObjectTypeDefinition = false
+	protected async getObjectTypeDefinition() { return null }
 	patchMap = {
 		id: {
-			$set: async (action: patchAction): Promise<void> => {
+			$set: async (category: ICategory, action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
-				const category: ICategory = action.resources.category;
 				await category.populate('catalog').execPopulate()
 				const existingCategory: ICategory = await await category.catalog.getCategory({id: action.value})
 				if (existingCategory) {
@@ -20,17 +21,14 @@ class CategoryService extends Patchable {
 			}
 		},
 		name: {
-			$set: async (action: patchAction): Promise<void> => {
+			$set: async (category: ICategory, action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
-				const category: ICategory = action.resources.category;
 				await category.setName(action.value)
 			}
 		},
 		parent: {
-			$set: async (action: patchAction): Promise<void> => {
+			$set: async (category: ICategory, action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
-				const category: ICategory = action.resources.category;
-				
 				await this.updateParent(category, action.value)
 			}
 		}
@@ -90,7 +88,7 @@ class CategoryService extends Patchable {
 	public async update(category: ICategory, patchRequest: patchRequest, resources: any): Promise<ICategory> {
 		console.log(chalk.magenta(`[CategoryService.update]`))
 
-		await this.patch(patchRequest, resources)
+		await this.patch(category, patchRequest, resources)
 
 		return category.save()
 	}

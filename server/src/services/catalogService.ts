@@ -6,20 +6,20 @@ import { ICatalog, ICategory, IProduct } from '../interfaces'
 import { categoryService } from '.'
 
 
-class CatalogService extends Patchable {
+class CatalogService extends Patchable<ICatalog> {
+	hasObjectTypeDefinition = false
+	protected async getObjectTypeDefinition() { return null }
 	patchMap = {
 		id: {
-			$set: async (action: patchAction): Promise<void> => {
+			$set: async (catalog: ICatalog, action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
-				const catalog: ICatalog = action.resources.catalog
 				// TODO: inconsistent with productService
 				await catalog.setId(action.value)
 			}
 		},
 		name: {
-			$set: async (action: patchAction): Promise<void> => {
+			$set: async (catalog: ICatalog, action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
-				const catalog: ICatalog = action.resources.catalog
 				await catalog.setName(action.value)
 			}
 		}
@@ -55,7 +55,7 @@ class CatalogService extends Patchable {
 	public async update(catalog: ICatalog, patchRequest: patchRequest, resources: any): Promise<ICatalog> {
 		console.log(chalk.magenta(`[CatalogService.update]`))
 
-		await this.patch(patchRequest, resources)
+		await this.patch(catalog, patchRequest, resources)
 		
 		return catalog.save()
 	}

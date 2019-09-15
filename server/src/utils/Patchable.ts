@@ -1,8 +1,12 @@
 import chalk from 'chalk'
 
-import { ValidationError } from '.';
+import { ValidationError } from '.'
+import { localizableAttributeService } from '../services'
+import { IObjectAttributeDefinition, IObjectTypeDefinition } from '../interfaces'
 
 export type patchOperation = '$add' | '$remove' | '$set' | '$unset'
+
+export const patchOperations = ['$add', '$remove', '$set', '$unset']
 
 export type patchAction = {
 	op: patchOperation,
@@ -10,42 +14,56 @@ export type patchAction = {
 }
 
 export type patchRequest = {
-	[key: string]: patchAction | patchAction[] // | patchRequest | patchRequest[]
+	[key: string]: patchAction | patchAction[]
 }
 
-export type patchFunction = (action: patchAction) => Promise<void> | void
+export type patchFunction<T> = (x: T, action: patchAction) => Promise<void> | void
 
-export type patchMap = {
-	[key: string]: Partial<Record<patchOperation, patchFunction>>
+export type patchMap<T> = {
+	[key: string]: Partial<Record<patchOperation, patchFunction<T>>>
 }
 
-export abstract class Patchable {
-	protected abstract patchMap: patchMap
-	protected async patch(patch: patchRequest, resources: object): Promise<void> {
-		// Parses the patchRequest and calls on update functions
+export abstract class Patchable<T> {
+	protected abstract patchMap: patchMap<T>
+	protected abstract hasObjectTypeDefinition: boolean
+	protected abstract getObjectTypeDefinition(): Promise<IObjectTypeDefinition>
+	protected async patch(object: T, patch: patchRequest, resources: any): Promise<void> {
+		// Parses the patchRequest and calls on update functions for each patch action
 		for (let [key, value] of Object.entries(patch)) {
 			console.log(chalk.keyword('salmon')(`\n========== PATCH: ${key} ==========\n`), value)
-			if (!this.patchMap.hasOwnProperty(key)) {
-				// Get ObjectAttributeDefinition
-				// Check for path
-				throw `invalid property [${key}]: property not in patchMap`
-			}
 			if (isPatchAction(value)) {
-				await this.executeAction(key, {...value, resources})
+				await this.executeAction(object, key, {...value, resources})
 			} else if (isArrayOfPatchActions(value)) {
-				await value.reduce((_, value: patchAction) => _.then(() => this.executeAction(key, {...value, resources})), Promise.resolve())
+				await value.reduce((_, patchAction: patchAction) => _.then(() => this.executeAction(object, key, {...patchAction, resources})), Promise.resolve())
 			} else {
 				console.log(chalk.red('Bad value: '), value)
-				// Ignore, unless implement deeper stuff later
 			}
 		}
 	}
 
-	private async executeAction(key: string, action: patchAction) {
-		if (!this.patchMap[key].hasOwnProperty(action.op)) {
-			throw `action ${action.op} for ${key} is not available`
+	private async executeAction(object: T, key: string, action: patchAction) {
+		if (this.patchMap.hasOwnProperty(key)) {
+			if (this.patchMap[key].hasOwnProperty(action.op)) {
+				await this.patchMap[key][action.op](object, action)
+			} else {
+				throw `action ${action.op} for ${key} is not available`
+			}
+		} else if (this.hasObjectTypeDefinition) {
+			const OTD: IObjectTypeDefinition = await this.getObjectTypeDefinition()
+			console.log('OTD', OTD)
+			const OAD: IObjectAttributeDefinition = OTD.getAttribute(key)
+			console.log('OAD', OAD)
+			if (OAD) {
+				await localizableAttributeService.update(
+					OAD.system ? object[key]: (<any>object).custom[key],
+					OAD,
+					key,
+					action
+				)
+			} else {
+				throw `invalid property [${key}]`
+			}
 		}
-		await this.patchMap[key][action.op](action)
 	}
 
 	protected checkRequiredProperties(action: patchAction, props: any[]) {
@@ -56,7 +74,7 @@ export abstract class Patchable {
 }
 
 function isPatchAction(action: any): action is patchAction {
-	return action.hasOwnProperty('op')
+	return action.hasOwnProperty('op') && patchOperations.includes(action.op)
 }
 
 function isArrayOfPatchActions(action: any): action is patchAction[] {

@@ -36,6 +36,8 @@ objectAttributeDefinitionSchema.methods = {
 	},
 }
 
+objectAttributeDefinitionSchema.plugin(require('mongoose-autopopulate'))
+
 export {
 	objectAttributeDefinitionSchema,
 }

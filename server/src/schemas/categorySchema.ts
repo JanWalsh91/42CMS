@@ -142,6 +142,8 @@ categorySchema.methods = {
 	},
 }
 
+categorySchema.plugin(require('mongoose-autopopulate'))
+
 export { 
 	categorySchema,
 }

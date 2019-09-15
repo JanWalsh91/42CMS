@@ -48,6 +48,8 @@ localeSettingsSchema.methods = {
 	}
 }
 
+localeSettingsSchema.plugin(require('mongoose-autopopulate'))
+
 export {
 	localeSettingsSchema,
 }

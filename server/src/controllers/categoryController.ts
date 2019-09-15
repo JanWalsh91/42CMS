@@ -39,9 +39,7 @@ export class CategoryController {
 		console.log(chalk.magenta('[CategoryController.update]'))
 		
 		try {
-			await categoryService.update(res.locals.category, req.body, {
-				category: res.locals.category
-			})
+			await categoryService.update(res.locals.category, req.body, {})
 			res.end()
 		} catch (e) { next(e) }
 	

@@ -117,6 +117,8 @@ catalogSchema.post('save', async function(this: ICatalog, doc: ICatalog, next: a
 	next()
 })
 
+catalogSchema.plugin(require('mongoose-autopopulate'))
+
 export { 
 	catalogSchema,
 }

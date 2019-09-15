@@ -7,6 +7,8 @@ const productVariantSchema = new Schema({
 	},
 })
 
+productVariantSchema.plugin(require('mongoose-autopopulate'))
+
 export {
 	productVariantSchema
 }

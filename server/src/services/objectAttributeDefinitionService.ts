@@ -7,33 +7,35 @@ import { patchRequest, Patchable, patchAction, ValidationError } from '../utils'
 import { ObjectTypeDefinition, Product } from '../models'
 import { attributeType } from '../types'
 
-class ObjectAttributeDefinitionService extends Patchable {
+class ObjectAttributeDefinitionService extends Patchable<IObjectAttributeDefinition> {
+	hasObjectTypeDefinition = false
+	protected async getObjectTypeDefinition() { return null }
 	patchMap = {
 		type: {
-			$set: async(action: patchAction): Promise<void> => {
-				console.log(chalk.keyword('goldenrod')('[ObjectTypeDefinitionService.objectAttributeDefinitions.$add]'))
+			$set: async(objectAttributeDefinition: IObjectAttributeDefinition, action: patchAction): Promise<void> => {
+				console.log(chalk.keyword('goldenrod')('[ObjectAttributeDefinitionService.objectAttributeDefinitions.$add]'))
 				this.checkRequiredProperties(action, ['value'])
-				await this.setType(action.resources.objectAttributeDefinition, action.value)
+				await this.setType(objectAttributeDefinition, action.value)
 			},
 		},
 		localizable: {
-			$set: async(action: patchAction): Promise<void> => {
-				console.log(chalk.keyword('goldenrod')('[ObjectTypeDefinitionService.objectAttributeDefinitions.$add]'))
+			$set: async(objectAttributeDefinition: IObjectAttributeDefinition, action: patchAction): Promise<void> => {
+				console.log(chalk.keyword('goldenrod')('[ObjectAttributeDefinitionService.objectAttributeDefinitions.$add]'))
 				this.checkRequiredProperties(action, ['value'])
-				await this.setLocalizable(action.resources.objectAttributeDefinition, action.value)
+				await this.setLocalizable(objectAttributeDefinition, action.value)
 			},
 		}
 	}
 
 	public async update(objectAttributeDefinition: IObjectAttributeDefinition, patchRequest: patchRequest, resources: any): Promise<IObjectAttributeDefinition> {
-		console.log(chalk.magenta(`[ObjectTypeDefinitionService.update]`))
+		console.log(chalk.magenta(`[ObjectAttributeDefinitionService.update]`))
 
-		await this.patch(patchRequest, resources)
+		await this.patch(objectAttributeDefinition, patchRequest, resources)
 		return objectAttributeDefinition
 	}
 
 	private async setType(objectAttributeDefinition: IObjectAttributeDefinition, value: attributeType): Promise<void> {
-		console.log(chalk.magenta(`[ObjectTypeDefinitionService.setType]`))
+		console.log(chalk.magenta(`[ObjectAttributeDefinitionService.setType]`))
 		if (!attributeTypes.includes(value)) {
 			throw new ValidationError(`Invalid attribute type: ${value}`)
 		}
@@ -42,7 +44,7 @@ class ObjectAttributeDefinitionService extends Patchable {
 	}
 
 	private async setLocalizable(objectAttributeDefinition: IObjectAttributeDefinition, value: boolean): Promise<void> {
-		console.log(chalk.magenta(`[ObjectTypeDefinitionService.setLocalizable]`))
+		console.log(chalk.magenta(`[ObjectAttributeDefinitionService.setLocalizable]`))
 		objectAttributeDefinition.localizable = value
 	}
 }

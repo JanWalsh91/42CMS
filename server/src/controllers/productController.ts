@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import chalk from 'chalk'
 
-import { productService } from '../services'
+import { productService, objectAttributeDefinitionService, objectTypeDefinitionService } from '../services'
 import { IProduct } from '../interfaces'
 import { ValidationError, ResourceNotFoundError } from '../utils/Errors';
 
@@ -40,7 +40,7 @@ export const productController = {
 
 		try {
 			await productService.update(res.locals.product, req.body, {
-				product: res.locals.product
+				objectTypeDefinition: await objectTypeDefinitionService.getByDocument(res.locals.product)
 			})
 			res.end()
 		} catch (e) { next(e) }

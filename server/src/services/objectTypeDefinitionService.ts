@@ -1,50 +1,54 @@
 import chalk from 'chalk'
 
-import { IObjectTypeDefinition, IObjectAttributeDefinition } from '../interfaces'
+import { IObjectTypeDefinition } from '../interfaces'
 import { patchRequest, Patchable, patchAction, ValidationError } from '../utils'
 import { ObjectTypeDefinition, Product } from '../models'
-import { Model, model, SchemaType } from 'mongoose'
-import { attributeType } from '../types';
-import { objectAttributeDefinitionService } from '.';
+import { Model, Document } from 'mongoose'
+import { attributeType } from '../types'
+import { objectAttributeDefinitionService } from '.'
 
 // const defaultObjectTypeDefinitions: Record<string, jsonDefaultObjectTypeDefinition> = require('../src/resources/defaultObjectTypeDefinitions')
 
-class ObjectTypeDefinitionService extends Patchable {
+class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
+	hasObjectTypeDefinition = false
+	protected async getObjectTypeDefinition() { return null }
+	
 	patchMap = {
 		objectAttributeDefinitions: {
-			$add: async(action: patchAction): Promise<void> => {
+			$add: async(objectTypeDefinition: IObjectTypeDefinition, action: patchAction): Promise<void> => {
 				console.log(chalk.keyword('goldenrod')('[ObjectTypeDefinitionService.objectAttributeDefinitions.$add]'))
 				this.checkRequiredProperties(action, ['path', 'type'])
-				await this.addObjectAttributeDefinition(action.resources.objectTypeDefinition, {
+				await this.addObjectAttributeDefinition(objectTypeDefinition, {
 					path: action.path,
 					type: action.type,
 					localizable: action.localizable || true,
 				})
 			},
-			$remove: async(action: patchAction): Promise<void> => {
+			$remove: async(objectTypeDefinition: IObjectTypeDefinition, action: patchAction): Promise<void> => {
 				console.log(chalk.keyword('goldenrod')('[ObjectTypeDefinitionService.objectAttributeDefinitions.$remove]'))
 				this.checkRequiredProperties(action, ['path'])
-				await this.removeObjectAttributeDefinition(action.resources.objectTypeDefinition, action.path)
+				await this.removeObjectAttributeDefinition(objectTypeDefinition, action.path)
 			},
 		}
 	}
 
 	static defaultModels: Model<any>[] = [ Product ]
 
-	public async update(objectTypeDefinitions: IObjectTypeDefinition, patchRequest: patchRequest, resources: any): Promise<IObjectTypeDefinition> {
+	public async update(objectTypeDefinition: IObjectTypeDefinition, patchRequest: patchRequest, resources: any): Promise<IObjectTypeDefinition> {
 		console.log(chalk.magenta(`[ObjectTypeDefinitionService.update]`))
 
 		if (resources.objectAttributeDefinition) {
 			await objectAttributeDefinitionService.update(resources.objectAttributeDefinition, patchRequest, resources)
-			objectTypeDefinitions.markModified('objectAttributeDefinitions')
+			objectTypeDefinition.markModified('objectAttributeDefinitions')
 		} else {
-			await this.patch(patchRequest, resources)
+			await this.patch(objectTypeDefinition, patchRequest, resources)
 		}
 		
-		return await objectTypeDefinitions.save() 
+		return await objectTypeDefinition.save() 
 	}
 
 	public async getById(objecttype: string): Promise<IObjectTypeDefinition> {
+		console.log(chalk.magenta('get by ID ' + objecttype))
 		return ObjectTypeDefinition.findOne({objectName: objecttype}).exec()
 	}
 
@@ -90,7 +94,7 @@ class ObjectTypeDefinitionService extends Patchable {
 				}
 				const path: any = model.schema.path(pathName)
 				// add LocalizableAttributes to ObjectTypeDefinition
-				if (path.instance && path.instance && path.instance && path.instance == 'ObjectID' && path.options && path.options && path.options.ref == 'LocalizableAttributeSchema') {
+				if (path.instance && path.instance && path.instance && path.instance == 'ObjectID' && path.options && path.options && path.options.ref == 'LocalizableAttribute') {
 					OTD.addObjectAttributeDefinition({
 						type: path.options.defaultType,
 						path: pathName,
@@ -99,11 +103,16 @@ class ObjectTypeDefinitionService extends Patchable {
 					})
 				}
 			})
+			console.log('created OTD:', OTD)
 			return OTD.save()
 		}))
 
 		console.log(chalk.magenta('[ObjectTypeDefinitionService.init] -- END'))
 
+	}
+
+	public async getByDocument(doc: Document): Promise<IObjectTypeDefinition> {
+		return this.getById((<any>doc.constructor).modelName)
 	}
 
 	private async addObjectAttributeDefinition(objectTypeDefinition: IObjectTypeDefinition, config: {path: string, type: attributeType, localizable: boolean}): Promise<void> {

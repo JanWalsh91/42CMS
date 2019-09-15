@@ -7,16 +7,16 @@ import { jsonLocale } from '../types'
 
 const locales: { default: jsonLocale[], all: jsonLocale[] } = require('../resources/locales.json')
 
-class LocaleService extends Patchable {
+class LocaleService extends Patchable<ILocale> {
+	hasObjectTypeDefinition = false
+	protected async getObjectTypeDefinition() { return null }
 	patchMap = {
 		fallback: {
-			$set: async (action: patchAction): Promise<void> => {
+			$set: async (locale: ILocale, action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
-				const locale: ILocale = action.resources.locale
 				await this.setFallback(locale, action.value)
 			},
-			$unset: async (action: patchAction): Promise<void> => {
-				const locale: ILocale = action.resources.locale
+			$unset: async (locale: ILocale, action: patchAction): Promise<void> => {
 				await this.setFallback(locale, 'default')
 			},
 		}
@@ -74,7 +74,7 @@ class LocaleService extends Patchable {
 	public async update(locale: ILocale, patchRequest: patchRequest, resources: any): Promise<ILocale> {
 		console.log(chalk.magenta(`[LocaleService.update]`))
 
-		await this.patch(patchRequest, resources)
+		await this.patch(locale, patchRequest, resources)
 
 		return locale.save()
 	}

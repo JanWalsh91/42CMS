@@ -25,6 +25,7 @@ describe('Product', function() {
 		await clearDataBase()
 		// Create user
 		await createUser(userData)
+		await app.ready
 	})
 
 	beforeEach(async function() {
@@ -35,6 +36,8 @@ describe('Product', function() {
 		// Create catalog
 		ret = await createCategory(catalogData.id, categoryData.id)
 		category = ret.body
+		// wait for server to init async tasks
+		await app.ready
 	})
 
 	describe('Create', () => {
@@ -82,7 +85,7 @@ describe('Product', function() {
 		})
 	})
 
-	describe.only('Get Product', () => {
+	describe('Get Product', () => {
 		it('Should get a product', async() => {
 			ret = await createProduct(catalogData.id, productData.id)
 			ret.should.have.status(OK)
@@ -138,7 +141,7 @@ describe('Product', function() {
 	
 			// Category's name and id should be updated
 			const product: IProduct = await Product.findOne({id: newId})
-			product.name.should.eq(newName)
+			product.name.value.get('default').should.eq(newName)
 			product.id.should.eq(newId)
 		})
 

@@ -18,9 +18,7 @@ export class GlobalSettingsController {
 		const globalSettings: IGlobalSettings = await globalSettingsService.get()
 		
 		try {
-			await globalSettingsService.update(globalSettings, req.body, {
-				globalSettings
-			})
+			await globalSettingsService.update(globalSettings, req.body, {})
 			res.end()
 		} catch (e) { next(e) }
 	

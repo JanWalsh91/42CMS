@@ -20,9 +20,7 @@ export const localeController = {
 	async update(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[localeController.update]'))
 		try {
-			await localeService.update(res.locals.locale, req.body, {
-				locale: res.locals.locale
-			})
+			await localeService.update(res.locals.locale, req.body, {})
 			res.end()
 		} catch (e) { next(e) }
 	

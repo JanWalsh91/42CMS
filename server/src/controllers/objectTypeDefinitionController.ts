@@ -17,7 +17,6 @@ export const objectTypeDefinitionController = {
 
 		try {
 			await objectTypeDefinitionService.update(res.locals.objectTypeDefinition, req.body, {
-				objectTypeDefinition: res.locals.objectTypeDefinition,
 				objectAttributeDefinition: res.locals.objectAttributeDefinition,
 			})
 			res.end()
@@ -28,9 +27,7 @@ export const objectTypeDefinitionController = {
 		console.log(chalk.magenta('[objectTypeDefinitionController.updateAttribute]'))
 
 		try {
-			await objectTypeDefinitionService.update(res.locals.objectTypeDefinition, req.body, {
-				objectTypeDefinition: res.locals.objectTypeDefinition,
-			})
+			await objectTypeDefinitionService.update(res.locals.objectTypeDefinition, req.body, {})
 			res.end()
 		} catch (e) { next(e) }
 	},

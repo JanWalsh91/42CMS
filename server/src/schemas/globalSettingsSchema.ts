@@ -21,6 +21,9 @@ globalSettingsSchema.methods = {
 	}
 }
 
+globalSettingsSchema.plugin(require('mongoose-autopopulate'))
+
+
 export {
 	globalSettingsSchema
 }

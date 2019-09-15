@@ -7,6 +7,8 @@ const productMasterSchema = new Schema({
 	}]
 })
 
+productMasterSchema.plugin(require('mongoose-autopopulate'))
+
 export {
 	productMasterSchema
 }

@@ -6,6 +6,7 @@ import { globalSettingsService } from './globalSettingsService'
 import { localeService } from './localeService'
 import { objectTypeDefinitionService } from './objectTypeDefinitionService'
 import { objectAttributeDefinitionService } from './objectAttributeDefinitionService'
+import { localizableAttributeService } from './localizableAttributeService'
 
 export {
 	userService,
@@ -16,4 +17,5 @@ export {
 	localeService,
 	objectTypeDefinitionService,
 	objectAttributeDefinitionService,
+	localizableAttributeService,
 }

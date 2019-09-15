@@ -40,9 +40,7 @@ export class CatalogController {
 		console.log(chalk.magenta('[CatalogController.update]'), req.body)
 
 		try {
-			await catalogService.update(res.locals.catalog, req.body, {
-				catalog: res.locals.catalog
-			})
+			await catalogService.update(res.locals.catalog, req.body, {})
 			res.end()
 		} catch (e) { next(e) }
 	

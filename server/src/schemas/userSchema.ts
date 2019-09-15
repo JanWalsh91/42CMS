@@ -35,6 +35,8 @@ userSchema.methods = {
 
 }
 
+userSchema.plugin(require('mongoose-autopopulate'))
+
 export {
 	userSchema
 }

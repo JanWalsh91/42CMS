@@ -29,6 +29,8 @@ localeSchema.methods = {
 	}
 }
 
+localeSchema.plugin(require('mongoose-autopopulate'))
+
 export {
 	localeSchema,
 }

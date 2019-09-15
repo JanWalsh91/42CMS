@@ -1,3 +1,4 @@
+import { LocalizableAttribute } from './localizableAttributeModel'
 import { User } from './userModel'
 import { Catalog } from './catalogModel'
 import { Category } from './categoryModel'
@@ -8,6 +9,7 @@ import { Locale } from './localeModel'
 import { ObjectTypeDefinition } from './objectTypeDefinitionModel'
 
 export {
+	LocalizableAttribute,
 	User,
 	Catalog,
 	Category,

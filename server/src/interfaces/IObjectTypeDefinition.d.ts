@@ -9,5 +9,6 @@ export interface IObjectTypeDefinition extends Document {
 	objectAttributeDefinitions: IObjectAttributeDefinition[]	
 	objectName: 'Product'
 
-	addObjectAttributeDefinition: (OAD) => void
+	addObjectAttributeDefinition: (OAD: IObjectAttributeDefinition) => void
+	getAttribute: (path: string) => IObjectAttributeDefinition
 }

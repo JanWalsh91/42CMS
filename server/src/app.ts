@@ -46,7 +46,7 @@ class App {
 			await globalSettingsService.init()
 
 			// for testing
-			await objectTypeDefinitionService.reset()
+			// await objectTypeDefinitionService.reset()
 
 			await objectTypeDefinitionService.init()
 

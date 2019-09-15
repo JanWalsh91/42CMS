@@ -20,6 +20,8 @@ siteSchema.methods = {
 
 }
 
+siteSchema.plugin(require('mongoose-autopopulate'))
+
 export {
 	siteSchema
 }
