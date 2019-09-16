@@ -232,7 +232,6 @@ class ProductService extends Patchable<IProduct> {
 		console.log(chalk.magenta(`[ProductService.update]`), product)
 
 		await this.patch(product, patchRequest, resources)
-		console.log('done patching', product)
 		return product.save()
 	}
 

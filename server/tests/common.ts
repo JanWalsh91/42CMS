@@ -4,7 +4,7 @@ import chaiHttp = require('chai-http')
 chai.use(chaiHttp)
 const agent = chai.request.agent(app.app)
 
-import { User, Catalog, Category, Product, Site, Locale, GlobalSettings, ObjectTypeDefinition } from '../src/models'
+import { User, Catalog, Category, Product, Site, Locale, GlobalSettings, ObjectTypeDefinition, LocalizableAttribute } from '../src/models'
 import { patchAction, patchRequest } from '../src/utils';
 import chalk from 'chalk';
 import { Model } from 'mongoose';
@@ -42,6 +42,7 @@ export const clearDataBase = async (...models: Model<any>[]) => {
 			Locale,
 			GlobalSettings,
 			ObjectTypeDefinition,
+			LocalizableAttribute,
 		]
 	}
 	await Promise.all(models.map(model => model.deleteMany({})))

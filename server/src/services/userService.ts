@@ -12,7 +12,7 @@ class UserService {
 		}
 	
 		// First user created is admin
-		const isFirstUser: boolean = (await User.count({}).exec()) == 0
+		const isFirstUser: boolean = (await User.countDocuments({}).exec()) == 0
 
 		// Create new user
 		return await new User({

@@ -1,9 +1,9 @@
 import chalk from 'chalk'
 
-import { IObjectTypeDefinition } from '../interfaces'
-import { patchRequest, Patchable, patchAction, ValidationError } from '../utils'
-import { ObjectTypeDefinition, Product } from '../models'
-import { Model, Document } from 'mongoose'
+import { IObjectTypeDefinition, IObjectAttributeDefinition, IExtensibleObject, ILocaleSettings, ILocalizableAttribute } from '../interfaces'
+import { patchRequest, Patchable, patchAction, ValidationError, InternalError } from '../utils'
+import { ObjectTypeDefinition, Product, LocalizableAttribute } from '../models'
+import { Model, Document, model } from 'mongoose'
 import { attributeType } from '../types'
 import { objectAttributeDefinitionService } from '.'
 
@@ -50,6 +50,10 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 	public async getById(objecttype: string): Promise<IObjectTypeDefinition> {
 		console.log(chalk.magenta('get by ID ' + objecttype))
 		return ObjectTypeDefinition.findOne({objectName: objecttype}).exec()
+	}
+
+	public async getByDocument(doc: Document): Promise<IObjectTypeDefinition> {
+		return this.getById((<any>doc.constructor).modelName)
 	}
 
 	public async reset(models?: Model<any>[]): Promise<void> {
@@ -111,8 +115,47 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 
 	}
 
-	public async getByDocument(doc: Document): Promise<IObjectTypeDefinition> {
-		return this.getById((<any>doc.constructor).modelName)
+
+	// ==== Custom Attribute Management ==== 
+	// Performs actions on object of type on OAD create, update, delete
+	public async createObjectAttribute(OTD: IObjectTypeDefinition, OAD: IObjectAttributeDefinition) {
+		console.log(chalk.magenta('[ObjectTypeDefinitionService.createObjectAttribute]'))
+		// console.log('name:', OTD.objectName)
+		// console.log('m: ', m)
+		let docs: IExtensibleObject[] = <IExtensibleObject[]>(await model(OTD.objectName).find().exec())
+		// console.log("DOCS BEFORE", docs)
+		await Promise.all(docs.map(async(doc: IExtensibleObject): Promise<void> => {
+			doc.custom.set(OAD.path, await (new LocalizableAttribute().save()))
+			doc.markModified('custom')
+			await doc.save()
+		}))
+		// console.log("DOCS AFTER", docs)
+
+	}
+	public async updateObjectAttributeType(OTD: IObjectTypeDefinition, OAD: IObjectAttributeDefinition) {
+		console.log(chalk.magenta('[ObjectTypeDefinitionService.updateObjectAttributeType]'))
+
+	}
+	public async deleteObjectAttribute(OTD: IObjectTypeDefinition, OAD: IObjectAttributeDefinition) {
+		console.log(chalk.magenta('[ObjectTypeDefinitionService.deleteObjectAttribute]'))
+		
+	}
+
+	public async initExtensibleObject(object: IExtensibleObject) {
+		const OTD: IObjectTypeDefinition = await this.getByDocument(object)
+		if (!OTD) {
+			throw new InternalError(`Object Type Definition not found for ${((<any>object.constructor).modelName)}`)
+		}
+		if (OTD.objectAttributeDefinitions.length == 0) {
+			return
+		}
+		await Promise.all(OTD.objectAttributeDefinitions
+			.filter(OAD => OAD.system == false)
+			.map(async(OAD: IObjectAttributeDefinition) => {
+				object.custom.set(OAD.path, await (new LocalizableAttribute()).save())
+			})
+		)
+		object.markModified('custom')
 	}
 
 	private async addObjectAttributeDefinition(objectTypeDefinition: IObjectTypeDefinition, config: {path: string, type: attributeType, localizable: boolean}): Promise<void> {
@@ -120,11 +163,15 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 		if (objectTypeDefinition.objectAttributeDefinitions.find(x => x.path == config.path)) {
 			throw new ValidationError(`Path ${config.path} already exists for object ${objectTypeDefinition.objectName}`)
 		}
-		objectTypeDefinition.objectAttributeDefinitions.push({
+
+		let OAD: IObjectAttributeDefinition = {
 			...config,
 			system: false,
-		})
+		}
+		objectTypeDefinition.objectAttributeDefinitions.push(OAD)
 		objectTypeDefinition.markModified('objectAttributeDefinitions')
+		await objectTypeDefinition.save()
+		await this.createObjectAttribute(objectTypeDefinition, OAD)
 	}
 
 	private async removeObjectAttributeDefinition(objectTypeDefinition: IObjectTypeDefinition, path: string): Promise<void> {

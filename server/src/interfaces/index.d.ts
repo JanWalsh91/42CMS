@@ -11,8 +11,10 @@ import { IGlobalSettings } from './IGlobalSettings'
 import { ILocalizableAttribute } from './ILocalizableAttribute'
 import { IObjectTypeDefinition } from './IObjectTypeDefinition'
 import { IObjectAttributeDefinition } from './IObjectAttributeDefinition'
+import { IExtensibleObject } from './IExtensibleObject'
 
 export {
+	IExtensibleObject,
 	IUser,
 	IProduct,
 	IProductMaster,

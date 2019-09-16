@@ -1,4 +1,4 @@
-import { Model, model, SchemaType } from 'mongoose'
+import { Model, model, SchemaType, Types } from 'mongoose'
 import chalk from 'chalk'
 
 import attributeTypes from '../resources/attributeTypes'
@@ -6,6 +6,7 @@ import { IObjectTypeDefinition, IObjectAttributeDefinition } from '../interfaces
 import { patchRequest, Patchable, patchAction, ValidationError } from '../utils'
 import { ObjectTypeDefinition, Product } from '../models'
 import { attributeType } from '../types'
+import { objectTypeDefinitionService } from '.';
 
 class ObjectAttributeDefinitionService extends Patchable<IObjectAttributeDefinition> {
 	hasObjectTypeDefinition = false
@@ -39,14 +40,18 @@ class ObjectAttributeDefinitionService extends Patchable<IObjectAttributeDefinit
 		if (!attributeTypes.includes(value)) {
 			throw new ValidationError(`Invalid attribute type: ${value}`)
 		}
-		objectAttributeDefinition.type = value
-		// TODO: reset all attributes of this type
+		if (value != objectAttributeDefinition.type) {
+			objectAttributeDefinition.type = value
+			await objectTypeDefinitionService.updateObjectAttributeType((<any>objectAttributeDefinition).ownerDocument(), objectAttributeDefinition)
+		}
 	}
 
 	private async setLocalizable(objectAttributeDefinition: IObjectAttributeDefinition, value: boolean): Promise<void> {
 		console.log(chalk.magenta(`[ObjectAttributeDefinitionService.setLocalizable]`))
 		objectAttributeDefinition.localizable = value
 	}
+
+	
 }
 
 export const objectAttributeDefinitionService: ObjectAttributeDefinitionService = new ObjectAttributeDefinitionService()

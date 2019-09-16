@@ -3,7 +3,7 @@ import chalk from 'chalk'
 
 import { ICatalog, ICategory, IProduct } from '../interfaces'
 import { InternalError } from '../utils'
-import { localizableAttributeService } from '../services'
+import { localizableAttributeService, objectAttributeDefinitionService, objectTypeDefinitionService } from '../services'
 import { LocalizableAttribute } from '../models'
 
 const productSchema = new Schema({
@@ -61,9 +61,9 @@ const productSchema = new Schema({
 		of: {
 			type: Schema.Types.ObjectId,
 			ref: 'LocalizableAttribute',
+			// autopopulate: true,
 		},
-		autopopulate: true,	
-		default: {},
+		default: new Map(),
 	}
 })
 
@@ -74,6 +74,7 @@ productSchema.pre('save', async function(this: IProduct) {
 				this[path] = await new LocalizableAttribute().save()
 			}
 		), Promise.resolve())
+		await objectTypeDefinitionService.initExtensibleObject(this)
 	}
 })
 
@@ -185,6 +186,21 @@ productSchema.methods = {
 }
 
 productSchema.plugin(require('mongoose-autopopulate'))
+
+const populateMap = function (path: string) {
+	return function(this: IProduct) {
+		this.populate(path)
+	}
+}
+
+productSchema.post('find', <any>async function(products: IProduct[]) {
+	for (let product of products) {
+		await product.populate('custom')
+	}
+})
+productSchema.pre('findOne', function(this: IProduct) {
+	this.populate('custom')
+})
 
 export {
 	productSchema,

@@ -1,8 +1,9 @@
 import chalk from 'chalk'
+import { Document } from 'mongoose'
 
 import { ValidationError } from '.'
 import { localizableAttributeService } from '../services'
-import { IObjectAttributeDefinition, IObjectTypeDefinition } from '../interfaces'
+import { IObjectAttributeDefinition, IObjectTypeDefinition, IExtensibleObject, ILocalizableAttribute } from '../interfaces'
 
 export type patchOperation = '$add' | '$remove' | '$set' | '$unset'
 
@@ -50,12 +51,16 @@ export abstract class Patchable<T> {
 			}
 		} else if (this.hasObjectTypeDefinition) {
 			const OTD: IObjectTypeDefinition = await this.getObjectTypeDefinition()
-			console.log('OTD', OTD)
 			const OAD: IObjectAttributeDefinition = OTD.getAttribute(key)
-			console.log('OAD', OAD)
+			let localizedAttribute: ILocalizableAttribute;
+			if (OAD.system) {
+				localizedAttribute = object[key]
+			} else {
+				localizedAttribute = (<IExtensibleObject><unknown>object).custom.get(key)
+			}
 			if (OAD) {
 				await localizableAttributeService.update(
-					OAD.system ? object[key]: (<any>object).custom[key],
+					localizedAttribute,
 					OAD,
 					key,
 					action

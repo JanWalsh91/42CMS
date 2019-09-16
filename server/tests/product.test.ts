@@ -3,9 +3,9 @@ chai.should()
 const expect = require('chai').expect
 import chalk from 'chalk';
 
-import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct, getProduct, logout, login, getAllProducts, deleteProduct  } from './common';
+import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct, getProduct, logout, login, getAllProducts, deleteProduct, updateObjectAttributeDefinition, updateObjectTypeDefinition  } from './common';
 
-import { User, Category, Catalog, Product } from '../src/models'
+import { User, Category, Catalog, Product, ObjectTypeDefinition } from '../src/models'
 import { IUser, IProduct, ICatalog, ICategory } from '../src/interfaces'
 import app from '../src/app'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
@@ -29,7 +29,7 @@ describe('Product', function() {
 	})
 
 	beforeEach(async function() {
-		await clearDataBase(Category, Catalog, Product)
+		await clearDataBase(Category, Catalog, Product, ObjectTypeDefinition)
 		// Create catalog
 		ret = await createCatalog(catalogData.id, {master: true})
 		catalog = ret.body
@@ -130,7 +130,7 @@ describe('Product', function() {
 		const newName: string = 'newProductName'
 		const newId: string = 'newProductId'
 
-		it.only('Should update Product name and ID', async() => {
+		it('Should update Product name and ID', async() => {
 			await createProduct(catalogData.id, productData.id)
 	
 			ret = await updateProduct(productData.id, {
@@ -293,7 +293,7 @@ describe('Product', function() {
 				const locale: localeCode = 'en'
 				const newDescription: string = 'This product is amazing'
 				await createProduct(catalogData.id, productData.id)
-				
+
 				ret = await updateProduct(productData.id, {
 					description: { op: '$set', value: newDescription, locale },
 				})
@@ -318,10 +318,55 @@ describe('Product', function() {
 				// Product description should be updated
 				const product: IProduct = await Product.findOne({id: productData.id})
 				console.log('description: ', product.description)
-				product.description.value['default'].should.eq(newDescription)
+				product.description.value.get('default').should.eq(newDescription)
 				console.log('typeof description: ', typeof product.description)
 				console.log('typeof description.values: ', typeof product.description.value)
 				console.log('typeof description.value.get("[default]"): ', typeof product.description.value['default'])
+			})
+		})
+
+		describe('Custom attributes', () => {
+			describe('Create Custom Attributes', () => {
+				const newPath: string = 'test'
+				const newValue: string = 'my value'
+				it('Should create a custom attribute when creating a new product', async() => {
+					ret = await updateObjectTypeDefinition('Product', {
+						objectAttributeDefinitions: {
+							op: '$add', type: 'string', path: newPath
+						}
+					})
+					ret.status.should.eq(OK)
+					ret = await createProduct(catalogData.id, productData.id)
+					ret.status.should.eq(OK)
+					let product: IProduct = await Product.findOne({id: productData.id}).exec()
+					product.custom.get(newPath).should.exist
+				})
+				it('Should create a custom attribute on a created product', async() => {
+					ret = await createProduct(catalogData.id, productData.id)
+					ret = await updateObjectTypeDefinition('Product', {
+						objectAttributeDefinitions: {
+							op: '$add', type: 'string', path: newPath
+						}
+					})
+					ret.status.should.eq(OK)
+					let product: IProduct = await Product.findOne({id: productData.id}).exec()
+					product.custom.get(newPath).should.exist
+				})
+				it('Should update a custom attribute', async() => {
+					ret = await createProduct(catalogData.id, productData.id)
+					ret = await updateObjectTypeDefinition('Product', {
+						objectAttributeDefinitions: {
+							op: '$add', type: 'string', path: newPath
+						}
+					})
+					ret = await updateProduct(productData.id, {
+						[newPath]: { op: '$set', value: newValue }
+					})
+					ret.status.should.eq(OK)
+					let product: IProduct = await Product.findOne({id: productData.id}).exec()
+					product.custom.get(newPath).should.exist
+					product.custom.get(newPath).value.get('default').should.eq(newValue)					
+				})
 			})
 		})
 	})
