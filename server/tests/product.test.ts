@@ -126,7 +126,7 @@ describe('Product', function() {
 		})
 	})
 
-	describe('Update Product', () => {
+	describe.only('Update Product', () => {
 		const newName: string = 'newProductName'
 		const newId: string = 'newProductId'
 
@@ -317,18 +317,14 @@ describe('Product', function() {
 
 				// Product description should be updated
 				const product: IProduct = await Product.findOne({id: productData.id})
-				console.log('description: ', product.description)
 				product.description.value.get('default').should.eq(newDescription)
-				console.log('typeof description: ', typeof product.description)
-				console.log('typeof description.values: ', typeof product.description.value)
-				console.log('typeof description.value.get("[default]"): ', typeof product.description.value['default'])
 			})
 		})
 
 		describe('Custom attributes', () => {
+			const newPath: string = 'test'
+			const newValue: string = 'my value'
 			describe('Create Custom Attributes', () => {
-				const newPath: string = 'test'
-				const newValue: string = 'my value'
 				it('Should create a custom attribute when creating a new product', async() => {
 					ret = await updateObjectTypeDefinition('Product', {
 						objectAttributeDefinitions: {
@@ -352,6 +348,8 @@ describe('Product', function() {
 					let product: IProduct = await Product.findOne({id: productData.id}).exec()
 					product.custom.get(newPath).should.exist
 				})
+			})
+			describe('$set Custom Attributes', () => {
 				it('Should update a custom attribute', async() => {
 					ret = await createProduct(catalogData.id, productData.id)
 					ret = await updateObjectTypeDefinition('Product', {
@@ -364,8 +362,68 @@ describe('Product', function() {
 					})
 					ret.status.should.eq(OK)
 					let product: IProduct = await Product.findOne({id: productData.id}).exec()
+					console.log('product', product)
+					console.log('product.custom', product.custom)
+
 					product.custom.get(newPath).should.exist
 					product.custom.get(newPath).value.get('default').should.eq(newValue)					
+				})
+			})
+			describe('Change Custom Attribute Type', () => {
+				it('Should change attribute type and reset values', async() => {
+					ret = await createProduct(catalogData.id, productData.id)
+					ret = await updateObjectTypeDefinition('Product', {
+						objectAttributeDefinitions: {
+							op: '$add', type: 'string', path: newPath
+						}
+					})
+					ret = await updateProduct(productData.id, {
+						[newPath]: { op: '$set', value: newValue }
+					})
+					ret = await updateObjectAttributeDefinition('Product', newPath, {
+						type: { op: '$set', value: 'number' }
+					})
+					let product: IProduct = await Product.findOne({id: productData.id}).exec()
+					console.log('product', product)
+					console.log('product.custom', product.custom)
+					console.log('product.custom.get(newPath)', product.custom.get(newPath))
+					console.log('product.custom.get(newPath).value', product.custom.get(newPath).value)
+					console.log('product.custom.get(newPath).value.get(default)', product.custom.get(newPath).value.get('default'))
+
+					expect(product.custom.get(newPath).value.get('default')).eq(null)
+					let newNum: number = 10
+					ret = await updateProduct(productData.id, {
+						[newPath]: { op: '$set', value: newNum }
+					})
+					
+					product = await Product.findOne({id: productData.id}).exec()
+					product.custom.get(newPath).value.get('default').should.eq(newNum)					
+				})
+			})
+			describe('Delete Custom Attribute Type', () => {
+				it.only('Should remove the attribute', async() => {
+					ret = await createProduct(catalogData.id, productData.id)
+					ret = await updateObjectTypeDefinition('Product', {
+						objectAttributeDefinitions: {
+							op: '$add', type: 'string', path: newPath
+						}
+					})
+					ret = await updateProduct(productData.id, {
+						[newPath]: { op: '$set', value: newValue }
+					})
+					ret = await updateObjectTypeDefinition('Product', {
+						objectAttributeDefinitions: {
+							op: '$remove', path: newPath
+						}
+					})
+					let product: IProduct = await Product.findOne({id: productData.id}).exec()
+					console.log('product', product)
+					console.log('product.custom', product.custom)
+					console.log('product.custom.get(newPath)', product.custom.get(newPath))
+					console.log('product.custom.get(newPath).value', product.custom.get(newPath).value)
+					console.log('product.custom.get(newPath).value.get(default)', product.custom.get(newPath).value.get('default'))
+
+					expect(product.custom.get(newPath)).eq(null)
 				})
 			})
 		})

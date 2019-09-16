@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 
-import { IObjectTypeDefinition, IObjectAttributeDefinition, IExtensibleObject, ILocaleSettings, ILocalizableAttribute } from '../interfaces'
+import { IObjectTypeDefinition, IObjectAttributeDefinition, IExtensibleObject, ILocaleSettings, ILocalizableAttribute, IProduct } from '../interfaces'
 import { patchRequest, Patchable, patchAction, ValidationError, InternalError } from '../utils'
 import { ObjectTypeDefinition, Product, LocalizableAttribute } from '../models'
 import { Model, Document, model } from 'mongoose'
@@ -125,8 +125,8 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 		let docs: IExtensibleObject[] = <IExtensibleObject[]>(await model(OTD.objectName).find().exec())
 		// console.log("DOCS BEFORE", docs)
 		await Promise.all(docs.map(async(doc: IExtensibleObject): Promise<void> => {
-			doc.custom.set(OAD.path, await (new LocalizableAttribute().save()))
-			doc.markModified('custom')
+			doc.custom.set(OAD.path, (await (new LocalizableAttribute().save()))._id)
+			// doc.markModified('custom')
 			await doc.save()
 		}))
 		// console.log("DOCS AFTER", docs)
@@ -134,11 +134,25 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 	}
 	public async updateObjectAttributeType(OTD: IObjectTypeDefinition, OAD: IObjectAttributeDefinition) {
 		console.log(chalk.magenta('[ObjectTypeDefinitionService.updateObjectAttributeType]'))
-
+		let docs: IExtensibleObject[] = <IExtensibleObject[]>(await model(OTD.objectName).find().exec())
+		await Promise.all(docs.map(async(doc: IExtensibleObject): Promise<void> => {
+			await doc.populate('custom').execPopulate()
+			await doc.custom.get(OAD.path).delete()
+			doc.custom.set(OAD.path, (await (new LocalizableAttribute().save()))._id)
+			doc.markModified('custom')
+			await doc.save()
+		}))
 	}
 	public async deleteObjectAttribute(OTD: IObjectTypeDefinition, OAD: IObjectAttributeDefinition) {
 		console.log(chalk.magenta('[ObjectTypeDefinitionService.deleteObjectAttribute]'))
-		
+		let docs: IExtensibleObject[] = <IExtensibleObject[]>(await model(OTD.objectName).find().exec())
+		await Promise.all(docs.map(async(doc: IExtensibleObject): Promise<void> => {
+			await doc.populate('custom').execPopulate()
+			await doc.custom.get(OAD.path).delete()
+			doc.custom.delete(OAD.path)
+			doc.markModified('custom')
+			await doc.save()
+		}))
 	}
 
 	public async initExtensibleObject(object: IExtensibleObject) {
@@ -152,7 +166,7 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 		await Promise.all(OTD.objectAttributeDefinitions
 			.filter(OAD => OAD.system == false)
 			.map(async(OAD: IObjectAttributeDefinition) => {
-				object.custom.set(OAD.path, await (new LocalizableAttribute()).save())
+				object.custom.set(OAD.path, (await (new LocalizableAttribute().save()))._id)
 			})
 		)
 		object.markModified('custom')
@@ -179,6 +193,7 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 		if (!objectTypeDefinition.objectAttributeDefinitions.find(x => x.path == path)) {
 			throw new ValidationError(`Path ${path} does not exist for object ${objectTypeDefinition.objectName}`)
 		}
+		await this.deleteObjectAttribute(objectTypeDefinition, objectTypeDefinition.objectAttributeDefinitions.find(x => x.path == path))
 		objectTypeDefinition.objectAttributeDefinitions = objectTypeDefinition.objectAttributeDefinitions.filter(x => x.path != path)
 		objectTypeDefinition.markModified('objectAttributeDefinitions')
 	}

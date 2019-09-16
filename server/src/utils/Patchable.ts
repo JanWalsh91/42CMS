@@ -32,6 +32,7 @@ export abstract class Patchable<T> {
 		// Parses the patchRequest and calls on update functions for each patch action
 		for (let [key, value] of Object.entries(patch)) {
 			console.log(chalk.keyword('salmon')(`\n========== PATCH: ${key} ==========\n`), value)
+			console.log(chalk.keyword('salmon')('=============================='))
 			if (isPatchAction(value)) {
 				await this.executeAction(object, key, {...value, resources})
 			} else if (isArrayOfPatchActions(value)) {
@@ -43,6 +44,7 @@ export abstract class Patchable<T> {
 	}
 
 	private async executeAction(object: T, key: string, action: patchAction) {
+		console.log('execute action', action)
 		if (this.patchMap.hasOwnProperty(key)) {
 			if (this.patchMap[key].hasOwnProperty(action.op)) {
 				await this.patchMap[key][action.op](object, action)

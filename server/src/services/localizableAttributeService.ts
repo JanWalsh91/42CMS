@@ -10,9 +10,9 @@ class LocalizableAttributeService {
 	
 	public async update(attribute: ILocalizableAttribute, OAD: IObjectAttributeDefinition, key: string, patchAction: patchAction): Promise<void> {
 		console.log(chalk.magenta(`[LocalizableAttributeService.update]`))
-		// console.log('attribute:', attribute)
-		// console.log('OAD:', OAD)
-		// console.log('patchAction:', patchAction)
+		console.log('attribute:', attribute)
+		console.log('OAD:', OAD)
+		console.log('patchAction:', patchAction)
 
 		if (!isValidTypeAndAction(OAD.type, patchAction.op)) {
 			throw new ValidationError(`Invalid action [${patchAction.op}] for type [${OAD.type}]`)

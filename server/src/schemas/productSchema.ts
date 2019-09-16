@@ -61,7 +61,7 @@ const productSchema = new Schema({
 		of: {
 			type: Schema.Types.ObjectId,
 			ref: 'LocalizableAttribute',
-			// autopopulate: true,
+			autopopulate: true,
 		},
 		default: new Map(),
 	}
@@ -187,15 +187,9 @@ productSchema.methods = {
 
 productSchema.plugin(require('mongoose-autopopulate'))
 
-const populateMap = function (path: string) {
-	return function(this: IProduct) {
-		this.populate(path)
-	}
-}
-
-productSchema.post('find', <any>async function(products: IProduct[]) {
+productSchema.pre('find', <any>async function(products: IProduct[]) {
 	for (let product of products) {
-		await product.populate('custom')
+		await product.populate('custom').execPopulate()
 	}
 })
 productSchema.pre('findOne', function(this: IProduct) {
