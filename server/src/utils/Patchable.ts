@@ -4,6 +4,7 @@ import { Document } from 'mongoose'
 import { ValidationError } from '.'
 import { localizableAttributeService } from '../services'
 import { IObjectAttributeDefinition, IObjectTypeDefinition, IExtensibleObject, ILocalizableAttribute } from '../interfaces'
+import { isExtensibleObject } from '../typeguards';
 
 export type patchOperation = '$add' | '$remove' | '$set' | '$unset'
 
@@ -58,8 +59,16 @@ export abstract class Patchable<T> {
 			if (OAD.system) {
 				localizedAttribute = object[key]
 			} else {
-				localizedAttribute = (<IExtensibleObject><unknown>object).custom.get(key)
+				if (isExtensibleObject(object)) {
+					localizedAttribute = object.custom.get(key)
+				} else {
+					// TODO: throw error
+				}
+
 			}
+			// console.log(object)
+			// console.log(localizedAttribute)
+			// process.exit()
 			if (OAD) {
 				await localizableAttributeService.update(
 					localizedAttribute,

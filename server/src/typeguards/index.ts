@@ -1,5 +1,5 @@
-import { isILocalizedAttribute } from './isILocalizedAttribute'
+import { isExtensibleObject } from './isExtensibleObject'
 
 export { 
-	isILocalizedAttribute,
+	isExtensibleObject,
 }

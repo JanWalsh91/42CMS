@@ -1,3 +1,6 @@
+import { ILocalizableAttribute } from "../interfaces";
+import { Document } from "mongoose";
+
 export type jsonLocale = {
 	id: string,
 	language: string,

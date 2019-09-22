@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import { Product, Catalog, Category } from '../models';
 import { IProduct, ICatalog, ICategory, IGlobalSettings } from '../interfaces'
 import { ResourceNotFoundError, ValidationError, patchRequest, Patchable, patchAction, NotImplementedError } from '../utils';
-import { catalogService, categoryService, globalSettingsService, objectTypeDefinitionService } from '.';
+import { catalogService, categoryService, globalSettingsService, objectTypeDefinitionService, localizableAttributeService } from '.';
 
 class ProductService extends Patchable<IProduct> {
 	hasObjectTypeDefinition = true
@@ -260,7 +260,9 @@ class ProductService extends Patchable<IProduct> {
 		promises.push(...product.assignedCatalogs.map((catalog: ICatalog) => catalog.removeProduct(product)))
 		// Remove product from assigned categories
 		promises.push(...categories.map((category: ICategory) => category.removeProduct(product)))
-		
+		// Delete LocalizableAttributes
+		promises.push(localizableAttributeService.deleteAttributesFromExtensibleObject(product))
+
 		await Promise.all(promises)
 
 		await Promise.all([

@@ -1,8 +1,8 @@
 import chalk from 'chalk'
 
-import { IObjectTypeDefinition, IGlobalSettings, IObjectAttributeDefinition, ILocalizableAttribute } from '../interfaces'
-import { patchRequest, ValidationError, patchAction } from '../utils'
-import { globalSettingsService } from '.'
+import { IObjectTypeDefinition, IGlobalSettings, IObjectAttributeDefinition, ILocalizableAttribute, IExtensibleObject } from '../interfaces'
+import { patchRequest, ValidationError, patchAction, InternalError } from '../utils'
+import { globalSettingsService, objectTypeDefinitionService } from '.'
 import { localeCode } from '../types'
 import { Document } from 'mongoose'
 
@@ -38,6 +38,24 @@ class LocalizableAttributeService {
 		if (!globalSettings.locale.localeIsAvailable(code)) {
 			throw new ValidationError(`Invalid locale code: ${code}`)
 		}
+	}
+
+	public async deleteAttributesFromExtensibleObject(obj: IExtensibleObject) : Promise<void> {
+		// console.log(chalk.magenta(`[LocalizableAttributeService.deleteAttributesFromExtensibleObject]`))
+		const OTD: IObjectTypeDefinition = await objectTypeDefinitionService.getByDocument(obj)
+		if (!OTD) {
+			throw new InternalError('Invalid Object')
+		}
+		await Promise.all(OTD.objectAttributeDefinitions.map((OAT: IObjectAttributeDefinition) => {
+			if (!obj[OAT.path] && !obj.custom.get(OAT.path)) {
+				return 
+			}
+			if (OAT.system) {
+				return obj[OAT.path].remove()
+			} else {
+				return obj.custom.get(OAT.path).remove()
+			}
+		}))
 	}
 }
 

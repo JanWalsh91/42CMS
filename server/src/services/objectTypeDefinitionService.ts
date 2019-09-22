@@ -137,7 +137,7 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 		let docs: IExtensibleObject[] = <IExtensibleObject[]>(await model(OTD.objectName).find().exec())
 		await Promise.all(docs.map(async(doc: IExtensibleObject): Promise<void> => {
 			await doc.populate('custom').execPopulate()
-			await doc.custom.get(OAD.path).delete()
+			await doc.custom.get(OAD.path).remove()
 			doc.custom.set(OAD.path, (await (new LocalizableAttribute().save()))._id)
 			doc.markModified('custom')
 			await doc.save()
@@ -148,7 +148,7 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 		let docs: IExtensibleObject[] = <IExtensibleObject[]>(await model(OTD.objectName).find().exec())
 		await Promise.all(docs.map(async(doc: IExtensibleObject): Promise<void> => {
 			await doc.populate('custom').execPopulate()
-			await doc.custom.get(OAD.path).delete()
+			await doc.custom.get(OAD.path).remove()
 			doc.custom.delete(OAD.path)
 			doc.markModified('custom')
 			await doc.save()

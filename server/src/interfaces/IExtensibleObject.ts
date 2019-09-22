@@ -1,5 +1,7 @@
 import { Document } from 'mongoose'
 
+import { ILocalizableAttribute } from '.'
+
 export interface IExtensibleObject extends Document {
-	custom: Record<string, any>
+	custom: Map<string, ILocalizableAttribute>
 }
