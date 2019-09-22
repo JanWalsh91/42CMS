@@ -1,9 +1,10 @@
 import chalk from 'chalk';
 
-import { Product, Catalog, Category } from '../models';
-import { IProduct, ICatalog, ICategory, IGlobalSettings } from '../interfaces'
+import { Product, Catalog, Category, ProductMaster, ProductVariant } from '../models';
+import { IProduct, ICatalog, ICategory, IGlobalSettings, IProductVariant, IObjectTypeDefinition, IObjectAttributeDefinition, IProductMaster } from '../interfaces'
 import { ResourceNotFoundError, ValidationError, patchRequest, Patchable, patchAction, NotImplementedError } from '../utils';
 import { catalogService, categoryService, globalSettingsService, objectTypeDefinitionService, localizableAttributeService } from '.';
+import { isMasterProduct } from '../typeguards';
 
 class ProductService extends Patchable<IProduct> {
 	hasObjectTypeDefinition = true
@@ -182,9 +183,39 @@ class ProductService extends Patchable<IProduct> {
 				])
 			},
 		},
+		variationAttributes: {
+			$add: async(product: IProduct, action: patchAction): Promise<void> => {
+				console.log(chalk.keyword('goldenrod')('[ProductService.variationAttributes.$add]'))
+				this.checkRequiredProperties(action, ['value'])
+				if (isMasterProduct(product)) {
+					const OTD: IObjectTypeDefinition = await product.getObjectTypeDefinition()
+					const OAD: IObjectAttributeDefinition = OTD.getAttribute(action.value)
+					if (!OAD) {
+						throw new ValidationError(`Attribute ${action.value} does not exist on product, or cannot be used as variation attribute`)
+					}
+					await product.addVariationAttribute(OAD)
+				} else {
+					throw new ValidationError(`Product is not a master product`)
+				}
+			},
+			$remove: async(product: IProduct, action: patchAction): Promise<void> => {
+				console.log(chalk.keyword('goldenrod')('[ProductService.variationAttributes.$remove]'))
+				this.checkRequiredProperties(action, ['value'])
+				if (isMasterProduct(product)) {
+					const OTD: IObjectTypeDefinition = await product.getObjectTypeDefinition()
+					const OAD: IObjectAttributeDefinition = OTD.getAttribute(action.value)
+					if (!OAD) {
+						throw new ValidationError(`Attribute ${action.value} does not exist on product, or cannot be used as variation attribute`)
+					}
+					await product.removeVariationAttribute(OAD)
+				} else {
+					throw new ValidationError(`Product is not a master product`)
+				}
+			},
+		}
 	}
 
-	public async create(options: Partial<IProduct>): Promise<IProduct> {
+	public async create(options: Partial<IProductVariant> | Partial<IProductMaster> | Partial<IProduct>): Promise<IProduct> {
 		console.log(chalk.blue('[productService.create]'), options)
 		const catalog: ICatalog = await catalogService.getById(options.masterCatalog)
 		if (!catalog) {
@@ -197,12 +228,64 @@ class ProductService extends Patchable<IProduct> {
 		if (existingProduct) {
 			throw new ValidationError('Product already exists in this catalog')
 		}
-		
+		if (!options.type) {
+			options.type = 'basic'
+		}
 		// Create new Product
-		const product: IProduct = await new Product({
-			id: options.id,
-			masterCatalog: catalog
-		}).save();
+		let product: IProduct;
+		switch (options.type) {
+			case 'basic':
+				product = await new Product({
+					id: options.id,
+					masterCatalog: catalog,
+				}).save();
+				break;
+			case 'master':
+				product = await new ProductMaster({
+					id: options.id,
+					masterCatalog: catalog,
+				}).save();
+				break;
+			case 'variant':
+				let variantOptions: Partial<IProductVariant> = options as Partial<IProductVariant>
+				let masterProduct: IProduct;
+				// Get master product
+				console.log('masterProduct:', variantOptions.masterProduct)
+				if (variantOptions.masterProduct) {
+					masterProduct = await Product.findOne({id: variantOptions.masterProduct}).populate('variationAttributes')
+				}
+				if (!masterProduct) {
+					throw new ResourceNotFoundError('MasterProduct', <any>variantOptions.masterProduct)
+				}
+				if (isMasterProduct(masterProduct)) {
+					const variationAttributes: IObjectAttributeDefinition[] = masterProduct.variationAttributes
+					if (variationAttributes.some(x => options[x.path] == undefined)) {
+						throw new ValidationError(`Must provide all variation attributes`)
+					}
+					product = await new ProductVariant({
+						id: options.id,
+						masterCatalog: catalog,
+						masterProduct,
+					}).save();
+					product = await Product.findById(product._id)
+					await Promise.all(variationAttributes.map(async (OAD: IObjectAttributeDefinition) => {
+						if (OAD.system) {
+							return localizableAttributeService.update(product[OAD.path], OAD, OAD.path, {
+								op: '$set', path: OAD.path, value: options[OAD.path]
+							})
+						} else {
+							return localizableAttributeService.update(product.custom.get(OAD.path), OAD, OAD.path, {
+								op: '$set', path: OAD.path, value: options[OAD.path]
+							})
+						}
+					}))
+				} else {
+					throw new ValidationError(`${<any>variantOptions.masterProduct} is not a master product`)
+				}
+				break;
+			default: 
+				throw new ValidationError(`Invalid type ${(<any>options).type}`)
+		}
 
 		// Add Product to Catalog
 		await Promise.all([

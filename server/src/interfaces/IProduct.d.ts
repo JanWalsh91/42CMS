@@ -2,10 +2,12 @@ import { Document } from 'mongoose'
 
 import { ICatalog, ICategory, IExtensibleObject } from '../interfaces'
 import { ILocalizableAttribute } from './ILocalizableAttribute'
+import { productType } from '../types';
 
 export interface IProduct extends IExtensibleObject {
 	id: string
-	
+	type: productType
+
 	name: ILocalizableAttribute['_id']
 	description: ILocalizableAttribute
 
@@ -30,6 +32,11 @@ export interface IProduct extends IExtensibleObject {
 	// remove methods
 	removeAssignedCatalog: (catalogId: ICatalog) => Promise<void>
 	removeAssignedCategoryByCatalog: (categoryId: ICategory, catalogId: ICatalog) => Promise<void>
+
+	// is methods
+	isMaster: () => boolean
+	isVariant: () => boolean
+	isBasic: () => boolean
 
 	// internal attributes
 	wasNew: boolean

@@ -26,3 +26,8 @@ export type attributeType =
 	'number'	|
 	'string[]'	|
 	'number[]'
+
+export type productType = 
+	'basic' 	|
+	'master'	|
+	'variant'

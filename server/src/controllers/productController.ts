@@ -8,13 +8,12 @@ import { ValidationError, ResourceNotFoundError } from '../utils/Errors';
 export const productController = {
 	async create(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[ProductController] create'))
-		const { name, id, mastercatalogid: masterCatalog } = req.body
-		
+		const { mastercatalogid: masterCatalog } = req.body
+
 		try {
 			const product: IProduct = await productService.create({
-				name, 
-				id,
-				masterCatalog
+				...req.body,
+				masterCatalog,
 			})
 			res.send(product)
 		} catch (e) { next(e) }

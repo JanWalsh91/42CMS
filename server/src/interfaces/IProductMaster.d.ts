@@ -1,5 +1,12 @@
-import { IProduct, IProductVariant } from '.'
+import { IProduct, IProductVariant, IObjectAttributeDefinition } from '.'
 
 export interface IProductMaster extends IProduct {
-	variantProducts: IProductVariant[],
+	type: 'master'
+	variantProducts: IProductVariant[]
+	variationAttributes: IObjectAttributeDefinition[]
+
+	// methods
+	addVariationAttribute: (OAD: IObjectAttributeDefinition) => Promise<void>
+	removeVariationAttribute: (OAD: IObjectAttributeDefinition) => Promise<void>
+	
 }

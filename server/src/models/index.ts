@@ -7,6 +7,7 @@ import { Site } from './siteModel'
 import { GlobalSettings } from './globalSettingsModel'
 import { Locale } from './localeModel'
 import { ObjectTypeDefinition } from './objectTypeDefinitionModel'
+import { ObjectAttributeDefinition } from './objectAttributeDefinitionModel'
 
 export {
 	LocalizableAttribute,
@@ -20,4 +21,5 @@ export {
 	GlobalSettings,
 	Locale,
 	ObjectTypeDefinition,
+	ObjectAttributeDefinition,
 }

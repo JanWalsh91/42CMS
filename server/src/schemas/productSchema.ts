@@ -1,16 +1,22 @@
 import { Schema } from 'mongoose'
 import chalk from 'chalk'
 
-import { ICatalog, ICategory, IProduct } from '../interfaces'
+import { ICatalog, ICategory, IProduct, IObjectTypeDefinition } from '../interfaces'
 import { InternalError } from '../utils'
-import { localizableAttributeService, objectAttributeDefinitionService, objectTypeDefinitionService } from '../services'
+import { objectTypeDefinitionService } from '../services'
 import { LocalizableAttribute } from '../models'
+import productTypes from '../resources/productTypes'
 
 const productSchema = new Schema({
 	id: {
 		type: String,
 		required: true,
 		unique: true,
+	},
+	type: {
+		type: String,
+		enum: productTypes,
+		default: 'basic',
 	},
 	name: {
 		type: Schema.Types.ObjectId,
@@ -79,6 +85,18 @@ productSchema.pre('save', async function(this: IProduct) {
 })
 
 productSchema.methods = {
+	getObjectTypeDefinition(this: IProduct): Promise<IObjectTypeDefinition> {
+		return objectTypeDefinitionService.getById('Product')
+	},
+	isMaster(this: IProduct): boolean {
+		return this.type === 'master'
+	} ,
+	isVariant(this: IProduct): boolean {
+		return this.type === 'variant'
+	} ,
+	isBasic(this: IProduct): boolean {
+		return this.type === 'basic'
+	} ,
 	// ==== set ====
 	async setPrimaryCategoryByCatalog(this: IProduct, category: ICategory | null, catalog: ICatalog): Promise<void> {
 		console.log(chalk.magenta(`[ProductModel.setPrimaryCategoryByCatalog] category; ${category.id}, catalog: ${catalog.id}, product: ${this.id}`))

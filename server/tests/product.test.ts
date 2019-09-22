@@ -6,7 +6,7 @@ import chalk from 'chalk';
 import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct, getProduct, logout, login, getAllProducts, deleteProduct, updateObjectAttributeDefinition, updateObjectTypeDefinition  } from './common';
 
 import { User, Category, Catalog, Product, ObjectTypeDefinition } from '../src/models'
-import { IUser, IProduct, ICatalog, ICategory } from '../src/interfaces'
+import { IUser, IProduct, ICatalog, ICategory, IProductMaster } from '../src/interfaces'
 import app from '../src/app'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 import { localeCode } from '../src/types';
@@ -16,6 +16,12 @@ let ret: any;
 let catalog: any = {}
 let category: any = {}
 let product: any = {}
+
+const variationAttributePath: string = 'size'
+const variationAttributeType: string = 'number'
+const masterId = 'tshirt'
+const variantId1 = 'tshirt1'
+const variantId2 = 'tshirt2'
 
 describe('Product', function() {
 	before(async () => {
@@ -61,12 +67,15 @@ describe('Product', function() {
 			expect(product.assignedCategoriesByCatalog.find(x => x.catalog.id == catalogData.id)).to.exist
 			// Should set product.primaryCategoryByCatalog
 			expect(product.primaryCategoryByCatalog.find(x => x.catalog.id == catalogData.id)).to.exist
-			
+			// Product type should be 'basic'
+			expect(product.type).to.eq('basic')
+
 			// Master Catalog should have product
 			const catalog: ICatalog = await Catalog.findOne({id: catalogData.id}).populate('products').exec()
 			catalog.products.find(x => x.id == productData.id).should.exist
 
 		})
+		
 		describe('Should fail to create a product if ...', () => {
 			it('the product id is not unique', async() => {
 				await createProduct(catalogData.id, productData.id)
@@ -84,6 +93,85 @@ describe('Product', function() {
 			})
 		})
 	})
+
+	describe('Master Product', () => {
+
+		it('Should create a master product', async() => {
+			ret = await createProduct(catalogData.id, productData.id, {type : 'master'})
+			ret.status.should.equal(OK)
+
+			const product: IProduct = await Product.findOne({id: productData.id}).exec()
+			// Product type should be 'master'
+			expect(product.type).to.eq('master')
+		})
+		it('Should add a variant attribute', async() => {
+			ret = await createProduct(catalogData.id, productData.id, {type : 'master'})
+			ret = await updateObjectTypeDefinition('Product', {
+				objectAttributeDefinitions: {
+					op: '$add', path: variationAttributePath, type: variationAttributeType
+				}
+			})
+			ret = await updateProduct(productData.id, {
+				variationAttributes: {
+					op: '$add', value: variationAttributePath
+				}
+			})
+			expect(ret.status).eq(OK)
+			const product: IProductMaster = (await Product.findOne({id: productData.id}).populate('variationAttributes').exec()) as IProductMaster
+			expect(product.variationAttributes.find(x => x.path == variationAttributePath))
+		})
+		it('Should remove a variant attribute', async() => {
+			ret = await createProduct(catalogData.id, productData.id, {type : 'master'})
+			ret = await updateObjectTypeDefinition('Product', {
+				objectAttributeDefinitions: {
+					op: '$add', path: variationAttributePath, type: variationAttributeType
+				}
+			})
+			ret = await updateProduct(productData.id, {
+				variationAttributes: {
+					op: '$add', value: variationAttributePath
+				}
+			})
+			ret = await updateProduct(productData.id, {
+				variationAttributes: {
+					op: '$remove', value: variationAttributePath
+				}
+			})
+			expect(ret.status).eq(OK)
+			const product: IProductMaster = (await Product.findOne({id: productData.id}).populate('variationAttributes').exec()) as IProductMaster
+			expect(product.variationAttributes.find(x => x.path == variationAttributePath)).to.not.exist
+		})
+	})
+
+	describe('Variant Product', () => {
+		it.only('Should create a variant product', async() => {
+			ret = await createProduct(catalogData.id, masterId, {type : 'master'})
+			ret = await updateObjectTypeDefinition('Product', {
+				objectAttributeDefinitions: {
+					op: '$add', path: variationAttributePath, type: variationAttributeType
+				}
+			})
+			ret = await updateProduct(masterId, {
+				variationAttributes: {
+					op: '$add', value: variationAttributePath
+				}
+			})
+			ret = await createProduct(catalogData.id, variantId1, {
+				type : 'variant',
+				[variationAttributePath]: 30,
+				masterProduct: masterId,
+			})
+			expect(ret.status).eq(OK)
+			// Should be of type variant
+			// Should have ref to master
+			// Master should have ref to variant
+		})
+		describe('Should fail if ...', () => {
+			it('... variant attributes were not defined')
+			it('... variant attributes were not provided')
+		})
+	})
+	
 
 	describe('Get Product', () => {
 		it('Should get a product', async() => {

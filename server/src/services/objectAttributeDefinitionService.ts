@@ -15,6 +15,7 @@ class ObjectAttributeDefinitionService extends Patchable<IObjectAttributeDefinit
 		type: {
 			$set: async(objectAttributeDefinition: IObjectAttributeDefinition, action: patchAction): Promise<void> => {
 				console.log(chalk.keyword('goldenrod')('[ObjectAttributeDefinitionService.objectAttributeDefinitions.$add]'))
+				console.log('action:', action)
 				this.checkRequiredProperties(action, ['value'])
 				await this.setType(objectAttributeDefinition, action.value)
 			},
@@ -32,7 +33,7 @@ class ObjectAttributeDefinitionService extends Patchable<IObjectAttributeDefinit
 		console.log(chalk.magenta(`[ObjectAttributeDefinitionService.update]`))
 
 		await this.patch(objectAttributeDefinition, patchRequest, resources)
-		return objectAttributeDefinition
+		return objectAttributeDefinition.save()
 	}
 
 	private async setType(objectAttributeDefinition: IObjectAttributeDefinition, value: attributeType): Promise<void> {
@@ -42,7 +43,8 @@ class ObjectAttributeDefinitionService extends Patchable<IObjectAttributeDefinit
 		}
 		if (value != objectAttributeDefinition.type) {
 			objectAttributeDefinition.type = value
-			await objectTypeDefinitionService.updateObjectAttributeType((<any>objectAttributeDefinition).ownerDocument(), objectAttributeDefinition)
+			await objectAttributeDefinition.populate('objectTypeDefinition').execPopulate()
+			await objectTypeDefinitionService.updateObjectAttributeType(objectAttributeDefinition.objectTypeDefinition, objectAttributeDefinition)
 		}
 	}
 

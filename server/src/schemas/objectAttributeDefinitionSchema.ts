@@ -22,7 +22,11 @@ const objectAttributeDefinitionSchema = new Schema({
 		type: Boolean,
 		default: true,
 	},
-}, {_id: false})
+	objectTypeDefinition: {
+		type: Schema.Types.ObjectId,
+		ref: 'ObjectTypeDefinition'
+	}
+})
 
 objectAttributeDefinitionSchema.methods = {
 	setType: function (this: IObjectAttributeDefinition, type: attributeType) {

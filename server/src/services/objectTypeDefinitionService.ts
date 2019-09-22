@@ -2,7 +2,7 @@ import chalk from 'chalk'
 
 import { IObjectTypeDefinition, IObjectAttributeDefinition, IExtensibleObject, ILocaleSettings, ILocalizableAttribute, IProduct } from '../interfaces'
 import { patchRequest, Patchable, patchAction, ValidationError, InternalError } from '../utils'
-import { ObjectTypeDefinition, Product, LocalizableAttribute } from '../models'
+import { ObjectTypeDefinition, Product, LocalizableAttribute, ObjectAttributeDefinition } from '../models'
 import { Model, Document, model } from 'mongoose'
 import { attributeType } from '../types'
 import { objectAttributeDefinitionService } from '.'
@@ -18,11 +18,11 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 			$add: async(objectTypeDefinition: IObjectTypeDefinition, action: patchAction): Promise<void> => {
 				console.log(chalk.keyword('goldenrod')('[ObjectTypeDefinitionService.objectAttributeDefinitions.$add]'))
 				this.checkRequiredProperties(action, ['path', 'type'])
-				await this.addObjectAttributeDefinition(objectTypeDefinition, {
+				await this.addObjectAttributeDefinition(objectTypeDefinition, new ObjectAttributeDefinition({
 					path: action.path,
 					type: action.type,
 					localizable: action.localizable || true,
-				})
+				}))
 			},
 			$remove: async(objectTypeDefinition: IObjectTypeDefinition, action: patchAction): Promise<void> => {
 				console.log(chalk.keyword('goldenrod')('[ObjectTypeDefinitionService.objectAttributeDefinitions.$remove]'))
@@ -52,8 +52,8 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 		return ObjectTypeDefinition.findOne({objectName: objecttype}).exec()
 	}
 
-	public async getByDocument(doc: Document): Promise<IObjectTypeDefinition> {
-		return this.getById((<any>doc.constructor).modelName)
+	public async getByDocument(doc: IExtensibleObject): Promise<IObjectTypeDefinition> {
+		return doc.getObjectTypeDefinition()
 	}
 
 	public async reset(models?: Model<any>[]): Promise<void> {
@@ -99,12 +99,12 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 				const path: any = model.schema.path(pathName)
 				// add LocalizableAttributes to ObjectTypeDefinition
 				if (path.instance && path.instance && path.instance && path.instance == 'ObjectID' && path.options && path.options && path.options.ref == 'LocalizableAttribute') {
-					OTD.addObjectAttributeDefinition({
+					OTD.addObjectAttributeDefinition(new ObjectAttributeDefinition({
 						type: path.options.defaultType,
 						path: pathName,
 						system: true,
 						localizable: true,
-					})
+					}))
 				}
 			})
 			console.log('created OTD:', OTD)
@@ -120,16 +120,11 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 	// Performs actions on object of type on OAD create, update, delete
 	public async createObjectAttribute(OTD: IObjectTypeDefinition, OAD: IObjectAttributeDefinition) {
 		console.log(chalk.magenta('[ObjectTypeDefinitionService.createObjectAttribute]'))
-		// console.log('name:', OTD.objectName)
-		// console.log('m: ', m)
 		let docs: IExtensibleObject[] = <IExtensibleObject[]>(await model(OTD.objectName).find().exec())
-		// console.log("DOCS BEFORE", docs)
 		await Promise.all(docs.map(async(doc: IExtensibleObject): Promise<void> => {
 			doc.custom.set(OAD.path, (await (new LocalizableAttribute().save()))._id)
-			// doc.markModified('custom')
 			await doc.save()
 		}))
-		// console.log("DOCS AFTER", docs)
 
 	}
 	public async updateObjectAttributeType(OTD: IObjectTypeDefinition, OAD: IObjectAttributeDefinition) {
@@ -156,7 +151,7 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 	}
 
 	public async initExtensibleObject(object: IExtensibleObject) {
-		const OTD: IObjectTypeDefinition = await this.getByDocument(object)
+		const OTD: IObjectTypeDefinition = await object.getObjectTypeDefinition()
 		if (!OTD) {
 			throw new InternalError(`Object Type Definition not found for ${((<any>object.constructor).modelName)}`)
 		}
@@ -172,30 +167,26 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 		object.markModified('custom')
 	}
 
-	private async addObjectAttributeDefinition(objectTypeDefinition: IObjectTypeDefinition, config: {path: string, type: attributeType, localizable: boolean}): Promise<void> {
-		console.log(chalk.magenta(`[ObjectTypeDefinitionService.addObjectAttributeDefinition]`))
-		if (objectTypeDefinition.objectAttributeDefinitions.find(x => x.path == config.path)) {
-			throw new ValidationError(`Path ${config.path} already exists for object ${objectTypeDefinition.objectName}`)
+	private async addObjectAttributeDefinition(objectTypeDefinition: IObjectTypeDefinition, objectAttributeDefinition: IObjectAttributeDefinition): Promise<void> {
+		console.log(chalk.magenta(`[ObjectTypeDefinitionService.addObjectAttributeDefinition]`), objectTypeDefinition)
+		if (objectTypeDefinition.objectAttributeDefinitions.find(x => x.path == objectAttributeDefinition.path)) {
+			throw new ValidationError(`Path ${objectAttributeDefinition.path} already exists for object ${objectTypeDefinition.objectName}`)
 		}
-
-		let OAD: IObjectAttributeDefinition = {
-			...config,
-			system: false,
-		}
-		objectTypeDefinition.objectAttributeDefinitions.push(OAD)
-		objectTypeDefinition.markModified('objectAttributeDefinitions')
+		await objectTypeDefinition.addObjectAttributeDefinition(objectAttributeDefinition)
 		await objectTypeDefinition.save()
-		await this.createObjectAttribute(objectTypeDefinition, OAD)
+		await this.createObjectAttribute(objectTypeDefinition, objectAttributeDefinition)
 	}
 
 	private async removeObjectAttributeDefinition(objectTypeDefinition: IObjectTypeDefinition, path: string): Promise<void> {
 		console.log(chalk.magenta(`[ObjectTypeDefinitionService.removeObjectAttributeDefinition]`))
-		if (!objectTypeDefinition.objectAttributeDefinitions.find(x => x.path == path)) {
+		let objectAttributeDefinition: IObjectAttributeDefinition = objectTypeDefinition.objectAttributeDefinitions.find(x => x.path == path)
+		if (!objectAttributeDefinition) {
 			throw new ValidationError(`Path ${path} does not exist for object ${objectTypeDefinition.objectName}`)
 		}
 		await this.deleteObjectAttribute(objectTypeDefinition, objectTypeDefinition.objectAttributeDefinitions.find(x => x.path == path))
-		objectTypeDefinition.objectAttributeDefinitions = objectTypeDefinition.objectAttributeDefinitions.filter(x => x.path != path)
+		await objectTypeDefinition.removeObjectAttributeDefinition(objectAttributeDefinition)
 		objectTypeDefinition.markModified('objectAttributeDefinitions')
+		await objectTypeDefinition.save()
 	}
 }
 

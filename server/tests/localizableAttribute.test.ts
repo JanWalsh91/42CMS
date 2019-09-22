@@ -20,7 +20,7 @@ let product: any = {}
 const newPath: string = 'test'
 const newValue: string = 'my value'
 
-describe.only('Localizable Attribute', function() {
+describe('Localizable Attribute', function() {
 	before(async () => {
 		// wait for server to init async tasks
 		await app.ready
@@ -83,8 +83,6 @@ describe.only('Localizable Attribute', function() {
 			})
 			ret.status.should.eq(OK)
 			let product: IProduct = await Product.findOne({id: productData.id}).exec()
-			console.log('product', product)
-			console.log('product.custom', product.custom)
 
 			product.custom.get(newPath).should.exist
 			product.custom.get(newPath).value.get('default').should.eq(newValue)					
@@ -105,11 +103,6 @@ describe.only('Localizable Attribute', function() {
 				type: { op: '$set', value: 'number' }
 			})
 			let product: IProduct = await Product.findOne({id: productData.id}).exec()
-			console.log('product', product)
-			console.log('product.custom', product.custom)
-			console.log('product.custom.get(newPath)', product.custom.get(newPath))
-			console.log('product.custom.get(newPath).value', product.custom.get(newPath).value)
-			console.log('product.custom.get(newPath).value.get(default)', product.custom.get(newPath).value.get('default'))
 
 			expect(product.custom.get(newPath).value.get('default')).eq(null)
 			let newNum: number = 10
