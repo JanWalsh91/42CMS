@@ -21,7 +21,7 @@ let product: any = {}
 const newPath: string = 'test'
 const newValue: string = 'my value'
 
-describe.only('Localizable Attribute', function() {
+describe('Localizable Attribute', function() {
 	before(async () => {
 		// wait for server to init async tasks
 		await app.ready

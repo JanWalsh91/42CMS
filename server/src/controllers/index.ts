@@ -5,6 +5,7 @@ import { userController } from './userController'
 import { globalSettingsController } from './globalSettingsController'
 import { localeController } from './localeController'
 import { objectTypeDefinitionController } from './objectTypeDefinitionController'
+import { imageController } from './imageController'
 
 export {
 	catalogController,
@@ -14,4 +15,5 @@ export {
 	globalSettingsController,
 	localeController,
 	objectTypeDefinitionController,
+	imageController,
 }

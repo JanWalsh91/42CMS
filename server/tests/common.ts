@@ -3,11 +3,12 @@ import * as chai from 'chai'
 import chaiHttp = require('chai-http')
 chai.use(chaiHttp)
 const agent = chai.request.agent(app.app)
+import chalk from 'chalk'
+import { Model } from 'mongoose'
+import * as fs from 'fs'
 
 import { User, Catalog, Category, Product, Site, Locale, GlobalSettings, ObjectTypeDefinition, LocalizableAttribute } from '../src/models'
-import { patchAction, patchRequest } from '../src/utils';
-import chalk from 'chalk';
-import { Model } from 'mongoose';
+import { patchAction, patchRequest } from '../src/utils'
 
 export const userData = {
 	name: 'John Smith',
@@ -146,7 +147,7 @@ export const clearDataBase = async (...models: Model<any>[]) => {
 	export const updateLocale = (localeid: string, patch: patchRequest) =>
 		agent.patch(`/locales/${localeid}`).send(patch)
 
-// ===== UTILITY ===== //
+// ===== OBJECT TYPE DEFINITION ===== //
 
 	export const getObjectTypeDefinition = (objecttype: string) =>
 		agent.get(`/objecttypedefintions/${objecttype}`)
@@ -157,6 +158,13 @@ export const clearDataBase = async (...models: Model<any>[]) => {
 	export const updateObjectAttributeDefinition = (objecttype: string, path: string, patch: patchRequest) =>
 		agent.patch(`/objecttypedefintions/${objecttype}/${path}`).send(patch)
 
+// ===== IMAGES ===== //
+
+	export const uploadImage = (path: string, options: any) => 
+		agent
+			.post(`/images`)
+			.attach('image', fs.readFileSync(path))
+			// .send(options)
 
 // ===== UTILITY ===== //
 
