@@ -11,43 +11,36 @@ const localizableAttributeSchema = new Schema({
 		of: Schema.Types.Mixed,
 		required: true,
 		default: {
-			default: null
-		}
+			default: null,
+		},
 	},
 })
 
 localizableAttributeSchema.methods = {
-	getValue: async function(this: ILocalizableAttribute, code?: localeCode): Promise<string>  {
-		if (!code) {
-			code = 'default'
-		}
-		let globalSettings: IGlobalSettings = await globalSettingsService.get()
-		if (!globalSettings.locale.localeIsAvailable(code)) {
-			throw new ValidationError(`Invalid locale code: ${code}`)
-		}
-		return this.value[code]
-		// return this.values[code]
+	getValue: async function(this: ILocalizableAttribute, code: localeCode = 'default'): Promise<any>  {
+		return this.value.get(code)
 	},
-	$set: async function(this: ILocalizableAttribute, value: any, code?: localeCode): Promise<void> {
-		// console.log('setting value ', value, 'at locale', code)
-		// console.log('value BEFORE', this.value)
-		if (!code) {
-			code = 'default'
-		}
-		// console.log('code:', code)
-		let globalSettings: IGlobalSettings = await globalSettingsService.get()
-		if (!globalSettings.locale.localeIsAvailable(code)) {
-			throw new ValidationError(`Invalid locale code: ${code}`)
-		}
-		// this.value[code] = value
+	$set: async function(this: ILocalizableAttribute, value: any, code: localeCode = 'default'): Promise<void> {
 		this.value.set(code, value)
-		// console.log('value AFTER', this.value)
+		this.markModified('value')
 	},
-	$add: async function(this: ILocalizableAttribute, value: any, code?: localeCode): Promise<void> {
+	$add: async function(this: ILocalizableAttribute, value: any, code: localeCode = 'default'): Promise<void> {
 		console.log('add to value [' + value + '] at locale', code)
+		if (!Array.isArray(this.value.get(code))) {
+			this.value.set(code, [value])
+		} else {
+			this.value.get(code).push(value)
+		}
+		this.markModified('value')
 	},
-	$remove: async function(this: ILocalizableAttribute, value: any, code?: localeCode): Promise<void> {
+	$remove: async function(this: ILocalizableAttribute, value: any, code: localeCode = 'default'): Promise<void> {
 		console.log('remove from value [' + value + '] at locale', code)
+		if (!Array.isArray(this.value.get(code))) {
+			this.value.set(code, [])
+		} else {
+			this.value.set(code, this.value.get(code).filter(x => x != value))
+		}
+		this.markModified('value')
 	},
 }
 

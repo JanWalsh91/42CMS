@@ -3,13 +3,14 @@ chai.should()
 const expect = require('chai').expect
 import chalk from 'chalk'
 
-import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct, getProduct, logout, login, getAllProducts, deleteProduct, updateObjectAttributeDefinition, updateObjectTypeDefinition  } from './common'
+import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct, getProduct, logout, login, getAllProducts, deleteProduct, updateObjectAttributeDefinition, updateObjectTypeDefinition, updateGlobalSettings  } from './common'
 
 import { User, Category, Catalog, Product, ObjectTypeDefinition, LocalizableAttribute } from '../src/models'
 import { IUser, IProduct, ICatalog, ICategory, ILocalizableAttribute } from '../src/interfaces'
 import app from '../src/app'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 import { localeCode } from '../src/types'
+import { patchOperation } from '../src/utils';
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes 
 
 let ret: any;
@@ -20,7 +21,7 @@ let product: any = {}
 const newPath: string = 'test'
 const newValue: string = 'my value'
 
-describe('Localizable Attribute', function() {
+describe.only('Localizable Attribute', function() {
 	before(async () => {
 		// wait for server to init async tasks
 		await app.ready
@@ -36,9 +37,16 @@ describe('Localizable Attribute', function() {
 		ret = await createCategory(catalogData.id, categoryData.id)
 		category = ret.body
 	})
-
+	
 	beforeEach(async function() {
 		await clearDataBase(Product, ObjectTypeDefinition, LocalizableAttribute)
+		// Set locale as available
+		ret = await updateGlobalSettings({
+			locale: [
+				{ op: '$add', value: 'fr_FR' },
+				{ op: '$add', value: 'fr' }
+			]
+		})
 		// wait for server to init async tasks
 		await app.ready
 	})
@@ -69,7 +77,66 @@ describe('Localizable Attribute', function() {
 			// New attribute should exist on product
 			product.custom.get(newPath).should.exist
 		})
+
 	})
+
+	const testParams: {path: string, type: string, value: any, badValue: any | any[], op: patchOperation }[] = [
+		{ path: 'test1', type: 'string', value: 'my value', badValue: 10, op: '$set' },
+		{ path: 'test2', type: 'number', value: 20, badValue: 'test', op: '$set' },
+		{ path: 'test3', type: 'boolean', value: true, badValue: 'string', op: '$set' },
+		{ path: 'test4', type: 'html', value: '<div>Hello</div>', badValue: false , op: '$set' },
+		{ path: 'test5', type: 'date', value: (new Date()).toISOString(), badValue: 'this is not a date', op: '$set' },
+		{ path: 'test6', type: 'string[]', value: 'my value', badValue: 10, op: '$add' },
+		{ path: 'test6', type: 'string[]', value: ['testing'], badValue: [10, 20, 30], op: '$set' },
+	]
+
+	describe('Attribute Types', () => {
+		for (let params of testParams) {
+			it(`Type: ${params.type}`, async () => {
+				console.log(chalk.cyan(`=== [${params.type}] Create OTD ===`))
+				ret = await updateObjectTypeDefinition('Product', { objectAttributeDefinitions: { op: '$add', type: params.type, path: params.path } })
+				ret.status.should.eq(OK)
+
+				console.log(chalk.cyan(`=== [${params.type}] Create Product ===`))
+				ret = await createProduct(catalogData.id, productData.id)
+				ret.status.should.eq(OK)
+
+				console.log(chalk.cyan(`=== [${params.type}] Assign Value ===`))
+				ret = await updateProduct(productData.id, { [params.path]: { op: params.op, value: params.value } })
+				ret.status.should.eq(OK)
+				let product: IProduct = await Product.findOne({id: productData.id}).exec()
+				product.custom.get(params.path).should.exist
+				if (params.type.includes('[]')) {
+					expect(product.custom.get(params.path).value.get('default').find(x => x == params.value)).to.exist					
+				} else {
+					product.custom.get(params.path).value.get('default').should.eq(params.value)
+				}
+
+				console.log(chalk.cyan(`=== [${params.type}] Assign Value To Locale ===`))
+				const locale: localeCode = 'fr_FR'
+				ret = await updateProduct(productData.id, { [params.path]: { op: params.op, value: params.value, locale } })
+				product = await Product.findOne({id: productData.id}).exec()
+				product.custom.get(params.path).should.exist
+				if (params.type.includes('[]')) {
+					expect(product.custom.get(params.path).value.get(locale).find(x => x == params.value)).to.exist					
+				} else {
+					product.custom.get(params.path).value.get(locale).should.eq(params.value)
+				}
+
+				console.log(chalk.cyan(`=== [${params.type}] Assign Invalid Value To Locale ===`))
+				ret = await updateProduct(productData.id, { [params.path]: { op: params.op, value: params.badValue } })
+				ret.status.should.not.eq(OK)
+				product = await Product.findOne({id: productData.id}).exec()
+				product.custom.get(params.path).should.exist
+				if (params.type.includes('[]')) {
+					expect(product.custom.get(params.path).value.get('default').find(x => x == params.badValue)).to.not.exist					
+				} else {
+					product.custom.get(params.path).value.get('default').should.not.eq(params.badValue)
+				}
+			})
+		}
+	})
+
 	describe('$set Custom Attributes', () => {
 		it('Should update a custom attribute', async() => {
 			ret = await createProduct(catalogData.id, productData.id)
@@ -134,8 +201,7 @@ describe('Localizable Attribute', function() {
 			expect(product.custom.get(newPath)).eq(undefined)
 		})
 	})
-
-	describe('Delete custom object', () => {
+	describe('Delete Extensible Object', () => {
 		it('Should delete attribute when product is deleted', async() => {
 			// create product
 			ret = await createProduct(catalogData.id, productData.id)
@@ -148,7 +214,6 @@ describe('Localizable Attribute', function() {
 			// save attribute _id
 			ret = await getProduct(productData.id)
 			let attributeId: string = ret.body.custom.test._id
-			console.log('attribiute id:', attributeId)
 			// delete product
 			ret = await deleteProduct(productData.id)
 			// get attribute

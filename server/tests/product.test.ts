@@ -145,7 +145,7 @@ describe('Product', function() {
 	})
 
 	describe('Variant Product', () => {
-		it.only('Should create a variant product', async() => {
+		it('Should create a variant product', async() => {
 			ret = await createProduct(catalogData.id, masterId, {type : 'master'})
 			ret = await updateObjectTypeDefinition('Product', {
 				objectAttributeDefinitions: {

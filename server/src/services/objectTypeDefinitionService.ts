@@ -17,6 +17,7 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 		objectAttributeDefinitions: {
 			$add: async(objectTypeDefinition: IObjectTypeDefinition, action: patchAction): Promise<void> => {
 				console.log(chalk.keyword('goldenrod')('[ObjectTypeDefinitionService.objectAttributeDefinitions.$add]'))
+				console.log(action)
 				this.checkRequiredProperties(action, ['path', 'type'])
 				await this.addObjectAttributeDefinition(objectTypeDefinition, new ObjectAttributeDefinition({
 					path: action.path,
@@ -48,7 +49,6 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 	}
 
 	public async getById(objecttype: string): Promise<IObjectTypeDefinition> {
-		console.log(chalk.magenta('get by ID ' + objecttype))
 		return ObjectTypeDefinition.findOne({objectName: objecttype}).exec()
 	}
 

@@ -1,38 +1,12 @@
-import { Types } from "mongoose";
+import x from './server/src/resources/attributeTypes'
 
-type attributeType = 'string' | 'number' | 'boolean'
+console.log(x)
 
-export interface IAttribute {
-	
-	localized: boolean
-	type: attributeType
-	value: any
 
-	isLocalized: () => boolean
-	getType: () => attributeType
 
-	getValue: () => any
-	setValue: (value: any) => void 
-}
 
-function isBaseValue (value: any) {
 
-}
 
-class Attribute implements IAttribute {
-	localized: boolean
-	type: attributeType
-	value: any
 
-	isLocalized = () => this.localized
-	getType = () => this.type
 
-	getValue = (locale?: string) => {
-		if (this.isLocalized) {
-
-		} else {
-
-		}
-	}
-	setValue: (value: any) => void 
-}
+const avatar: string = req.file ? req.file.path : undefined;

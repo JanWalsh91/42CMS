@@ -1,5 +1,7 @@
-import { ILocalizableAttribute } from "../interfaces";
-import { Document } from "mongoose";
+import { Document } from 'mongoose'
+
+import { ILocalizableAttribute } from '../interfaces'
+import attributeTypes from '../resources/attributeTypes'
 
 export type jsonLocale = {
 	id: string,
@@ -23,9 +25,15 @@ export type localeCode =
 
 export type attributeType = 
 	'string'	|
+	'html'		|
 	'number'	|
+	'boolean'	|
+	'date'		|
 	'string[]'	|
-	'number[]'
+	'html[]'	|
+	'number[]'	|
+	'boolean[]'	|
+	'date[]'	
 
 export type productType = 
 	'basic' 	|

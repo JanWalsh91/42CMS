@@ -3,8 +3,8 @@ import chalk from 'chalk'
 import { IObjectTypeDefinition, IGlobalSettings, IObjectAttributeDefinition, ILocalizableAttribute, IExtensibleObject } from '../interfaces'
 import { patchRequest, ValidationError, patchAction, InternalError } from '../utils'
 import { globalSettingsService, objectTypeDefinitionService } from '.'
-import { localeCode } from '../types'
-import { Document } from 'mongoose'
+import { localeCode, attributeType } from '../types'
+import attributeTypes from '../resources/attributeTypes'
 
 class LocalizableAttributeService {
 	
@@ -14,30 +14,15 @@ class LocalizableAttributeService {
 		console.log('OAD:', OAD)
 		console.log('patchAction:', patchAction)
 
-		if (!isValidTypeAndAction(OAD.type, patchAction.op)) {
-			throw new ValidationError(`Invalid action [${patchAction.op}] for type [${OAD.type}]`)
-		}
+		let locale = patchAction.locale ? patchAction.locale : 'default'
 
-		let locale = patchAction.locale ? patchAction.locale : undefined
+		await this.validateAction(OAD.type, patchAction.op)
+		await this.validateLocale(locale)
+		await this.validateValue(OAD.type, patchAction.value)
 
-		switch (OAD.type) {
-			case 'string':
-				await attribute[patchAction.op](String(patchAction.value), locale)
-				break 
-			case 'number':
-				await attribute[patchAction.op](Number(patchAction.value), locale)
-				break 
-		}
-		attribute.markModified('value')
+		await attribute[patchAction.op](patchAction.value, locale)
+
 		await attribute.save()
-	}
-
-	// TODO: unused
-	private async validateValid(code: localeCode): Promise<void> {
-		let globalSettings: IGlobalSettings = await globalSettingsService.get()
-		if (!globalSettings.locale.localeIsAvailable(code)) {
-			throw new ValidationError(`Invalid locale code: ${code}`)
-		}
 	}
 
 	public async deleteAttributesFromExtensibleObject(obj: IExtensibleObject) : Promise<void> {
@@ -57,15 +42,57 @@ class LocalizableAttributeService {
 			}
 		}))
 	}
+
+	private async validateLocale(code: localeCode): Promise<void> {
+		const globalSettings: IGlobalSettings = await globalSettingsService.get()
+		if (!globalSettings.locale.localeIsAvailable(code)) {
+			throw new ValidationError(`Invalid locale code: ${code}`)
+		}
+	}
+
+	private async validateValue(type: attributeType, value: any): Promise<void> {
+		const validate: Record<string, (x: any) => boolean> = {
+			'string' : (x: any) => typeof x == 'string',
+			'number' : (x: any) => typeof x == 'number',
+			'boolean': (x: any) => typeof x == 'boolean',
+			'html'   : (x: any) => typeof x == 'string',
+			'date'   : (x: any) => !isNaN(<any>(new Date(x))),
+		}
+
+		let baseType: attributeType = type.includes('[]') ? type.split('[]')[0] as attributeType : type
+		
+		if (Array.isArray(value)) {
+			if (this.typeIsArray(type)) {
+				for (let val of value) {
+					if (!validate[baseType](val)) {
+						throw new ValidationError(`Invalid value [${val}] for type [${type}]`)
+					}
+				}		
+			} else {
+				throw new ValidationError(`Invalid value [${value}] for type [${type}]`)
+			}
+		} else {
+			if (!validate[baseType](value)) {
+				throw new ValidationError(`Invalid value [${value}] for type [${type}]`)
+			}
+		}
+	}
+
+	private async validateAction(type, action): Promise<void> {
+		if (this.typeIsArray(type)) {
+			if (!['$set','$add', '$remove'].includes(action)) {
+				throw new ValidationError(`Invalid action [${action}] for type [${type}]`)
+			}
+		} else {
+			if (!['$set'].includes(action)) {
+				throw new ValidationError(`Invalid action [${action}] for type [${type}]`)
+			}
+		}
+	}
+
+	private typeIsArray(type: attributeType): boolean {
+		return type.includes('[]')
+	}
 }
 
 export const localizableAttributeService: LocalizableAttributeService = new LocalizableAttributeService()
-
-const actionsByType = {
-	'string': ['$set'],
-	'number': ['$set'],
-	'string[]': ['$add', '$remove'],
-	'number[]': ['$add', '$remove'],
-}
-
-const isValidTypeAndAction = (type, action) => actionsByType.hasOwnProperty(type) && actionsByType[type].includes(action)

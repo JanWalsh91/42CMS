@@ -1,9 +1,0 @@
-{
-	"Product": {
-		"color": {
-			"type": "string",
-			"system": true,
-			"localizable": "true"
-		}
-	}
-}

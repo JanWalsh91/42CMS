@@ -17,9 +17,9 @@ import {
 	patchRequest,
 } from './Patchable'
 
-import { uuid } from './uuid'
-
 import ResponseStatusTypes from './ResponseStatusTypes'
+
+import { uuid } from './uuid'
 
 
 export {

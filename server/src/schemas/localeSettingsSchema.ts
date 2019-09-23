@@ -2,17 +2,14 @@ import { Schema } from 'mongoose'
 import chalk from 'chalk'
 
 import { ILocale, ILocaleSettings } from '../interfaces'
-import { Locale } from '../models'
-import { jsonLocale } from '../types'
 import { ValidationError } from '../utils';
 import { localeService } from '../services';
-
-// const locales: { default: jsonLocale[], all: jsonLocale[] } = require('../resources/locales.json')
 
 const localeSettingsSchema = new Schema({
 	availableLocales: [{
 		type: Schema.Types.ObjectId,
 		ref: 'Locale',
+		autopopulate: true,
 	}]
 })
 
@@ -33,15 +30,12 @@ localeSettingsSchema.methods = {
 		return this.availableLocales.some(x => x.id == id)
 	},
 	addAvailableLocale: async function (this: ILocaleSettings, locale: ILocale): Promise<void> {
-		console.log(chalk.magenta(`[localeSettingsSchema.addLocale] ${locale.id}`))
-		// await this.populate('availableLocales').execPopulate()
+		// console.log(chalk.magenta(`[localeSettingsSchema.addLocale] ${locale.id}`))
 		this.availableLocales.push(locale)
 	},
 	removeAvailableLocale: async function (this: ILocaleSettings, locale: ILocale): Promise<void> {
-		console.log(chalk.magenta(`[localeSettingsSchema.removeLocale] ${locale.id}`))
-		// await this.populate({path: 'availableLocales', populate: {path: 'fallback'}}).execPopulate()
+		// console.log(chalk.magenta(`[localeSettingsSchema.removeLocale] ${locale.id}`))
 		if (this.availableLocales.some(x => x.fallback && x.fallback.id == locale.id )) {
-			console.log(chalk.red('Cannot remove locale it is being used as a fallback'))
 			throw new ValidationError('Cannot remove locale it is being used as a fallback')
 		}
 		this.availableLocales = this.availableLocales.filter(x => x.id != locale.id)
