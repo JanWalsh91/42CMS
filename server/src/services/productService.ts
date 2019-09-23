@@ -4,7 +4,7 @@ import { Product, Catalog, Category, ProductMaster, ProductVariant } from '../mo
 import { IProduct, ICatalog, ICategory, IGlobalSettings, IProductVariant, IObjectTypeDefinition, IObjectAttributeDefinition, IProductMaster } from '../interfaces'
 import { ResourceNotFoundError, ValidationError, patchRequest, Patchable, patchAction, NotImplementedError } from '../utils';
 import { catalogService, categoryService, globalSettingsService, objectTypeDefinitionService, localizableAttributeService } from '.';
-import { isMasterProduct } from '../typeguards';
+import { isMasterProduct, isVariantProduct } from '../typeguards';
 
 class ProductService extends Patchable<IProduct> {
 	hasObjectTypeDefinition = true
@@ -231,6 +231,7 @@ class ProductService extends Patchable<IProduct> {
 		if (!options.type) {
 			options.type = 'basic'
 		}
+
 		// Create new Product
 		let product: IProduct;
 		switch (options.type) {
@@ -279,6 +280,8 @@ class ProductService extends Patchable<IProduct> {
 							})
 						}
 					}))
+					await masterProduct.addVariant(product as IProductVariant)
+					await masterProduct.save()
 				} else {
 					throw new ValidationError(`${<any>variantOptions.masterProduct} is not a master product`)
 				}
@@ -345,15 +348,30 @@ class ProductService extends Patchable<IProduct> {
 		promises.push(...categories.map((category: ICategory) => category.removeProduct(product)))
 		// Delete LocalizableAttributes
 		promises.push(localizableAttributeService.deleteAttributesFromExtensibleObject(product))
-
+		// If product Variant, remove from list of master
+		if (isVariantProduct(product)) {
+			await product.populate({path: 'masterProduct', populate: {path: 'variantProducts'}}).execPopulate()
+			await product.masterProduct.removeVariant(product)
+			await product.masterProduct.save()
+		}
+		
 		await Promise.all(promises)
-
+		
+		// If product Master, delete all variants
+		if (isMasterProduct(product)) {
+			await product.populate('variantProducts').execPopulate()
+			await product.variantProducts.reduce((_: Promise<void>, v: IProductVariant): Promise<void> => {
+				return _.then(async() => this.delete(v))
+			}, Promise.resolve())
+		}
+		
 		await Promise.all([
 			...[
 				...categories,
 				...product.assignedCatalogs
 			].map(x => x.save()),
 		])
+
 
 		// Delete Product
 		await Product.findOneAndDelete({id: product.id})

@@ -1,5 +1,5 @@
 import { Schema } from 'mongoose'
-import { IProductMaster, IObjectAttributeDefinition } from '../interfaces';
+import { IProductMaster, IObjectAttributeDefinition, IProductVariant } from '../interfaces';
 import chalk from 'chalk';
 import { ValidationError } from '../utils';
 
@@ -11,7 +11,7 @@ const productMasterSchema = new Schema({
 	},
 	variantProducts: [{
 		type: Schema.Types.ObjectId,
-		ref: 'VariantProduct',
+		ref: 'ProductVariant',
 	}],
 	variationAttributes: [{
 		type: Schema.Types.ObjectId,
@@ -43,6 +43,26 @@ productMasterSchema.methods = {
 			throw new ValidationError(`Attribute ${OAD.path} does not exist on this product`)
 		}
 	},
+	addVariant: async function(this: IProductMaster, variant: IProductVariant): Promise<void> {
+		console.log(chalk.magenta(`[MasterProductModel.addVariant]`))
+		await this.populate('variantProducts').execPopulate()
+		if (this.variantProducts.find(x => x.id == variant.id)) {
+			throw new ValidationError(`Variant ${variant.id} already in master product variant list`)
+		} else {
+			this.variantProducts.push(variant)
+			this.markModified('variantProducts')
+		}
+	},
+	removeVariant: async function(this: IProductMaster, variant: IProductVariant): Promise<void> {
+		console.log(chalk.magenta(`[MasterProductModel.removeVariant]`))
+		await this.populate('variantProducts').execPopulate()
+		if (this.variantProducts.find(x => x.id == variant.id)) {
+			this.variantProducts = this.variantProducts.filter(x => x.id != variant.id)
+			this.markModified('variantProducts')
+		} else {
+			throw new ValidationError(`Variant ${variant.id} not in master product variant list`)
+		}
+	}
 }
 
 productMasterSchema.plugin(require('mongoose-autopopulate'))

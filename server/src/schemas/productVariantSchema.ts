@@ -4,7 +4,7 @@ import { IProductVariant, IObjectAttributeDefinition, IObjectTypeDefinition } fr
 const productVariantSchema = new Schema({
 	masterProduct: {
 		type: Schema.Types.ObjectId,
-		ref: 'MasterProduct',
+		ref: 'ProductMaster',
 		required: true,
 	},
 	type: {

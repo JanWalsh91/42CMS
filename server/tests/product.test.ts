@@ -10,6 +10,7 @@ import { IUser, IProduct, ICatalog, ICategory, IProductMaster } from '../src/int
 import app from '../src/app'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 import { localeCode } from '../src/types';
+import { isVariantProduct } from '../src/typeguards';
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes 
 
 let ret: any;
@@ -162,9 +163,17 @@ describe('Product', function() {
 				masterProduct: masterId,
 			})
 			expect(ret.status).eq(OK)
+			const product: IProduct = await Product.findOne({id: variantId1}).populate('masterProduct')
 			// Should be of type variant
-			// Should have ref to master
-			// Master should have ref to variant
+			product.type.should.eq('variant')
+			if (isVariantProduct(product)) {
+				product.custom.get(variationAttributePath).value.get('default').should.eq(30)
+				// Should have ref to master
+				expect(product.masterProduct).to.exist
+				// Master should have ref to variant
+				const master: IProductMaster = (await Product.findOne({id: masterId}).populate('variantProducts').exec()) as IProductMaster
+				expect(master.variantProducts.find(x => x.id == variantId1)).to.exist
+			}
 		})
 		describe('Should fail if ...', () => {
 			it('... variant attributes were not defined')
