@@ -4,8 +4,9 @@ import * as fs from 'fs'
 import * as path from 'path'
 import chalk from 'chalk'
 
-import { ServerError, ValidationError } from '../utils'
+import { ServerError, ValidationError, NotImplementedError, ResourceNotFoundError } from '../utils'
 import { imageService } from '../services/imageService'
+import { IImage } from '../interfaces';
 
 
 const imageFieldName: string = 'image'
@@ -54,19 +55,38 @@ export const imageController = {
 
 	async get(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[ImageController] get'))
+		throw new NotImplementedError()
 	},
 
 	async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[ImageController] getAll'))
+		throw new NotImplementedError()
 	},
 
 	async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[ImageController] delete'))
+		try {
+			await imageService.delete(res.locals.image)
+			res.end()
+		} catch (e) { next(e) }
 	},
 
 	async uploadImage(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[ImageController] upload image'))
 		await uploadImage(req, res, next)
 		console.log(chalk.magenta('[ImageController] upload image __END'))
-	}
+	},
+
+	async setImageFromParams(req: Request, res: Response, next: NextFunction): Promise<void> {
+		console.log(chalk.magenta('[ImageController.setImageFromParams]'))
+		if (!req.params.imageid) {
+			return next(new ValidationError('Image id not provided'))
+		}
+		const image: IImage = await imageService.getById(req.params.imageid)
+		if (!image) {
+			return next(new ResourceNotFoundError('Image', req.params.imageid))
+		}
+		res.locals.image = image
+		next()
+	},
 }

@@ -179,6 +179,9 @@ export const removeImages = async () => {
 			.field('id', id)
 			.attach('image', fs.readFileSync(path), path)
 
+	export const deleteImage = (imageid: string) =>
+		agent.delete(`/images/${imageid}`)
+
 // ===== UTILITY ===== //
 
 	export const printret = ret => {

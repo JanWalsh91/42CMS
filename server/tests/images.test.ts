@@ -8,7 +8,7 @@ import app from '../src/app'
 import { Locale, Image } from '../src/models'
 import { jsonLocale } from '../src/types'
 import { ILocale, IImage } from '../src/interfaces';
-import { clearDataBase, uploadImage, printret, createUser, userData, removeImages } from './common'
+import { clearDataBase, uploadImage, printret, createUser, userData, removeImages, deleteImage } from './common'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes
@@ -38,12 +38,20 @@ describe('Image', () => {
 		await app.ready
 	})
 	describe('Create', () => {
-		it.only('Should upload and create an image', async() => {
+		it('Should upload and create an image', async() => {
 			ret = await uploadImage(placeholderImages[0], imageId)
-			printret(ret)
 			ret.status.should.eq(OK)
 			let image: IImage = await Image.findOne({id: imageId})
 			expect(image.id).to.eq(imageId)
+		})
+	})
+	describe('Delete', () => {
+		it.only('Should delete an image', async() => {
+			ret = await uploadImage(placeholderImages[0], imageId)
+			ret = await deleteImage(imageId)
+			ret.status.should.eq(OK)
+			let image: IImage = await Image.findOne({id: imageId})
+			expect(image).to.not.exist			
 		})
 	})
 })

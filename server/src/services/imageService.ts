@@ -1,4 +1,6 @@
 import chalk from 'chalk'
+import * as path from 'path'
+import * as fs from 'fs'
 
 import { ResourceNotFoundError, NotImplementedError, ValidationError, Patchable, patchAction, patchRequest } from '../utils'
 import { IImage } from '../interfaces'
@@ -38,6 +40,7 @@ class ImageService extends Patchable<IImage> {
 
 	public async delete(image: IImage): Promise<void> {
 		console.log(chalk.blue('[imageService.delete]'))
+		fs.unlinkSync(path.join(__dirname, image.path))
 		await image.remove()
 	}
 	
