@@ -5,9 +5,9 @@ import chalk from 'chalk'
 import * as path from 'path'
 
 import app from '../src/app'
-import { Locale } from '../src/models'
+import { Locale, Image } from '../src/models'
 import { jsonLocale } from '../src/types'
-import { ILocale } from '../src/interfaces';
+import { ILocale, IImage } from '../src/interfaces';
 import { clearDataBase, uploadImage, printret, createUser, userData, removeImages } from './common'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 
@@ -32,15 +32,18 @@ describe('Image', () => {
 		// Create user
 		await createUser(userData)
 	})
-
 	beforeEach(async () => {
 		await removeImages()
+		await clearDataBase(Image)
+		await app.ready
 	})
 	describe('Create', () => {
 		it.only('Should upload and create an image', async() => {
 			ret = await uploadImage(placeholderImages[0], imageId)
 			printret(ret)
 			ret.status.should.eq(OK)
+			let image: IImage = await Image.findOne({id: imageId})
+			expect(image.id).to.eq(imageId)
 		})
 	})
 })

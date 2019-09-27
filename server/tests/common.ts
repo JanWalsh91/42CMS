@@ -8,7 +8,7 @@ import { Model } from 'mongoose'
 import * as fs from 'fs'
 import * as path from 'path'
 
-import { User, Catalog, Category, Product, Site, Locale, GlobalSettings, ObjectTypeDefinition, LocalizableAttribute } from '../src/models'
+import { User, Catalog, Category, Product, Site, Locale, GlobalSettings, ObjectTypeDefinition, LocalizableAttribute, Image } from '../src/models'
 import { patchAction, patchRequest } from '../src/utils'
 
 export const userData = {
@@ -45,6 +45,7 @@ export const clearDataBase = async (...models: Model<any>[]) => {
 			GlobalSettings,
 			ObjectTypeDefinition,
 			LocalizableAttribute,
+			Image,
 		]
 	}
 	await Promise.all(models.map(model => model.deleteMany({})))
@@ -54,13 +55,14 @@ export const clearDataBase = async (...models: Model<any>[]) => {
 }
 
 const imgFolder: string = path.join(__dirname, '../images/')
+// const tmpImgFolder: string = path.join(__dirname, '../tmp_uploads/')
 
 export const removeImages = async () => {
 	console.log('Remove images')
-	fs.readdirSync(imgFolder).forEach(file => {
-		console.log(file)
-	})
-	process.exit()
+	for (let file of fs.readdirSync(imgFolder)) {
+		console.log(`delete image [${file}]`)
+		fs.unlinkSync(path.join(imgFolder, file))
+	}
 }
 
 // ===== USERS ===== //
