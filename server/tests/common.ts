@@ -6,6 +6,7 @@ const agent = chai.request.agent(app.app)
 import chalk from 'chalk'
 import { Model } from 'mongoose'
 import * as fs from 'fs'
+import * as path from 'path'
 
 import { User, Catalog, Category, Product, Site, Locale, GlobalSettings, ObjectTypeDefinition, LocalizableAttribute } from '../src/models'
 import { patchAction, patchRequest } from '../src/utils'
@@ -50,6 +51,16 @@ export const clearDataBase = async (...models: Model<any>[]) => {
 	if (models.some(model => ['GlobalSettings', 'Locale', 'ObjectTypeDefinition'].includes(model.modelName))) {
 		await app.init()
 	}
+}
+
+const imgFolder: string = path.join(__dirname, '../images/')
+
+export const removeImages = async () => {
+	console.log('Remove images')
+	fs.readdirSync(imgFolder).forEach(file => {
+		console.log(file)
+	})
+	process.exit()
 }
 
 // ===== USERS ===== //
@@ -160,11 +171,11 @@ export const clearDataBase = async (...models: Model<any>[]) => {
 
 // ===== IMAGES ===== //
 
-	export const uploadImage = (path: string, options: any) => 
+	export const uploadImage = (path: string, id: string) => 
 		agent
 			.post(`/images`)
-			.attach('image', fs.readFileSync(path))
-			// .send(options)
+			.field('id', id)
+			.attach('image', fs.readFileSync(path), path)
 
 // ===== UTILITY ===== //
 

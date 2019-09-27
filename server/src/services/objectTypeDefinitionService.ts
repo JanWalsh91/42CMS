@@ -2,7 +2,7 @@ import chalk from 'chalk'
 
 import { IObjectTypeDefinition, IObjectAttributeDefinition, IExtensibleObject, ILocaleSettings, ILocalizableAttribute, IProduct } from '../interfaces'
 import { patchRequest, Patchable, patchAction, ValidationError, InternalError } from '../utils'
-import { ObjectTypeDefinition, Product, LocalizableAttribute, ObjectAttributeDefinition } from '../models'
+import { ObjectTypeDefinition, Product, LocalizableAttribute, ObjectAttributeDefinition, Image } from '../models'
 import { Model, Document, model } from 'mongoose'
 import { attributeType } from '../types'
 import { objectAttributeDefinitionService } from '.'
@@ -33,7 +33,7 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 		}
 	}
 
-	static defaultModels: Model<any>[] = [ Product ]
+	static defaultModels: Model<any>[] = [ Product, Image ]
 
 	public async update(objectTypeDefinition: IObjectTypeDefinition, patchRequest: patchRequest, resources: any): Promise<IObjectTypeDefinition> {
 		console.log(chalk.magenta(`[ObjectTypeDefinitionService.update]`))
@@ -79,7 +79,7 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 		}
 
 		await Promise.all(models.map(async (model: Model<any>) => {
-
+			
 			// only create if doesn't exist
 			if (await ObjectTypeDefinition.findOne({objectName: model.modelName})) {
 				return 	

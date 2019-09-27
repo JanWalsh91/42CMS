@@ -11,6 +11,7 @@ import { localeSettingsSchema } from './localeSettingsSchema'
 import { globalSettingsSchema } from './globalSettingsSchema'
 import { objectAttributeDefinitionSchema  } from './objectAttributeDefinitionSchema'
 import { objectTypeDefinitionSchema  } from './objectTypeDefinitionSchema'
+import { imageSchema  } from './imageSchema'
 
 export {
 	localizableAttributeSchema,
@@ -26,4 +27,5 @@ export {
 	localeSchema,
 	objectTypeDefinitionSchema,
 	objectAttributeDefinitionSchema,
+	imageSchema,
 }

@@ -7,7 +7,7 @@ import { IObjectAttributeDefinition } from '.'
 
 export interface IObjectTypeDefinition extends Document {
 	objectAttributeDefinitions: IObjectAttributeDefinition[]	
-	objectName: 'Product'
+	objectName: 'Product' | 'Image'
 
 	addObjectAttributeDefinition: (OAD: IObjectAttributeDefinition) => Promise<void>
 	removeObjectAttributeDefinition: (OAD: IObjectAttributeDefinition) => Promise<void>

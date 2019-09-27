@@ -1,11 +1,10 @@
 import { Schema } from 'mongoose'
-import { objectAttributeDefinitionSchema } from '.';
-import { IObjectTypeDefinition, IObjectAttributeDefinition } from '../interfaces';
+import { IObjectTypeDefinition, IObjectAttributeDefinition } from '../interfaces'
 
 const objectTypeDefinitionSchema = new Schema({
 	objectName: {
 		type: String,
-		validate: (x) => ['Product'].includes(x),
+		validate: (x) => ['Product', 'Image'].includes(x),
 		unique: true,
 	},
 	objectAttributeDefinitions: {

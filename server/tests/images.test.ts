@@ -8,7 +8,7 @@ import app from '../src/app'
 import { Locale } from '../src/models'
 import { jsonLocale } from '../src/types'
 import { ILocale } from '../src/interfaces';
-import { clearDataBase, uploadImage, printret, createUser, userData } from './common'
+import { clearDataBase, uploadImage, printret, createUser, userData, removeImages } from './common'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes
@@ -21,6 +21,7 @@ const placeholderImages: string[] = [
 ].map(img => `${folderPath}/${img}`)
 
 let ret: any;
+let imageId = 'img1'
 
 describe('Image', () => {
 	before(async () => {
@@ -29,11 +30,15 @@ describe('Image', () => {
 		await clearDataBase()
 		await app.ready
 		// Create user
-		await createUser(userData)		
+		await createUser(userData)
+	})
+
+	beforeEach(async () => {
+		await removeImages()
 	})
 	describe('Create', () => {
 		it.only('Should upload and create an image', async() => {
-			ret = await uploadImage(placeholderImages[0], {})
+			ret = await uploadImage(placeholderImages[0], imageId)
 			printret(ret)
 			ret.status.should.eq(OK)
 		})

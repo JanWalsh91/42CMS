@@ -67,3 +67,5 @@ package-lock.json
 Coverage
 
 dist
+
+tmp_uploads/

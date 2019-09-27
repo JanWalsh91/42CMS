@@ -8,6 +8,7 @@ import { GlobalSettings } from './globalSettingsModel'
 import { Locale } from './localeModel'
 import { ObjectTypeDefinition } from './objectTypeDefinitionModel'
 import { ObjectAttributeDefinition } from './objectAttributeDefinitionModel'
+import { Image } from './imageModel'
 
 export {
 	LocalizableAttribute,
@@ -22,4 +23,5 @@ export {
 	Locale,
 	ObjectTypeDefinition,
 	ObjectAttributeDefinition,
+	Image,
 }

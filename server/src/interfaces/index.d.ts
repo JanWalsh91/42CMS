@@ -12,6 +12,7 @@ import { ILocalizableAttribute } from './ILocalizableAttribute'
 import { IObjectTypeDefinition } from './IObjectTypeDefinition'
 import { IObjectAttributeDefinition } from './IObjectAttributeDefinition'
 import { IExtensibleObject } from './IExtensibleObject'
+import { IImage } from './IImage'
 
 export {
 	IExtensibleObject,
@@ -28,6 +29,7 @@ export {
 	ILocalizableAttribute,
 	IObjectTypeDefinition,
 	IObjectAttributeDefinition,
+	IImage,
 }
 
 import { Document } from 'mongoose'
