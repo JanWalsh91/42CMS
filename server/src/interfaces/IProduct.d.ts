@@ -8,7 +8,7 @@ export interface IProduct extends IExtensibleObject {
 	id: string
 	type: productType
 
-	name: ILocalizableAttribute['_id']
+	name: ILocalizableAttribute
 	description: ILocalizableAttribute
 
 	masterCatalog: ICatalog['_id'] | ICatalog

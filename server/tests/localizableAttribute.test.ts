@@ -3,7 +3,7 @@ chai.should()
 const expect = require('chai').expect
 import chalk from 'chalk'
 
-import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct, getProduct, logout, login, getAllProducts, deleteProduct, updateObjectAttributeDefinition, updateObjectTypeDefinition, updateGlobalSettings, placeholderImages, uploadImage  } from './common'
+import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct, getProduct, logout, login, getAllProducts, deleteProduct, updateObjectAttributeDefinition, updateObjectTypeDefinition, updateGlobalSettings, placeholderImages, uploadImage, deleteImage  } from './common'
 
 import { User, Category, Catalog, Product, ObjectTypeDefinition, LocalizableAttribute } from '../src/models'
 import { IUser, IProduct, ICatalog, ICategory, ILocalizableAttribute } from '../src/interfaces'
@@ -139,6 +139,9 @@ describe('Localizable Attribute', function() {
 					expect(product.custom.get(params.path).value.get('default').find(x => x == params.badValue)).to.not.exist					
 				} else {
 					product.custom.get(params.path).value.get('default').should.not.eq(params.badValue)
+				}
+				if (params.type == 'image') {
+					await deleteImage(imgid)
 				}
 			})
 		}
