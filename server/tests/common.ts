@@ -32,6 +32,13 @@ export const productData = {
 	id: 'missdior'
 }
 
+export const folderPath: string = path.join(__dirname, './resources/')
+
+export const placeholderImages: string[] = [
+	'150.png',
+	'800x500.png',
+].map(img => `${folderPath}/${img}`)
+
 export const clearDataBase = async (...models: Model<any>[]) => {
 	console.log(chalk.red('[clearDatabase]: ' + (models.length ? models.map(model => model.modelName).join(', ') : 'all models')))
 	if (!models.length) {

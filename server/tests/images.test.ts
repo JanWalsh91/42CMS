@@ -8,17 +8,10 @@ import app from '../src/app'
 import { Locale, Image } from '../src/models'
 import { jsonLocale } from '../src/types'
 import { ILocale, IImage } from '../src/interfaces';
-import { clearDataBase, uploadImage, printret, createUser, userData, removeImages, deleteImage } from './common'
+import { clearDataBase, uploadImage, printret, createUser, userData, removeImages, deleteImage, placeholderImages } from './common'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes
-
-const folderPath: string = path.join(__dirname, './resources/')
-
-const placeholderImages: string[] = [
-	'150.png',
-	'800x500.png',
-].map(img => `${folderPath}/${img}`)
 
 let ret: any;
 let imageId = 'img1'
@@ -46,7 +39,7 @@ describe('Image', () => {
 		})
 	})
 	describe('Delete', () => {
-		it.only('Should delete an image', async() => {
+		it('Should delete an image', async() => {
 			ret = await uploadImage(placeholderImages[0], imageId)
 			ret = await deleteImage(imageId)
 			ret.status.should.eq(OK)

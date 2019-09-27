@@ -4,6 +4,7 @@ const baseTypes: string[] = [
 	'number',
 	'boolean',
 	'date',
+	'image',
 ]
 
 baseTypes.push(...baseTypes.map(x => x + '[]'))

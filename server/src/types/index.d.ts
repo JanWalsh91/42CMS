@@ -29,11 +29,13 @@ export type attributeType =
 	'number'	|
 	'boolean'	|
 	'date'		|
+	'image'		|
 	'string[]'	|
 	'html[]'	|
 	'number[]'	|
 	'boolean[]'	|
-	'date[]'	
+	'date[]'	|
+	'image[]'
 
 export type productType = 
 	'basic' 	|

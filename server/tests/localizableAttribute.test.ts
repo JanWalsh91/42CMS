@@ -3,7 +3,7 @@ chai.should()
 const expect = require('chai').expect
 import chalk from 'chalk'
 
-import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct, getProduct, logout, login, getAllProducts, deleteProduct, updateObjectAttributeDefinition, updateObjectTypeDefinition, updateGlobalSettings  } from './common'
+import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct, getProduct, logout, login, getAllProducts, deleteProduct, updateObjectAttributeDefinition, updateObjectTypeDefinition, updateGlobalSettings, placeholderImages, uploadImage  } from './common'
 
 import { User, Category, Catalog, Product, ObjectTypeDefinition, LocalizableAttribute } from '../src/models'
 import { IUser, IProduct, ICatalog, ICategory, ILocalizableAttribute } from '../src/interfaces'
@@ -77,8 +77,9 @@ describe('Localizable Attribute', function() {
 			// New attribute should exist on product
 			product.custom.get(newPath).should.exist
 		})
-
 	})
+
+	const imgid: string = 'myimage'
 
 	const testParams: {path: string, type: string, value: any, badValue: any | any[], op: patchOperation }[] = [
 		{ path: 'test1', type: 'string', value: 'my value', badValue: 10, op: '$set' },
@@ -87,12 +88,13 @@ describe('Localizable Attribute', function() {
 		{ path: 'test4', type: 'html', value: '<div>Hello</div>', badValue: false , op: '$set' },
 		{ path: 'test5', type: 'date', value: (new Date()).toISOString(), badValue: 'this is not a date', op: '$set' },
 		{ path: 'test6', type: 'string[]', value: 'my value', badValue: 10, op: '$add' },
-		{ path: 'test6', type: 'string[]', value: ['testing'], badValue: [10, 20, 30], op: '$set' },
+		{ path: 'test7', type: 'string[]', value: ['testing'], badValue: [10, 20, 30], op: '$set' },
+		{ path: 'test8', type: 'image', value: imgid, badValue: 'asdfadf', op: '$set' },
 	]
 
 	describe('Attribute Types', () => {
 		for (let params of testParams) {
-			it(`Type: ${params.type}`, async () => {
+			it.only(`Type: ${params.type}`, async () => {
 				console.log(chalk.cyan(`=== [${params.type}] Create OTD ===`))
 				ret = await updateObjectTypeDefinition('Product', { objectAttributeDefinitions: { op: '$add', type: params.type, path: params.path } })
 				ret.status.should.eq(OK)
@@ -100,6 +102,11 @@ describe('Localizable Attribute', function() {
 				console.log(chalk.cyan(`=== [${params.type}] Create Product ===`))
 				ret = await createProduct(catalogData.id, productData.id)
 				ret.status.should.eq(OK)
+
+				if (params.type == 'image') {
+					ret = await uploadImage(placeholderImages[0], imgid)
+					ret.status.should.eq(OK)
+				}
 
 				console.log(chalk.cyan(`=== [${params.type}] Assign Value ===`))
 				ret = await updateProduct(productData.id, { [params.path]: { op: params.op, value: params.value } })
