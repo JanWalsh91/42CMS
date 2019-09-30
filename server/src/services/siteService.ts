@@ -1,8 +1,8 @@
 import chalk from 'chalk'
 
 import { Patchable, patchAction, ValidationError, ResourceNotFoundError, patchRequest } from '../utils'
-import { ISite, ILocale } from '../interfaces'
-import { objectTypeDefinitionService, localeService } from '.'
+import { ISite, ILocale, ICatalog } from '../interfaces'
+import { objectTypeDefinitionService, localeService, catalogService } from '.'
 import { Site } from '../models'
 
 class SiteService extends Patchable<ISite> {
@@ -126,7 +126,8 @@ class SiteService extends Patchable<ISite> {
 		
 		await site.populate('catalogs').execPopulate()
 		
-		// TODO: remove catalog assignment
+		// Unassign catalogs from site
+		await site.catalogs.reduce(async (_, catalog: ICatalog) => _.then(() => catalogService.removeSite(catalog, site.id)), Promise.resolve())
 
 		await site.remove()
 	}
