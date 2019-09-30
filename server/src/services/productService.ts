@@ -306,14 +306,6 @@ class ProductService extends Patchable<IProduct> {
 		return product
 	}
 
-	public async getById(id: string): Promise<IProduct> {
-		return Product.findOne({id}).exec()
-	}
-
-	public async getAll(): Promise<IProduct[]> {
-		return Product.find({}).exec()
-	}
-
 	public async update(product: IProduct, patchRequest: patchRequest, resources: any): Promise<IProduct> {
 		console.log(chalk.magenta(`[ProductService.update]`), product)
 
@@ -321,12 +313,6 @@ class ProductService extends Patchable<IProduct> {
 		return product.save()
 	}
 
-	private async setId(product: IProduct, id: string): Promise<IProduct> {
-		console.log(chalk.magenta(`[ProductService.setId] ${id}`))
-		product.id = id
-		return product
-	}
-	
 	public async delete(product: IProduct): Promise<void> {
 		console.log(chalk.magenta('[productService.delete] ' +  product.id))
 		await product.populate([
@@ -375,6 +361,21 @@ class ProductService extends Patchable<IProduct> {
 
 		// Delete Product
 		await Product.findOneAndDelete({id: product.id})
+	}
+
+	// ==== get ====
+	public async getById(id: string): Promise<IProduct> {
+		return Product.findOne({id}).exec()
+	}
+	public async getAll(): Promise<IProduct[]> {
+		return Product.find({}).exec()
+	}
+
+	// ==== set ====
+	private async setId(product: IProduct, id: string): Promise<IProduct> {
+		console.log(chalk.magenta(`[ProductService.setId] ${id}`))
+		product.id = id
+		return product
 	}
 }
 

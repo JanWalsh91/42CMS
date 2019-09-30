@@ -6,7 +6,8 @@ import { LocalizableAttribute } from '../models';
 const siteSchema = new Schema({
 	id: {
 		type: String,
-		required: true
+		required: true,
+		unique: true,
 	},
 	hostName: {
 		type: String,
@@ -40,7 +41,13 @@ const siteSchema = new Schema({
 siteSchema.methods = {
 	
 	// ==== set ====
-
+	async setId(this: ISite, id: string) {
+		this.id = id
+	},
+	async setHostName(this: ISite, hostName: string) {
+		this.hostName = hostName
+	},
+	
 	// ==== get ====
 	getObjectTypeDefinition(this: ISite): Promise<IObjectTypeDefinition> {
 		return objectTypeDefinitionService.getById('Site')

@@ -65,7 +65,6 @@ export const objectTypeDefinitionController = {
 		if (!req.params.attribute) {
 			return next(new ValidationError('attribute not provided'))
 		}
-		// TODO;
 		next()
 	},
 }

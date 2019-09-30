@@ -13,31 +13,31 @@ class SiteService extends Patchable<ISite> {
 
 	patchMap = {
 		id: {
-			$set: async(product: ISite, action: patchAction): Promise<void> => {
+			$set: async(site: ISite, action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
-				await this.setId(product, action.value)
+				await site.setId(action.value)
 			},
 		},
 		hostName: {
-			$set: async(product: ISite, action: patchAction): Promise<void> => {
+			$set: async(site: ISite, action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
-				await this.setHostname(product, action.value)
+				await site.setHostName(action.value)
 			},
 		},
 		defaultLocale: {
-			$set: async(product: ISite, action: patchAction): Promise<void> => {
+			$set: async(site: ISite, action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
-				await this.setDefaultLocale(product, action.value)
+				await this.setDefaultLocale(site, action.value)
 			},
 		},
 		allowedLocales: {
-			$add: async(product: ISite, action: patchAction): Promise<void> => {
+			$add: async(site: ISite, action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
-				await this.addAllowedLocale(product, action.value)
+				await this.addAllowedLocale(site, action.value)
 			},
-			$remove: async(product: ISite, action: patchAction): Promise<void> => {
+			$remove: async(site: ISite, action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
-				await this.removeAllowedLocale(product, action.value)
+				await this.removeAllowedLocale(site, action.value)
 			},
 		},
 	}
@@ -61,18 +61,6 @@ class SiteService extends Patchable<ISite> {
 
 		await this.patch(site, patchRequest, resources)
 		return site.save()
-	}
-
-	private async setId(site: ISite, id: string): Promise<ISite> {
-		console.log(chalk.magenta(`[SiteService.setId] ${id}`))
-		site.id = id
-		return site
-	}
-
-	private async setHostname(site: ISite, hostName: string): Promise<ISite> {
-		console.log(chalk.magenta(`[SiteService.setHostname] ${hostName}`))
-		site.hostName = hostName
-		return site
 	}
 
 	private async setDefaultLocale(site: ISite, localeId: string): Promise<ISite> {

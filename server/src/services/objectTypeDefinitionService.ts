@@ -60,10 +60,7 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 			models = ObjectTypeDefinitionService.defaultModels
 		}
 		console.log(chalk.magenta('Reseting ' + models.map((x: Model<any>) => x.modelName).join(', ')))
-		await Promise.all(models.map(async (model: Model<any>) => {
-			// TODO: remove objectAttributeDefinitons
-			await ObjectTypeDefinition.find({objectName: model.modelName}).remove()
-		}))
+		await Promise.all(models.map(async (model: Model<any>) => ObjectTypeDefinition.find({objectName: model.modelName}).remove()))
 		console.log(chalk.magenta('[ObjectTypeDefinitionService.reset] -- END'))
 
 	}

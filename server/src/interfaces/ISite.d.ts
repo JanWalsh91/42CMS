@@ -10,18 +10,22 @@ export interface ISite extends IExtensibleObject {
 	defaultLocale: ILocale['_id'] | ILocale
 	catalogs: (ICatalog['_id'] | ICatalog)[]
 	
-	// get methods
+	// ==== set ====
+	setId: (id: string) => void
+	setHostName: (hostName: string) => void
+
+	// ==== get ====
 	getObjectTypeDefinition: () => Promise<IObjectTypeDefinition>
 	getAssignedCatalog: (query: object) => ICatalog
 	
-	// to methods
+	// ==== to ====
 	toJSONForClient: () => Promise<object>
 	
-	// add methods
+	// ==== add ====
 	addAllowedLocale: (locale: ILocale) => Promise<void>
 	addCatalog: (catalog: ICatalog) => Promise<void>
 
-	// remove methods
+	// ==== remove ====
 	removeAllowedLocale: (locale: ILocale) => Promise<void>
 	removeCatalog: (catalog: ICatalog) => Promise<void>
 }
