@@ -7,6 +7,7 @@ import { localeService } from './localeService'
 import { objectTypeDefinitionService } from './objectTypeDefinitionService'
 import { objectAttributeDefinitionService } from './objectAttributeDefinitionService'
 import { localizableAttributeService } from './localizableAttributeService'
+import { siteService } from './siteService'
 
 export {
 	userService,
@@ -18,4 +19,5 @@ export {
 	objectTypeDefinitionService,
 	objectAttributeDefinitionService,
 	localizableAttributeService,
+	siteService,
 }

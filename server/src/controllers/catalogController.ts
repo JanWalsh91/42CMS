@@ -43,7 +43,6 @@ export class CatalogController {
 			await catalogService.update(res.locals.catalog, req.body, {})
 			res.end()
 		} catch (e) { next(e) }
-	
 	}
 	
 	public async delete(req: Request, res: Response, next: NextFunction): Promise<void> {

@@ -10,6 +10,7 @@ import globalSettings from './globalSettingsRoute'
 import locales from './localesRoute'
 import objectTypeDefintions from './objectTypeDefinitionsRoute'
 import images from './imagesRoute'
+import sites from './sitesRoute'
 
 import authorize from '../middleware/authorize'
 
@@ -33,5 +34,6 @@ router.use('/globalsettings', authorize, globalSettings)
 router.use('/locales', authorize, locales)
 router.use('/objecttypedefintions', authorize, objectTypeDefintions)
 router.use('/images', authorize, images)
+router.use('/sites', authorize, sites)
 
 export default router

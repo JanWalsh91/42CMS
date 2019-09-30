@@ -3,12 +3,12 @@ chai.should()
 const expect = require('chai').expect
 import chalk from 'chalk'
 
-import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs, logout, createCategory, categoryData, deleteCatalog, updateCatalog } from './common'
+import { clearDataBase, createUser, printret, userData, createCatalog, getCatalog, getAllCatalogs, logout, createCategory, categoryData, deleteCatalog, updateCatalog, createSite } from './common'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes 
 
-import { Catalog, Category } from '../src/models'
-import { ICatalog } from '../src/interfaces'
+import { Catalog, Category, Site } from '../src/models'
+import { ICatalog, ISite } from '../src/interfaces'
 import app from '../src/app'
 
 let ret: any
@@ -17,8 +17,10 @@ const catalogData = {
 	id: 'storefrontCatalog',
 	master: true
 }
+const siteId: string = 'siteid'
+const siteId2: string = 'siteid2'
 
-describe('Catalog', () => {
+describe.only('Catalog', () => {
 	before(async () => {
 		await app.ready
 	})
@@ -137,6 +139,8 @@ describe('Catalog', () => {
 			expect(await Category.find({id: { $in: [catid1, catid2, catid3] }})).length(0)
 
 			// TODO: products should no longer be assigned to that Catalog
+
+			// TODO: check delete site assignments
 		})
 	})
 
@@ -146,7 +150,6 @@ describe('Catalog', () => {
 
 		it('Should update is', async() => {
 			await createCatalog(catalogData.id)
-
 			ret = await updateCatalog(catalogData.id, {
 				id: { op: '$set', value: newId }
 			})
@@ -157,9 +160,7 @@ describe('Catalog', () => {
 			catalog.id.should.eq(newId)
 		})
 		it('Should update name and id', async() => {
-
 			await createCatalog(catalogData.id)
-
 			ret = await updateCatalog(catalogData.id, {
 				id: { op: '$set', value: newId },
 				name: { op: '$set', value: newName },
@@ -171,10 +172,46 @@ describe('Catalog', () => {
 			catalog.name.should.eq(newName)
 			catalog.id.should.eq(newId)
 		})
+		it('Should assign a catalog to a site', async() => {
+			ret = await createCatalog(catalogData.id)
+			ret = await createSite(siteId)
+			ret = await updateCatalog(catalogData.id, {
+				sites: { op: '$add', value: siteId }
+			})
+			ret.status.should.eq(OK)
+
+			// Site should have catalog
+			const site: ISite = await Site.findOne({id: siteId}).populate('catalogs').exec()
+			expect(site.catalogs.find(x => x.id == catalogData.id)).to.exist
+
+			// Catalog should have site
+			const catalog: ICatalog = await Catalog.findOne({id: catalogData.id}).populate('sites').exec()
+			expect(catalog.sites.find(x => x.id == siteId)).to.exist
+		})
+		it('Should unassigned a catalog from a site', async() => {
+			ret = await createCatalog(catalogData.id)
+			ret = await createSite(siteId)
+			ret = await updateCatalog(catalogData.id, {
+				sites: { op: '$add', value: siteId }
+			})
+			ret = await updateCatalog(catalogData.id, {
+				sites: { op: '$remove', value: siteId }
+			})
+			ret.status.should.eq(OK)
+
+			// Site should not have catalog
+			const site: ISite = await Site.findOne({id: siteId}).populate('catalogs').exec()
+			expect(site.catalogs.find(x => x.id == catalogData.id)).to.not.exist
+
+			// Catalog should not have site
+			const catalog: ICatalog = await Catalog.findOne({id: catalogData.id}).populate('sites').exec()
+			expect(catalog.sites.find(x => x.id == siteId)).to.not.exist
+		})
 		describe('Should fail if ...', () => {
 			it('User is not authorized')
 			it('Name is invalid')
 			it('Id is not unique')
+			it('Site does not exist')
 		})
 	})
 });

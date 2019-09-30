@@ -1,10 +1,9 @@
 import chalk from 'chalk'
 
-import { IObjectTypeDefinition, IObjectAttributeDefinition, IExtensibleObject, ILocaleSettings, ILocalizableAttribute, IProduct } from '../interfaces'
+import { IObjectTypeDefinition, IObjectAttributeDefinition, IExtensibleObject } from '../interfaces'
 import { patchRequest, Patchable, patchAction, ValidationError, InternalError } from '../utils'
-import { ObjectTypeDefinition, Product, LocalizableAttribute, ObjectAttributeDefinition, Image } from '../models'
-import { Model, Document, model } from 'mongoose'
-import { attributeType } from '../types'
+import { ObjectTypeDefinition, Product, LocalizableAttribute, ObjectAttributeDefinition, Image, Site } from '../models'
+import { Model, model } from 'mongoose'
 import { objectAttributeDefinitionService } from '.'
 
 // const defaultObjectTypeDefinitions: Record<string, jsonDefaultObjectTypeDefinition> = require('../src/resources/defaultObjectTypeDefinitions')
@@ -17,7 +16,6 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 		objectAttributeDefinitions: {
 			$add: async(objectTypeDefinition: IObjectTypeDefinition, action: patchAction): Promise<void> => {
 				console.log(chalk.keyword('goldenrod')('[ObjectTypeDefinitionService.objectAttributeDefinitions.$add]'))
-				console.log(action)
 				this.checkRequiredProperties(action, ['path', 'type'])
 				await this.addObjectAttributeDefinition(objectTypeDefinition, new ObjectAttributeDefinition({
 					path: action.path,
@@ -33,7 +31,7 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 		}
 	}
 
-	static defaultModels: Model<any>[] = [ Product, Image ]
+	static defaultModels: Model<any>[] = [ Product, Image, Site ]
 
 	public async update(objectTypeDefinition: IObjectTypeDefinition, patchRequest: patchRequest, resources: any): Promise<IObjectTypeDefinition> {
 		console.log(chalk.magenta(`[ObjectTypeDefinitionService.update]`))
@@ -78,41 +76,46 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 			models = ObjectTypeDefinitionService.defaultModels
 		}
 
-		await Promise.all(models.map(async (model: Model<any>) => {
-			
+		// await Promise.all(models.map(async (model: Model<any>) => {
+		for (let model of models) {
+
 			// only create if doesn't exist
 			if (await ObjectTypeDefinition.findOne({objectName: model.modelName})) {
 				return 	
 			}
 
 			// create new ObjectTypeDefinition
-			let OTD: IObjectTypeDefinition = new ObjectTypeDefinition({
+			let OTD: IObjectTypeDefinition = await new ObjectTypeDefinition({
 				objectName: model.modelName,
 				objectAttributeDefinitions: [],
-			})
+			}).save()
 			
-			model.schema.eachPath((pathName: string) => {
+			const paths: string[] = []
+			model.schema.eachPath(path => paths.push(path))
+
+			for (let path of paths) {
 				// ignore non system attribute
-				if (pathName.includes('custom')) {
-					return
+				if (path.includes('custom')) {
+					continue
 				}
-				const path: any = model.schema.path(pathName)
+				const schemaPath: any = model.schema.path(path)
 				// add LocalizableAttributes to ObjectTypeDefinition
-				if (path.instance && path.instance && path.instance && path.instance == 'ObjectID' && path.options && path.options && path.options.ref == 'LocalizableAttribute') {
-					OTD.addObjectAttributeDefinition(new ObjectAttributeDefinition({
-						type: path.options.defaultType,
-						path: pathName,
+				if (schemaPath.instance && schemaPath.instance && schemaPath.instance && schemaPath.instance == 'ObjectID' && schemaPath.options && schemaPath.options && schemaPath.options.ref == 'LocalizableAttribute') {
+					const OAD: IObjectAttributeDefinition = await new ObjectAttributeDefinition({
+						type: schemaPath.options.defaultType,
+						path: path,
 						system: true,
 						localizable: true,
-					}))
+						objectTypeDefinition: OTD._id
+					}).save()
+
+					await OTD.addObjectAttributeDefinition(OAD)
 				}
-			})
-			console.log('created OTD:', OTD)
-			return OTD.save()
-		}))
+			}
+			await OTD.save()
+		}
 
 		console.log(chalk.magenta('[ObjectTypeDefinitionService.init] -- END'))
-
 	}
 
 
@@ -161,7 +164,7 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 		await Promise.all(OTD.objectAttributeDefinitions
 			.filter(OAD => OAD.system == false)
 			.map(async(OAD: IObjectAttributeDefinition) => {
-				object.custom.set(OAD.path, (await (new LocalizableAttribute().save()))._id)
+				return object.custom.set(OAD.path, (await (new LocalizableAttribute().save()))._id)
 			})
 		)
 		object.markModified('custom')

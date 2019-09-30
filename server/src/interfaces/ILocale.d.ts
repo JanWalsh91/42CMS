@@ -7,5 +7,6 @@ export interface ILocale extends Document {
 	country: string,
 	fallback: ILocale['_id'] | ILocale,
 
+	// to methods
 	toJsonForUser: (user: IUser) => Promise<any>
 }

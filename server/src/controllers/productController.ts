@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express'
 import chalk from 'chalk'
 
-import { productService, objectAttributeDefinitionService, objectTypeDefinitionService } from '../services'
+import { productService, objectTypeDefinitionService } from '../services'
 import { IProduct } from '../interfaces'
-import { ValidationError, ResourceNotFoundError } from '../utils/Errors';
+import { ValidationError, ResourceNotFoundError } from '../utils/Errors'
 
 export const productController = {
 	async create(req: Request, res: Response, next: NextFunction): Promise<void> {

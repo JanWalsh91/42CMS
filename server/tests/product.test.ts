@@ -1,16 +1,16 @@
 import * as chai from 'chai'
 chai.should()
 const expect = require('chai').expect
-import chalk from 'chalk';
+import chalk from 'chalk'
 
-import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct, getProduct, logout, login, getAllProducts, deleteProduct, updateObjectAttributeDefinition, updateObjectTypeDefinition  } from './common';
+import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct, getProduct, logout, login, getAllProducts, deleteProduct, updateObjectAttributeDefinition, updateObjectTypeDefinition  } from './common'
 
 import { User, Category, Catalog, Product, ObjectTypeDefinition } from '../src/models'
 import { IUser, IProduct, ICatalog, ICategory, IProductMaster } from '../src/interfaces'
 import app from '../src/app'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
-import { localeCode } from '../src/types';
-import { isVariantProduct } from '../src/typeguards';
+import { localeCode } from '../src/types'
+import { isVariantProduct } from '../src/typeguards'
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes 
 
 let ret: any;

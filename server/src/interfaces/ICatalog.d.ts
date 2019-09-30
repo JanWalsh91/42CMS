@@ -1,11 +1,11 @@
 import { Document } from 'mongoose'
 
-import { ICategory, IProduct } from './' 
+import { ICategory, IProduct, ISite } from './' 
 
 export interface ICatalog extends Document {
 	id: string
 	name: string
-	// sitesAssignedTo: ISite['_id'][]
+	sites: (ISite['_id'] | ISite)[]
 	rootCategory: ICategory['_id'] | ICategory
 	categories: (ICategory['_id'] | ICategory)[] 
 	products: (IProduct['_id'] | IProduct)[]
@@ -27,10 +27,12 @@ export interface ICatalog extends Document {
 	// add methods
 	addCategory: (category: ICategory) => Promise<ICatalog>
 	addProduct: (product: IProduct) => Promise<ICatalog>
+	addSite: (site: ISite) => Promise<ICatalog>
 
 	// remove methods
 	removeCategory: (category: ICategory) => Promise<ICatalog>
 	removeProduct: (product: IProduct) => Promise<ICatalog>
+	removeSite: (site: ISite) => Promise<ICatalog>
 
 	wasNew: boolean // internal use
 }

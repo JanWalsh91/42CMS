@@ -5,9 +5,11 @@ export interface IProductMaster extends IProduct {
 	variantProducts: IProductVariant[]
 	variationAttributes: IObjectAttributeDefinition[]
 
-	// methods
+	// add methods
 	addVariationAttribute: (OAD: IObjectAttributeDefinition) => Promise<void>
-	removeVariationAttribute: (OAD: IObjectAttributeDefinition) => Promise<void>
 	addVariant: (variant: IProductVariant) => Promise<void>
+	
+	// remove methods
+	removeVariationAttribute: (OAD: IObjectAttributeDefinition) => Promise<void>
 	removeVariant: (variant: IProductVariant) => Promise<void>
 }

@@ -9,7 +9,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import { User, Catalog, Category, Product, Site, Locale, GlobalSettings, ObjectTypeDefinition, LocalizableAttribute, Image } from '../src/models'
-import { patchAction, patchRequest } from '../src/utils'
+import { patchRequest } from '../src/utils'
 
 export const userData = {
 	name: 'John Smith',
@@ -53,6 +53,7 @@ export const clearDataBase = async (...models: Model<any>[]) => {
 			ObjectTypeDefinition,
 			LocalizableAttribute,
 			Image,
+			Site,
 		]
 	}
 	await Promise.all(models.map(model => model.deleteMany({})))
@@ -188,6 +189,20 @@ export const removeImages = async () => {
 
 	export const deleteImage = (imageid: string) =>
 		agent.delete(`/images/${imageid}`)
+
+// ===== SITE ===== //
+
+	export const createSite = (id: string) => 
+		agent.post(`/sites`).send({id})
+
+	export const getSite = (id: string) => 
+		agent.get(`/sites/${id}`)
+
+	export const updateSite = (id: string, patch: patchRequest) =>
+		agent.patch(`/sites/${id}`).send(patch)
+
+	export const deleteSite = (id: string) =>
+		agent.delete(`/sites/${id}`)
 
 // ===== UTILITY ===== //
 

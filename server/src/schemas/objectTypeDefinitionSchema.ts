@@ -4,7 +4,7 @@ import { IObjectTypeDefinition, IObjectAttributeDefinition } from '../interfaces
 const objectTypeDefinitionSchema = new Schema({
 	objectName: {
 		type: String,
-		validate: (x) => ['Product', 'Image'].includes(x),
+		validate: (x) => ['Product', 'Image', 'Site'].includes(x),
 		unique: true,
 	},
 	objectAttributeDefinitions: {
@@ -19,10 +19,10 @@ const objectTypeDefinitionSchema = new Schema({
 
 objectTypeDefinitionSchema.methods = {
 	addObjectAttributeDefinition: async function (this: IObjectTypeDefinition, OAD: IObjectAttributeDefinition) : Promise<void> {
-		OAD.objectTypeDefinition = this
-		await OAD.save()
-		this.objectAttributeDefinitions.push(OAD)
-		this.markModified('objectAttributeDefinitions')
+		if (this.objectAttributeDefinitions.every(x => x.path != OAD.path)) {
+			this.objectAttributeDefinitions.push(OAD)
+			this.markModified('objectAttributeDefinitions')
+		}
 	},
 	removeObjectAttributeDefinition: async function (this: IObjectTypeDefinition, OAD: IObjectAttributeDefinition) : Promise<void> {
 		this.objectAttributeDefinitions = this.objectAttributeDefinitions.filter(x => x.path != OAD.path)

@@ -2,8 +2,8 @@ import chalk from 'chalk'
 
 import { ResourceNotFoundError, NotImplementedError, ValidationError, Patchable, patchAction, patchRequest } from '../utils'
 import { Catalog } from '../models'
-import { ICatalog, ICategory, IProduct } from '../interfaces'
-import { categoryService } from '.'
+import { ICatalog, ICategory, IProduct, ISite } from '../interfaces'
+import { categoryService, siteService } from '.'
 
 
 class CatalogService extends Patchable<ICatalog> {
@@ -13,7 +13,6 @@ class CatalogService extends Patchable<ICatalog> {
 		id: {
 			$set: async (catalog: ICatalog, action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
-				// TODO: inconsistent with productService
 				await catalog.setId(action.value)
 			}
 		},
@@ -21,6 +20,16 @@ class CatalogService extends Patchable<ICatalog> {
 			$set: async (catalog: ICatalog, action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
 				await catalog.setName(action.value)
+			}
+		},
+		sites: {
+			$add: async (catalog: ICatalog, action: patchAction): Promise<void> => {
+				this.checkRequiredProperties(action, ['value'])
+				await this.addSite(catalog, action.value)
+			},
+			$remove: async (catalog: ICatalog, action: patchAction): Promise<void> => {
+				this.checkRequiredProperties(action, ['value'])
+				await this.removeSite(catalog, action.value)
 			}
 		}
 	}
@@ -40,18 +49,6 @@ class CatalogService extends Patchable<ICatalog> {
 		}).save()
 	}
 
-	public async getById(id: string): Promise<ICatalog> {
-		return Catalog.findOne({id}).exec()
-	}
-
-	public async getByName(name: string): Promise<ICatalog> {
-		return Catalog.findOne({name}).exec()
-	}
-
-	public async getAll(): Promise<ICatalog[]> {
-		return Catalog.find({}).exec()
-	}
-
 	public async update(catalog: ICatalog, patchRequest: patchRequest, resources: any): Promise<ICatalog> {
 		console.log(chalk.magenta(`[CatalogService.update]`))
 
@@ -61,59 +58,88 @@ class CatalogService extends Patchable<ICatalog> {
 	}
 
 	public async delete(catalog: ICatalog): Promise<void> {
+		catalog = await catalog.populate([
+			{path: 'categories'},
+			{path: 'sites'},
+		]).execPopulate()
+		
 		// Delete all categories
-		catalog = await catalog.populate('categories').execPopulate()
 		await catalog.categories.reduce((_, category: ICategory) => _.then(() => categoryService.delete(category)), Promise.resolve())
+		
+		// Delete site assignements
+		await catalog.sites.reduce((_, site: ISite) => _.then(() => {
+			site.removeCatalog(catalog);
+			return site.save()
+		}), Promise.resolve())
+
+		// TODO: handle products:
+			// if master, delete products?
+			// else, unassign for catalog
+
 		await catalog.remove()
 	}
 
+	// ==== get ====
+	public async getById(id: string): Promise<ICatalog> {
+		return Catalog.findOne({id}).exec()
+	}
+	public async getByName(name: string): Promise<ICatalog> {
+		return Catalog.findOne({name}).exec()
+	}
+	public async getAll(): Promise<ICatalog[]> {
+		return Catalog.find({}).exec()
+	}
+
+	// ==== add ====
 	public async addCategory(catalog: ICatalog, category: ICategory): Promise<void> {
-		await catalog.populate('categories').execPopulate()
-		if (catalog.categories.some(x => x.id == category.id)) {
-			console.log(chalk.yellow('[CatalogService.addCategory] category already in catalog'))
-			return 
-		}
 		await catalog.addCategory(category)
+
 		await catalog.save()
 	}
-
-	public async removeCategory(catalog: ICatalog, category: ICategory): Promise<void> {
-		console.log(chalk.magenta(`[CatalogModel.removeCategory] ${category.id} from ${category.id}`))
-		await catalog.populate('categories').execPopulate()
-		if (catalog.categories.some(x => x.id == category.id)) {
-			await catalog.removeCategory(category)
-			await catalog.save()
-		} else {
-			console.log(chalk.yellow(`[CatalogModel.removeCategory] ${category.id} not in ${category.id}`))
-		}
-	}
-
 	public async addProduct(catalog: ICatalog, product: IProduct): Promise<void> {
 		console.log(chalk.magenta(`[CatalogService.addProduct] ${product.id} to ${catalog.id}`))
-		await catalog.populate('products').execPopulate()
-		if (catalog.products.some(x => x.id == product.id)) {
-			console.log(chalk.yellow('[CatalogModel.addProduct] product already in catalog'))
-			return
-		}
 		await catalog.addProduct(product)
+		
+		await catalog.save()
+	}
+	public async addSite(catalog: ICatalog, siteid: string): Promise<void> {
+		console.log(chalk.magenta(`[CatalogService.addSite] ${siteid} to ${catalog.id}`))
+		const site: ISite = await siteService.getById(siteid)
+		if (!site) {
+			throw new ResourceNotFoundError('Site', siteid)
+		}
+		await site.addCatalog(catalog)
+		await catalog.addSite(site)
+
+		await site.save()
 		await catalog.save()
 	}
 
+	// ==== remove ====
+	public async removeCategory(catalog: ICatalog, category: ICategory): Promise<void> {
+		console.log(chalk.magenta(`[CatalogModel.removeCategory] ${category.id} from ${category.id}`))
+		await catalog.removeCategory(category)
+		
+		await catalog.save()
+	}
 	public async removeProduct(catalog: ICatalog, product: IProduct): Promise<void> {
 		console.log(chalk.magenta(`[CatalogService.removeProduct] ${product.id} to ${catalog.id}`))
-		await catalog.populate('products').execPopulate()
-		if (catalog.products.some(x => x.id == product.id)) {
-			await catalog.removeProduct(product)
-			await catalog.save()
-			return 
-		} else {
-			console.log(chalk.yellow('[CatalogModel.removeProduct] product not in catalog'))
-			return
-		}
+		await catalog.removeProduct(product)
+		
+		await catalog.save()
 	}
-
-	
-
+	public async removeSite(catalog: ICatalog, siteid: string): Promise<void> {
+		console.log(chalk.magenta(`[CatalogService.removeSite] ${siteid} to ${catalog.id}`))
+		const site: ISite = await siteService.getById(siteid)
+		if (!site) {
+			throw new ResourceNotFoundError('Site', siteid)
+		}
+		await site.removeCatalog(catalog)
+		await catalog.removeSite(site)
+		
+		await site.save()
+		await catalog.save()
+	}
 }
 
 export const catalogService: CatalogService = new CatalogService();

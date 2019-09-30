@@ -16,6 +16,7 @@ export interface IObjectAttributeDefinition extends Document {
 	// objectTypeDefinition: IObjectTypeDefinition['_id']
 	objectTypeDefinition: IObjectTypeDefinition
 
+	// set methods
 	setType?: (type: attributeType) => void
 	setLocalizable?: (localizable: boolean) => void
 }

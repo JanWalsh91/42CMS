@@ -1,10 +1,10 @@
-import chalk from 'chalk';
+import chalk from 'chalk'
 
-import { Product, Catalog, Category, ProductMaster, ProductVariant } from '../models';
+import { Product, Catalog, Category, ProductMaster, ProductVariant } from '../models'
 import { IProduct, ICatalog, ICategory, IGlobalSettings, IProductVariant, IObjectTypeDefinition, IObjectAttributeDefinition, IProductMaster } from '../interfaces'
-import { ResourceNotFoundError, ValidationError, patchRequest, Patchable, patchAction, NotImplementedError } from '../utils';
-import { catalogService, categoryService, globalSettingsService, objectTypeDefinitionService, localizableAttributeService } from '.';
-import { isMasterProduct, isVariantProduct } from '../typeguards';
+import { ResourceNotFoundError, ValidationError, patchRequest, Patchable, patchAction, NotImplementedError } from '../utils'
+import { catalogService, categoryService, globalSettingsService, objectTypeDefinitionService, localizableAttributeService } from '.'
+import { isMasterProduct, isVariantProduct } from '../typeguards'
 
 class ProductService extends Patchable<IProduct> {
 	hasObjectTypeDefinition = true

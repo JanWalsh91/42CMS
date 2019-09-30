@@ -56,19 +56,16 @@ export abstract class Patchable<T> {
 			const OTD: IObjectTypeDefinition = await this.getObjectTypeDefinition()
 			const OAD: IObjectAttributeDefinition = OTD.getAttribute(key)
 			let localizedAttribute: ILocalizableAttribute;
-			if (OAD.system) {
+			if (OAD && OAD.system) {
 				localizedAttribute = object[key]
 			} else {
 				if (isExtensibleObject(object)) {
 					localizedAttribute = object.custom.get(key)
 				} else {
-					// TODO: throw error
+					throw `invalid property [${key}]`
 				}
 
 			}
-			// console.log(object)
-			// console.log(localizedAttribute)
-			// process.exit()
 			if (OAD) {
 				await localizableAttributeService.update(
 					localizedAttribute,

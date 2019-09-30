@@ -85,9 +85,6 @@ productSchema.pre('save', async function(this: IProduct) {
 })
 
 productSchema.methods = {
-	getObjectTypeDefinition(this: IProduct): Promise<IObjectTypeDefinition> {
-		return objectTypeDefinitionService.getById('Product')
-	},
 	isMaster(this: IProduct): boolean {
 		return this.type === 'master'
 	} ,
@@ -98,6 +95,9 @@ productSchema.methods = {
 		return this.type === 'basic'
 	} ,
 	// ==== set ====
+	setId(this: IProduct, id: string): void {
+		this.id = id
+	},
 	async setPrimaryCategoryByCatalog(this: IProduct, category: ICategory | null, catalog: ICatalog): Promise<void> {
 		console.log(chalk.magenta(`[ProductModel.setPrimaryCategoryByCatalog] category; ${category.id}, catalog: ${catalog.id}, product: ${this.id}`))
 		await this.populate([
@@ -122,6 +122,9 @@ productSchema.methods = {
 	},
 
 	// ==== get ====
+	getObjectTypeDefinition(this: IProduct): Promise<IObjectTypeDefinition> {
+		return objectTypeDefinitionService.getById('Product')
+	},
 	async getMasterCatalog(this: IProduct): Promise<ICatalog> {
 		await this.populate('masterCatalog').execPopulate()
 		return this.masterCatalog

@@ -94,7 +94,7 @@ describe('Localizable Attribute', function() {
 
 	describe('Attribute Types', () => {
 		for (let params of testParams) {
-			it.only(`Type: ${params.type}`, async () => {
+			it(`Type: ${params.type}`, async () => {
 				console.log(chalk.cyan(`=== [${params.type}] Create OTD ===`))
 				ret = await updateObjectTypeDefinition('Product', { objectAttributeDefinitions: { op: '$add', type: params.type, path: params.path } })
 				ret.status.should.eq(OK)
