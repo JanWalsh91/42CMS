@@ -63,6 +63,7 @@ describe('Localizable Attribute', function() {
 			ret.status.should.eq(OK)
 			let product: IProduct = await Product.findOne({id: productData.id}).exec()
 			// New attribute should exist on product
+			console.log(product)
 			product.custom.get(newPath).should.exist
 		})
 		it('Should create a custom attribute on an existing product', async() => {

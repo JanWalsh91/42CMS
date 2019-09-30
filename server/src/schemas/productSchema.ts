@@ -73,17 +73,6 @@ const productSchema = new Schema({
 	}
 })
 
-productSchema.pre('save', async function(this: IProduct) {
-	if (this.isNew) {
-		await ['name', 'description'].reduce((_: Promise<any>, path: string) =>
-			_.then(async() => {
-				this[path] = await new LocalizableAttribute().save()
-			}
-		), Promise.resolve())
-		await objectTypeDefinitionService.initExtensibleObject(this)
-	}
-})
-
 productSchema.methods = {
 	isMaster(this: IProduct): boolean {
 		return this.type === 'master'
@@ -207,6 +196,17 @@ productSchema.methods = {
 }
 
 productSchema.plugin(require('mongoose-autopopulate'))
+
+productSchema.pre('save', async function(this: IProduct) {
+	if (this.isNew) {
+		await ['name', 'description'].reduce((_: Promise<any>, path: string) =>
+			_.then(async() => {
+				this[path] = await new LocalizableAttribute().save()
+			}
+		), Promise.resolve())
+		await objectTypeDefinitionService.initExtensibleObject(this)
+	}
+})
 
 productSchema.pre('find', <any>async function(products: IProduct[]) {
 	for (let product of products) {

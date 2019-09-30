@@ -105,5 +105,4 @@ describe('Object Type Definitions', () => {
 			expect(ret.body.objectAttributeDefinitions.find(x => x.path == path)).to.not.exist
 		})
 	})
-
 })

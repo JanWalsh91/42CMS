@@ -24,7 +24,8 @@ const objectAttributeDefinitionSchema = new Schema({
 	},
 	objectTypeDefinition: {
 		type: Schema.Types.ObjectId,
-		ref: 'ObjectTypeDefinition'
+		ref: 'ObjectTypeDefinition',
+		required: true,
 	}
 })
 

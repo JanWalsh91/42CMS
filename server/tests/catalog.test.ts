@@ -20,7 +20,7 @@ const catalogData = {
 const siteId: string = 'siteid'
 const siteId2: string = 'siteid2'
 
-describe.only('Catalog', () => {
+describe('Catalog', () => {
 	before(async () => {
 		await app.ready
 	})

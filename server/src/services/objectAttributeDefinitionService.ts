@@ -43,8 +43,7 @@ class ObjectAttributeDefinitionService extends Patchable<IObjectAttributeDefinit
 		}
 		if (value != objectAttributeDefinition.type) {
 			objectAttributeDefinition.type = value
-			await objectAttributeDefinition.populate('objectTypeDefinition').execPopulate()
-			await objectTypeDefinitionService.updateObjectAttributeType(objectAttributeDefinition.objectTypeDefinition, objectAttributeDefinition)
+			await objectTypeDefinitionService.updateObjectAttributeType(objectAttributeDefinition)
 		}
 	}
 
