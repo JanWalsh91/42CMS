@@ -124,6 +124,7 @@ class CatalogService extends Patchable<ICatalog> {
 	}
 	public async removeProduct(catalog: ICatalog, product: IProduct): Promise<void> {
 		console.log(chalk.magenta(`[CatalogService.removeProduct] ${product.id} to ${catalog.id}`))
+		
 		await catalog.removeProduct(product)
 		
 		await catalog.save()

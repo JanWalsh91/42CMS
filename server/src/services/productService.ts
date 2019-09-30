@@ -22,6 +22,7 @@ class ProductService extends Patchable<IProduct> {
 			$add: async(product: IProduct, action: patchAction): Promise<void> => {
 				console.log(chalk.keyword('goldenrod')('[ProductService.assignedCatalogs.$add]'))
 				this.checkRequiredProperties(action, ['value'])
+				
 				const catalog: ICatalog = await Catalog.findOne({id: action.value})
 				if (!catalog) {
 					throw new ResourceNotFoundError('Catalog', action.value)
