@@ -65,15 +65,13 @@ class SiteService extends Patchable<ISite> {
 
 	private async setDefaultLocale(site: ISite, localeId: string): Promise<ISite> {
 		console.log(chalk.magenta(`[SiteService.setDefaultLocale] ${localeId}`))
+	
 		const locale: ILocale = await localeService.getById(localeId)
-
 		if (!locale) {
 			throw new ResourceNotFoundError('Locale', localeId)
 		}
-
-		await this.addAllowedLocale(site, localeId)
-
-		site.defaultLocale = locale
+	
+		await site.setDefaultLocale(locale)
 		await site.save()
 		return site
 	}

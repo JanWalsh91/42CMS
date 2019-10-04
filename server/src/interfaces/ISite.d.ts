@@ -13,6 +13,7 @@ export interface ISite extends IExtensibleObject {
 	// ==== set ====
 	setId: (id: string) => void
 	setHostName: (hostName: string) => void
+	setDefaultLocale: (locale: ILocale) => Promise<void>
 
 	// ==== get ====
 	getObjectTypeDefinition: () => Promise<IObjectTypeDefinition>

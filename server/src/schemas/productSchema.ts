@@ -74,6 +74,7 @@ const productSchema = new Schema({
 })
 
 productSchema.methods = {
+	// ==== is ====
 	isMaster(this: IProduct): boolean {
 		return this.type === 'master'
 	} ,
@@ -83,6 +84,7 @@ productSchema.methods = {
 	isBasic(this: IProduct): boolean {
 		return this.type === 'basic'
 	} ,
+	
 	// ==== set ====
 	setId(this: IProduct, id: string): void {
 		this.id = id
@@ -139,7 +141,6 @@ productSchema.methods = {
 		this.markModified('assignedCategoriesByCatalog')
 		// console.log(chalk.magenta(`[ProductModel.addAssignedCatalog] catalog: ${catalog.id}, product: ${this.id}`))
 	},
-
 	async addAssignedCategoryByCatalog(this: IProduct, category: ICategory, catalog: ICatalog): Promise<void> {
 		console.log(chalk.magenta(`[ProductModel.addAssignedCategoryByCatalog] category: ${category.id}, catalog: ${catalog.id}, product: ${this.id}`))
 		await this.populate([
@@ -174,7 +175,6 @@ productSchema.methods = {
 		this.markModified('assignedCategoriesByCatalog')
 		// console.log(chalk.magenta(`[ProductModel.removeAssignedCatalog] catalog: ${catalog.id}, product: ${this.id} END`))
 	},
-
 	async removeAssignedCategoryByCatalog(this: IProduct, category: ICategory, catalog: ICatalog): Promise<void> {
 		console.log(chalk.magenta(`[ProductModel.removeAssignedCategoryByCatalog] catalog: ${catalog.id}, category: ${category.id}, product: ${this.id}`))
 		await this.populate([

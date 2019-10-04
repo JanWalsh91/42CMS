@@ -47,6 +47,10 @@ siteSchema.methods = {
 	async setHostName(this: ISite, hostName: string) {
 		this.hostName = hostName
 	},
+	async setDefaultLocale(this: ISite, locale: ILocale): Promise<void> {
+		await this.addAllowedLocale(locale)
+		this.defaultLocale = locale
+	},
 	
 	// ==== get ====
 	getObjectTypeDefinition(this: ISite): Promise<IObjectTypeDefinition> {
