@@ -67,8 +67,8 @@ class CatalogService extends Patchable<ICatalog> {
 		await catalog.categories.reduce((_, category: ICategory) => _.then(() => categoryService.delete(category)), Promise.resolve())
 		
 		// Delete site assignements
-		await catalog.sites.reduce((_, site: ISite) => _.then(() => {
-			site.removeCatalog(catalog);
+		await catalog.sites.reduce((_, site: ISite) => _.then(async () => {
+			await site.removeCatalog(catalog)
 			return site.save()
 		}), Promise.resolve())
 

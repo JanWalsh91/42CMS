@@ -11,6 +11,7 @@ import locales from './localesRoute'
 import objectTypeDefintions from './objectTypeDefinitionsRoute'
 import images from './imagesRoute'
 import sites from './sitesRoute'
+import impex from './impexRoute'
 
 import authorize from '../middleware/authorize'
 
@@ -35,5 +36,6 @@ router.use('/locales', authorize, locales)
 router.use('/objecttypedefintions', authorize, objectTypeDefintions)
 router.use('/images', authorize, images)
 router.use('/sites', authorize, sites)
+router.use('/impex', authorize, impex)
 
 export default router

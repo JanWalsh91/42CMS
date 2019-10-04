@@ -6,6 +6,7 @@ import { globalSettingsController } from './globalSettingsController'
 import { localeController } from './localeController'
 import { objectTypeDefinitionController } from './objectTypeDefinitionController'
 import { imageController } from './imageController'
+import { impexController } from './impexController'
 
 export {
 	catalogController,
@@ -16,4 +17,5 @@ export {
 	localeController,
 	objectTypeDefinitionController,
 	imageController,
+	impexController,
 }

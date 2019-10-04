@@ -204,6 +204,17 @@ export const removeImages = async () => {
 	export const deleteSite = (id: string) =>
 		agent.delete(`/sites/${id}`)
 
+// ===== IMPEX =====
+
+	export const getAllImpexFiles = () =>
+		agent.get(`/impex`)
+
+	export const exportToXLM = (filename: string, types: string[]) =>
+		agent.get(`/impex/export`).send({filename, types})
+
+	export const getImpexFile = (filename: string) =>
+		agent.get(`/impex/${filename}`)
+
 // ===== UTILITY ===== //
 
 	export const printret = ret => {

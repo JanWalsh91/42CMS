@@ -8,6 +8,7 @@ import { objectTypeDefinitionService } from './objectTypeDefinitionService'
 import { objectAttributeDefinitionService } from './objectAttributeDefinitionService'
 import { localizableAttributeService } from './localizableAttributeService'
 import { siteService } from './siteService'
+import { impexService } from './impexService'
 
 export {
 	userService,
@@ -20,4 +21,5 @@ export {
 	objectAttributeDefinitionService,
 	localizableAttributeService,
 	siteService,
+	impexService,
 }

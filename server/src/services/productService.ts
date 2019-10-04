@@ -33,7 +33,8 @@ class ProductService extends Patchable<IProduct> {
 					catalog.addProduct(product),
 				])
 
-				// TODO: validate all before saving ?
+				// TODO: validate all before saving
+				// let error = product.validateSync()
 
 				await Promise.all([
 					product.save(),
