@@ -4,6 +4,7 @@ import chalk from 'chalk'
 import { catalogService } from '../services/catalogService'
 import { ICatalog } from '../interfaces'
 import { ResourceNotFoundError, ValidationError } from '../utils/Errors'
+import { Catalog } from '../models'
 
 export class CatalogController {
 	public async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -37,7 +38,7 @@ export class CatalogController {
 	}
 
 	public async update(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[CatalogController.update]'), req.body)
+		console.log(chalk.magenta('[CatalogController.update]'))
 
 		try {
 			await catalogService.update(res.locals.catalog, req.body, {})
@@ -63,7 +64,6 @@ export class CatalogController {
 		res.locals.catalog = catalog
 		next()
 	}
-
 }
 
 export const catalogController: CatalogController = new CatalogController();

@@ -3,13 +3,14 @@ import * as chai from 'chai'
 import chaiHttp = require('chai-http')
 chai.use(chaiHttp)
 const agent = chai.request.agent(app.app)
-import chalk from 'chalk'
+import chalk, { ChalkOptions } from 'chalk'
 import { Model } from 'mongoose'
 import * as fs from 'fs'
 import * as path from 'path'
 
 import { User, Catalog, Category, Product, Site, Locale, GlobalSettings, ObjectTypeDefinition, LocalizableAttribute, Image } from '../src/models'
 import { patchRequest } from '../src/utils'
+import { SuperAgentRequest, Request, Response } from 'superagent';
 
 export const userData = {
 	name: 'John Smith',
@@ -210,10 +211,23 @@ export const removeImages = async () => {
 		agent.get(`/impex`)
 
 	export const exportToXLM = (filename: string, types: string[]) =>
-		agent.get(`/impex/export`).send({filename, types})
+		agent.post(`/impex/export`).send({filename, types})
 
 	export const getImpexFile = (filename: string) =>
 		agent.get(`/impex/${filename}`)
+
+	export const downloadsPath: string = './server/tests/downloads'
+
+	export const getFileName = (req: Response) => {
+		const regexp = new RegExp('filename="([^"]+)"')
+		const filename: string = regexp.exec(req.header['content-disposition'])[1]
+		return filename
+	}
+
+	export const writeToFile = async (req: Response) => {
+		await new Promise(resolve => fs.mkdir(downloadsPath, resolve))
+		fs.writeFileSync(`${downloadsPath}/${getFileName(req)}`, req.text)
+	}
 
 // ===== UTILITY ===== //
 

@@ -15,6 +15,9 @@ export interface ICatalog extends Document {
 	 */
 	master: boolean
 
+	// to methods
+	toJSONForClient: () => Promise<object>
+
 	// set methods
 	setId: (id: string) => Promise<ICatalog>
 	setName: (id: string) => Promise<ICatalog>

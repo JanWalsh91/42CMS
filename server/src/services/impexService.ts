@@ -24,18 +24,5 @@ export const impexService = {
 			})
 		})
 	},
-
-	// getFile(filename: string): Promise<Buffer> {
-	// 	console.log(chalk.magenta(`[ImpexService.filename]`))
-		
-	// 	return new Promise((resolve, reject) => {
-	// 		fs.readFile(path.join(impexRoute, filename), (err, data: Buffer) => {
-	// 			if (err) {
-	// 				reject(err)
-	// 			} else {
-	// 				return data
-	// 			}
-	// 		})
-	// 	})
-	// }
+	
 }

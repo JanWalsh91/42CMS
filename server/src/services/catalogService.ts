@@ -14,13 +14,14 @@ class CatalogService extends Patchable<ICatalog> {
 			$set: async (catalog: ICatalog, action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
 				await catalog.setId(action.value)
-			}
+			},
 		},
 		name: {
 			$set: async (catalog: ICatalog, action: patchAction): Promise<void> => {
+				console.log(chalk.red('SET CATALOG NAME' + action.value))
 				this.checkRequiredProperties(action, ['value'])
 				await catalog.setName(action.value)
-			}
+			},
 		},
 		sites: {
 			$add: async (catalog: ICatalog, action: patchAction): Promise<void> => {
@@ -30,7 +31,7 @@ class CatalogService extends Patchable<ICatalog> {
 			$remove: async (catalog: ICatalog, action: patchAction): Promise<void> => {
 				this.checkRequiredProperties(action, ['value'])
 				await this.removeSite(catalog, action.value)
-			}
+			},
 		}
 	}
 
@@ -140,6 +141,20 @@ class CatalogService extends Patchable<ICatalog> {
 		
 		await site.save()
 		await catalog.save()
+	}
+
+	public async exportAllCatalogs(): Promise<any> {
+		console.log(chalk.magenta('[CatalogService.exportAllCatalogs]'))
+
+		// Get all catalogs
+		const catalogs: ICatalog[] = await Catalog.find().exec()
+
+		// Build JSON object to be converted to xml using xml-builder // https://www.npmjs.com/package/xmlbuilder
+		let jsonCatalogs: object[] = await Promise.all(catalogs.map((catalog: ICatalog) => catalog.toJSONForClient()))
+
+		console.log(jsonCatalogs)
+
+		return jsonCatalogs
 	}
 }
 

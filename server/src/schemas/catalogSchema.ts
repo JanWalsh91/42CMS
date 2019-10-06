@@ -40,6 +40,28 @@ const catalogSchema = new Schema({
 })
 
 catalogSchema.methods = {
+	// ==== to ====
+	async toJSONForClient(this: ICatalog): Promise<object> {
+		await this.populate([
+			{ path: 'sites' },
+			{ path: 'rootCategory' },
+			{ path: 'categories' },
+			{ path: 'products' },
+		]).execPopulate()
+		
+		let obj: any = {
+			id: this.id,
+			name: this.name,
+			sites: this.sites.map((site: ISite) => site.id),
+			rootCategory: this.rootCategory ? this.rootCategory.id : null,
+			categories: this.categories.map((category: ICategory) => category.id),
+			products: this.products.map((product: IProduct) => product.id),
+			master: this.master,
+		}
+
+		return obj
+	},
+
 	// ==== set ====
 	async setId(this: ICatalog, id: string): Promise<ICatalog> {
 		this.id = id
@@ -115,6 +137,7 @@ catalogSchema.methods = {
 		}
 		return this
 	},
+	
 }
 
 // 'On create' middleware

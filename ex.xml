@@ -1,0 +1,51 @@
+<catalogs>
+	<catalog id="catalog-1">
+		
+		<siteids>
+			<value>6540</value>
+			<value>6540</value>
+			<value>6540</value>
+			<value>6540</value>
+		</siteids>
+
+		<categories>
+			<cateogry id="654">
+				<name>root</name>
+				<parent>null</parent>
+
+				<subcategoryids>
+					<value>Beauty</value>
+				</subcategoryids>
+			
+				<productids>
+					
+				</productids>
+			</cateogry>
+		</categories>
+
+		<productids>
+			<value>6540</value>
+			<value>6540</value>
+			<value>6540</value>
+			<value>6540</value>
+		</productids>
+
+
+
+		<systemattributes>
+			<systemattribute id="name">
+				<value>Beauty</value>
+			</systemattribute>
+			<systemattribute id="master">
+				<value>true</value>
+			</systemattribute>
+		</systemattributes>
+		
+		<customattributes>
+			<customattribute name='image'>
+				<value>alsdkfj.png</value>
+			</customattribute>
+		</customattributes>
+
+	</catalog>
+</catalogs>
