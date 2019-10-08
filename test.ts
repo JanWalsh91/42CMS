@@ -2,9 +2,14 @@ import * as xlmbuilder from 'xmlbuilder'
 
 
 let xml = {
-	catalog: 'hello',
-	test2: {
-		stuff: 'helo1'
+	sites: {
+		site: [{
+			'#text': 'hello1',
+			'@site-id': 'id1',
+		}, {
+			'#text': 'hello2',
+			'@site-id': 'id2',
+		}],
 	}
 }
 

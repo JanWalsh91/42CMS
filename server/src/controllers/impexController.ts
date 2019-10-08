@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import chalk from 'chalk'
 import * as path from 'path'
 import * as xlmbuilder from 'xmlbuilder'
+import * as fs from 'fs'
 
 import { ValidationError, UnauthorizedError, LoginError, ResourceNotFoundError, NotImplementedError } from '../utils/Errors'
 import { impexService, catalogService, productService } from '../services';
@@ -68,24 +69,24 @@ class ImpexController {
 		// Get types
 		types = types.map(x => x.toLowerCase())
 		if (types.includes('catalog') || types.includes('catalogs')) {
-			var catalogs = await catalogService.exportAllCatalogs()
-			root.catalogs = await this.toXMLJSON(catalogs)
-			// console.log('catalogs', catalogs)
+			var catalogs: any = await catalogService.exportAllCatalogs()
+			root.catalogs = catalogs
 		}
 		// if (types.includes('product') || types.includes('products')) {
 			// 	let products = await productService.exportAllProducts()
 			// }
-			
-		// create up XML
-		console.log(root)
 
 		console.log('\n')
 
-		let xlm = xlmbuilder.create({root})
+		let xml = xlmbuilder.create(root)
 
 		console.log('\n')
 
-		console.log(xlm.end({pretty: true}).toString())
+		console.log(chalk.yellow('POST XML CREATION: '))
+
+		console.log(xml.end({pretty: true}).toString())
+
+		fs.writeFileSync(path.join(impexRoute, filename), xml.end({pretty: true}))
 
 		res.end()
 	}
@@ -98,20 +99,6 @@ class ImpexController {
 	// Delete a file from impex/
 	async delete(req: Request, res: Response, next: NextFunction) {
 		console.log(chalk.magenta('[ImpexController.delete]'))
-	}
-
-	public toXMLJSON = async (obj: any): Promise<any> => {
-		obj = Object.keys(obj).map(key => {
-			if (typeof obj[key] == 'string') {
-				obj[key] = {
-					'#text': obj[key]
-				}
-			} else {
-				obj[key] = obj[key]
-			}
-			return obj
-		})
-		return obj
 	}
 }
 

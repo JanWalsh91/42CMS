@@ -213,10 +213,22 @@ export const removeImages = async () => {
 	export const exportToXLM = (filename: string, types: string[]) =>
 		agent.post(`/impex/export`).send({filename, types})
 
+	export const downloadsPath: string = './server/tests/downloads'
+
 	export const getImpexFile = (filename: string) =>
 		agent.get(`/impex/${filename}`)
+			.buffer()
+			.parse(function (res: any, cb) {
+				res.setEncoding("binary");
+				res.data = "";
+				res.on("data", function (chunk) {
+					res.data += chunk;
+				});
+				res.on("end", function () {
+					cb(null, Buffer.from(res.data, "binary"));
+				});
+			})
 
-	export const downloadsPath: string = './server/tests/downloads'
 
 	export const getFileName = (req: Response) => {
 		const regexp = new RegExp('filename="([^"]+)"')
@@ -225,8 +237,10 @@ export const removeImages = async () => {
 	}
 
 	export const writeToFile = async (req: Response) => {
-		await new Promise(resolve => fs.mkdir(downloadsPath, resolve))
-		fs.writeFileSync(`${downloadsPath}/${getFileName(req)}`, req.text)
+		if (!fs.existsSync(downloadsPath)) {
+			fs.mkdirSync(downloadsPath)
+		}
+		fs.writeFileSync(`${downloadsPath}/${getFileName(req)}`, req.body)
 	}
 
 // ===== UTILITY ===== //

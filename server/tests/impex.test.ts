@@ -36,8 +36,11 @@ describe('Export', () => {
 	})
 
 	it('Should download a file from impex', async() => {
+		console.log('START TEST')
+		// const filename: string = 'myexport.xml'
 		const filename: string = 'test.txt'
-		let ret = await getImpexFile(filename)
+		ret = await getImpexFile(filename)
+		console.log('AFTER GET IMPEX FILE')
 		printret(ret)
 		ret.status.should.eq(OK)
 		
@@ -47,7 +50,9 @@ describe('Export', () => {
 		expect(file(`${downloadsPath}/${newFilename}`)).to.exist
 	})
 
-	it.only('Should export all catalogs', async() => {
+	it.only('Should export all catalogs, categories and download file', async() => {
+		const filename: string = 'myexport.xml'
+
 		ret = await createCatalog('catalog1', { master: true } )
 		ret = await createSite('site1')
 		ret = await createCategory('catalog1', 'category1')
@@ -75,13 +80,14 @@ describe('Export', () => {
 			sites: { op: '$add', value: 'site1' }
 		})
 
-		ret = await exportToXLM('myexport.xml', ['Catalog'])
+		ret = await exportToXLM(filename, ['Catalog'])
 		printret(ret)
 		ret.status.should.eq(OK)
 
-		// let newFilename = getFileName(ret)
-		// await writeToFile(ret)
-		// expect(file(`${downloadsPath}/${newFilename}`)).to.exist
+		ret = await getImpexFile(filename)
+		await writeToFile(ret)
+
+		expect(file(`${downloadsPath}/${filename}`)).to.exist
 	})
 })
 

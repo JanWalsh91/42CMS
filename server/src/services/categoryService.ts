@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 
 import { Category, Catalog } from '../models'
-import { ICategory, ICatalog } from '../interfaces'
+import { ICategory, ICatalog, IProduct } from '../interfaces'
 import { ValidationError, ResourceNotFoundError, Patchable, patchAction, patchRequest } from '../utils'
 import { catalogService } from '.' 
 
@@ -175,6 +175,35 @@ class CategoryService extends Patchable<ICategory> {
 		])
 		return { parent, child }
 	}
-}
+
+	public async categoryToXMLJSON(category: ICategory): Promise<any> {
+		console.log(chalk.magenta(`[CategoryService.categoryToXMLJSON ${category.id}`))
+		await category.populate([
+			{ path: 'products' },
+			{ path: 'subCategories' },
+			{ path: 'parent' },
+		]).execPopulate()
+
+		return {
+			'@category-id': category.id,
+			name: {
+				'#text': category.name ? category.name : null 
+			},
+			parent: {
+				'@category-id': category.parent ? category.parent.id : null,
+			},
+			subcategories: {
+				category: category.subCategories.map((category: ICategory) => ({
+					'@category-id': category.id,
+				}))
+			},
+			products: {
+				product: category.products.map((product: IProduct) => ({
+					'@product-id': product.id,
+				}))
+			}
+		}
+	}
+ }
 
 export const categoryService: CategoryService = new CategoryService()

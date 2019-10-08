@@ -146,15 +146,55 @@ class CatalogService extends Patchable<ICatalog> {
 	public async exportAllCatalogs(): Promise<any> {
 		console.log(chalk.magenta('[CatalogService.exportAllCatalogs]'))
 
-		// Get all catalogs
-		const catalogs: ICatalog[] = await Catalog.find().exec()
+		let catalogs: ICatalog[] = await Catalog.find().exec()
 
+		
 		// Build JSON object to be converted to xml using xml-builder // https://www.npmjs.com/package/xmlbuilder
-		let jsonCatalogs: object[] = await Promise.all(catalogs.map((catalog: ICatalog) => catalog.toJSONForClient()))
+		let jsonCatalogs: any = await Promise.all(catalogs.map(this.catalogToXMLJSON))
 
-		console.log(jsonCatalogs)
+		jsonCatalogs = {
+			catalog: jsonCatalogs
+		}
+
+		console.log(chalk.yellow('PRE XML:'))
+
+		console.log(JSON.stringify(jsonCatalogs, null, 4))
 
 		return jsonCatalogs
+	}
+
+	public async catalogToXMLJSON(catalog: ICatalog): Promise<any> {
+		console.log(chalk.magenta(`[CatalogService.catalogToXMLJSON] ${catalog.id}`))
+		await catalog.populate([
+			{ path: 'sites' },
+			{ path: 'categories' },
+			{ path: 'rootCategory' },
+			{ path: 'products' },
+		]).execPopulate()
+		
+		return {
+			'@catalog-id': catalog.id,
+			name: {
+				'#text': catalog.name ? catalog.name : null 
+			},
+			master: {
+				'#text': catalog.master
+			},
+			sites: {
+				site: catalog.sites.map((site: ISite) => ({ '@site-id': site.id }))
+			},
+			categories: {
+				category: await Promise.all(catalog.categories.map(categoryService.categoryToXMLJSON))
+			},
+			rootcategory: {
+				'@category-id': catalog.rootCategory.id,
+			},
+			products: {
+				product: catalog.products.map((product: IProduct) => ({
+					'@product-id': product.id
+				}))
+			}
+		}
 	}
 }
 

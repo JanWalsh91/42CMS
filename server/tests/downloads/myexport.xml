@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<catalogs>
+  <catalog catalog-id="catalog1">
+    <name>Beauty</name>
+    <master>true</master>
+    <sites>
+      <site site-id="site1"/>
+    </sites>
+    <categories>
+      <category category-id="root">
+        <name/>
+        <parent/>
+        <subcategories>
+          <category category-id="category1"/>
+        </subcategories>
+        <products/>
+      </category>
+      <category category-id="category1">
+        <name/>
+        <parent category-id="root"/>
+        <subcategories/>
+        <products>
+          <product product-id="product1"/>
+          <product product-id="product2"/>
+        </products>
+      </category>
+    </categories>
+    <rootcategory category-id="root"/>
+    <products>
+      <product product-id="product1"/>
+      <product product-id="product2"/>
+    </products>
+  </catalog>
+</catalogs>
