@@ -379,6 +379,40 @@ class ProductService extends Patchable<IProduct> {
 		product.id = id
 		return product
 	}
+
+	public async exportAllProducts(): Promise<any> {
+		console.log(chalk.magenta('[ProductService.exportAllProducts]'))
+
+		let products: IProduct[] = await Product.find().exec()
+
+		let jsonProducts: any = await Promise.all(products.map(this.productToXMLJSON))
+
+		jsonProducts = {
+			product: jsonProducts
+		}
+
+		return jsonProducts
+	}
+
+
+	public async productToXMLJSON(product: IProduct): Promise<any> {
+		console.log(chalk.magenta(`[ProductService.productToXMLJSON ${product.id}`))
+		await product.populate([
+			{ path: '' },
+		]).execPopulate()
+
+		let ret: any =  {
+			'@product-id': product.id,
+			type: {
+				'#text': product.type
+			},
+			...(await objectTypeDefinitionService.extensibleObjectToXMLJSON(product))
+		}
+	
+		console.log(JSON.stringify(ret, null, 4))
+
+		return ret
+	}
 }
 
 export const productService: ProductService = new ProductService();

@@ -182,6 +182,7 @@ class CategoryService extends Patchable<ICategory> {
 			{ path: 'products' },
 			{ path: 'subCategories' },
 			{ path: 'parent' },
+			{ path: 'catalog' },
 		]).execPopulate()
 
 		return {
@@ -198,9 +199,14 @@ class CategoryService extends Patchable<ICategory> {
 				}))
 			},
 			products: {
-				product: category.products.map((product: IProduct) => ({
+				product: await Promise.all(category.products.map(async (product: IProduct) => ({
 					'@product-id': product.id,
-				}))
+					'@primary-category': await new Promise(async (resolve) => {
+						let primaryCat: ICategory = await product.getPrimaryCategoryByCatalog(category.catalog)
+						console.log('primqrycat:  ', primaryCat ? primaryCat.id : null)
+						resolve(!!primaryCat && (primaryCat.id == category.id))
+					})
+				})))
 			}
 		}
 	}

@@ -24,6 +24,7 @@ export interface IProduct extends IExtensibleObject {
 	
 	// get methods
 	getObjectTypeDefinition: () => Promise<IObjectTypeDefinition>
+	getPrimaryCategoryByCatalog: (catalog: ICatalog) => Promise<ICategory>
 
 	// set methods
 	setId: (id: string): void

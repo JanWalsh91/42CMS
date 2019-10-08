@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 
-import { IObjectTypeDefinition, IObjectAttributeDefinition, IExtensibleObject } from '../interfaces'
+import { IObjectTypeDefinition, IObjectAttributeDefinition, IExtensibleObject, ILocalizableAttribute } from '../interfaces'
 import { patchRequest, Patchable, patchAction, ValidationError, InternalError } from '../utils'
 import { ObjectTypeDefinition, Product, LocalizableAttribute, ObjectAttributeDefinition, Image, Site } from '../models'
 import { Model, model } from 'mongoose'
@@ -204,6 +204,44 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 		OTD.markModified('objectAttributeDefinitions')
 		await OTD.save()
 		await OAD.remove()
+	}
+
+	public async extensibleObjectToXMLJSON(eObj: IExtensibleObject) {
+		console.log(chalk.magenta(`[ObjectTypeDefinitionService.extensibleObjectToXMLJSON]`))
+
+		let OTD: IObjectTypeDefinition = await eObj.getObjectTypeDefinition()
+
+		let systemattribute: any = []
+		let customattribute: any = []
+		OTD.objectAttributeDefinitions.forEach((OAD: IObjectAttributeDefinition) => {
+			let value: any = []
+	
+			let attr: ILocalizableAttribute = OAD.system ? eObj[OAD.path] : eObj.custom[OAD.path]
+	
+			attr.value.forEach((val, key) => {
+				value.push({
+					'@locale': key,
+					value: val
+				})
+			})
+
+			if (OAD.system) {
+				systemattribute.push({
+					'@path': OAD.path,
+					value
+				})
+			} else {
+				customattribute.push({
+					'@path': OAD.path,
+					value
+				})
+			}
+		})
+		let ret: any = {
+			systemattributes: { systemattribute } ,
+			customattributes: { customattribute },
+		}
+		return ret
 	}
 }
 

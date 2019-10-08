@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<products>
+  <product product-id="product1">
+    <type>basic</type>
+    <systemattributes>
+      <systemattribute path="name">
+        <value locale="default"/>
+      </systemattribute>
+      <systemattribute path="description">
+        <value locale="default"/>
+      </systemattribute>
+    </systemattributes>
+    <customattributes/>
+  </product>
+  <product product-id="product2">
+    <type>basic</type>
+    <systemattributes>
+      <systemattribute path="name">
+        <value locale="default"/>
+      </systemattribute>
+      <systemattribute path="description">
+        <value locale="default">
+          <value>This describes my product in default</value>
+        </value>
+        <value locale="en">
+          <value>This describes my product in EN</value>
+        </value>
+      </systemattribute>
+    </systemattributes>
+    <customattributes/>
+  </product>
+</products>

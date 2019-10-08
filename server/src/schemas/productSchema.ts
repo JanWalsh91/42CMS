@@ -120,6 +120,20 @@ productSchema.methods = {
 		await this.populate('masterCatalog').execPopulate()
 		return this.masterCatalog
 	},
+	async getPrimaryCategoryByCatalog(this: IProduct, catalog: ICatalog): Promise<ICategory> {
+		await this.populate([
+			{ path: 'primaryCategoryByCatalog.catalog '},
+			{ path: 'primaryCategoryByCatalog.category '},
+		]).execPopulate()
+
+		let match = this.primaryCategoryByCatalog.find(x => x.catalog.id == catalog.id)
+		
+		if (match) {
+			return match.category 
+		} else {
+			return null
+		}
+	},
 
 	// ==== add ==== 
 	async addAssignedCatalog(this: IProduct, catalog: ICatalog): Promise<void> {

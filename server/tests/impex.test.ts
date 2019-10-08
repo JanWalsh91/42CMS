@@ -9,7 +9,7 @@ import chalk from 'chalk'
 import * as path from 'path'
 
 import app from '../src/app'
-import { Locale, Image } from '../src/models'
+import { Locale, Image, Product } from '../src/models'
 import { jsonLocale } from '../src/types'
 import { ILocale, IImage } from '../src/interfaces';
 import { clearDataBase, uploadImage, printret, createUser, userData, removeImages, deleteImage, placeholderImages, exportToXLM, getAllImpexFiles, getImpexFile, writeToFile, getFileName, downloadsPath, createCatalog, createProduct, updateCatalog, createSite, createCategory, productData, updateProduct, updateSite } from './common'
@@ -51,7 +51,7 @@ describe('Export', () => {
 	})
 
 	it.only('Should export all catalogs, categories and download file', async() => {
-		const filename: string = 'myexport.xml'
+		let filename: string = 'myexport.xml'
 
 		ret = await createCatalog('catalog1', { master: true } )
 		ret = await createSite('site1')
@@ -66,7 +66,7 @@ describe('Export', () => {
 				op: '$add',
 				value: 'category1',
 				catalog: 'catalog1',
-			}
+			},
 		})
 		ret = await createProduct('catalog1', 'product2')
 		ret = await updateProduct('product2', {
@@ -74,13 +74,41 @@ describe('Export', () => {
 				op: '$add',
 				value: 'category1',
 				catalog: 'catalog1',
-			}
+			},
+			primaryCategoryByCatalog: {
+				op: '$set',
+				value: 'category1',
+				catalog: 'catalog1',
+			},
+			description: [
+				{
+					op: '$set',
+					value: 'This describes my product in default'
+				},
+				{
+					op: '$set',
+					value: 'This describes my product in EN',
+					locale: 'en'
+				},
+			]
 		})
+
 		ret = await updateCatalog('catalog1', {
 			sites: { op: '$add', value: 'site1' }
 		})
 
-		ret = await exportToXLM(filename, ['Catalog'])
+		// ret = await exportToXLM(filename, ['Catalog'])
+		// printret(ret)
+		// ret.status.should.eq(OK)
+
+		// ret = await getImpexFile(filename)
+		// await writeToFile(ret)
+
+		// expect(file(`${downloadsPath}/${filename}`)).to.exist
+
+		filename = 'productexports.xml'
+
+		ret = await exportToXLM(filename, ['Product'])
 		printret(ret)
 		ret.status.should.eq(OK)
 

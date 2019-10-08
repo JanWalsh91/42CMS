@@ -64,7 +64,7 @@ class ImpexController {
 			throw new ValidationError('filename must be a string')
 		}
 
-		var root: { catalogs?: any, procuct?: any } = {}
+		var root: { catalogs?: any, products?: any } = {}
 
 		// Get types
 		types = types.map(x => x.toLowerCase())
@@ -72,9 +72,10 @@ class ImpexController {
 			var catalogs: any = await catalogService.exportAllCatalogs()
 			root.catalogs = catalogs
 		}
-		// if (types.includes('product') || types.includes('products')) {
-			// 	let products = await productService.exportAllProducts()
-			// }
+		if (types.includes('product') || types.includes('products')) {
+			let products = await productService.exportAllProducts()
+			root.products = products 
+		}
 
 		console.log('\n')
 

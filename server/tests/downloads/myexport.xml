@@ -20,8 +20,8 @@
         <parent category-id="root"/>
         <subcategories/>
         <products>
-          <product product-id="product1"/>
-          <product product-id="product2"/>
+          <product product-id="product1" primary-category="false"/>
+          <product product-id="product2" primary-category="true"/>
         </products>
       </category>
     </categories>
@@ -32,3 +32,9 @@
     </products>
   </catalog>
 </catalogs>
+
+<systemattributes>
+	<systemattribute path='description'>
+		<value locale='default'>32130210</value>
+	</systemattribute>
+</systemattributes>
