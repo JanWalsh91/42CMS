@@ -50,7 +50,12 @@ export const imageController = {
 			})
 			await imageService.create(id, finalPath)
 			res.end()
-		} catch (e) { next(e) }
+		} catch (e) {
+			if (fs.existsSync(path.join(__dirname, finalPath))) {
+				fs.unlinkSync(path.join(__dirname, finalPath))
+			}
+			next(e)
+		}
 	},
 
 	async get(req: Request, res: Response, next: NextFunction): Promise<void> {

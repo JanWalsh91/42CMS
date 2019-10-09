@@ -20,6 +20,7 @@ describe('Global Setting', function() {
 	beforeEach(async function() {
 		// Clear database
 		await clearDataBase()
+		await app.ready
 		// Create user
 		ret = await createUser(userData)
 	})
@@ -59,6 +60,12 @@ describe('Global Setting', function() {
 					})).locale
 					expect(localeSettings.availableLocales.find(x => x.id == 'fr_FR')).to.not.exist
 				})
+				it('Patch operator is invalid', async() => {
+					ret = await updateGlobalSettings({
+						locale: { op: '$set', value: 'fr_FR' }
+					})
+					ret.status.should.eq(BAD_REQUEST)
+				})
 			})
 		})
 		describe('Remove locale from available locales', () => {
@@ -66,10 +73,10 @@ describe('Global Setting', function() {
 				ret = await updateGlobalSettings({
 					locale: { op: '$add', value: 'fr_FR' }
 				})
-				ret.status.should.eq(OK)
 				ret = await updateGlobalSettings({
 					locale: { op: '$remove', value: 'fr_FR' }
 				})
+				ret.status.should.eq(OK)
 				let localeSettings: ILocaleSettings = (await GlobalSettings.findOne({}).populate({
 					path: 'locale.availableLocales',
 					populate: {
@@ -77,6 +84,26 @@ describe('Global Setting', function() {
 					}
 				})).locale
 				expect(localeSettings.availableLocales.find(x => x.id == 'fr_FR')).to.not.exist
+			})
+			describe('Should fail if ...', () => {
+				it('Locale is invalid', async() => {
+					ret = await updateGlobalSettings({
+						locale: { op: '$add', value: 'fr_FR' }
+					})
+					ret = await updateGlobalSettings({
+						locale: { op: '$remove', value: 'fr_FRRRR' }
+					})
+					ret.status.should.eq(BAD_REQUEST)
+				})
+				it('Locale is no available', async() => {
+					ret = await updateGlobalSettings({
+						locale: { op: '$add', value: 'fr_FR' }
+					})
+					ret = await updateGlobalSettings({
+						locale: { op: '$remove', value: 'fr' }
+					})
+					ret.status.should.eq(BAD_REQUEST)
+				})
 			})
 		})
 	})

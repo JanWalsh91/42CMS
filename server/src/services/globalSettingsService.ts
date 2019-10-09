@@ -84,6 +84,8 @@ class GlobalSettingsService extends Patchable<IGlobalSettings> {
 				throw new ResourceNotFoundError('Locale', value)
 			}
 			await localeSettings.removeAvailableLocale(locale)
+		} else {
+			throw new ValidationError('Locale not available')
 		}
 	}
 }

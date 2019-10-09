@@ -40,6 +40,11 @@ export const placeholderImages: string[] = [
 	'800x500.png',
 ].map(img => `${folderPath}/${img}`)
 
+export const invalidImgs: string[] = [
+	'invalidimage.png',
+	'notanimage.txt',
+].map(img => `${folderPath}/${img}`)
+
 export const clearDataBase = async (...models: Model<any>[]) => {
 	console.log(chalk.red('[clearDatabase]: ' + (models.length ? models.map(model => model.modelName).join(', ') : 'all models')))
 	if (!models.length) {

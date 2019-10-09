@@ -13,7 +13,7 @@ import app from '../src/app'
 
 let ret: any
 
-describe.only('Category', () => {
+describe('Category', () => {
 	before(async () => {
 		await app.ready
 	})

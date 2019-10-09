@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import { Document } from 'mongoose'
 
-import { ValidationError } from '.'
+import { ValidationError, ServerError } from '.'
 import { localizableAttributeService } from '../services'
 import { IObjectAttributeDefinition, IObjectTypeDefinition, IExtensibleObject, ILocalizableAttribute } from '../interfaces'
 import { isExtensibleObject } from '../typeguards';
@@ -50,7 +50,7 @@ export abstract class Patchable<T> {
 			if (this.patchMap[key].hasOwnProperty(action.op)) {
 				await this.patchMap[key][action.op](object, action)
 			} else {
-				throw `action ${action.op} for ${key} is not available`
+				throw new ServerError(400, `action ${action.op} for ${key} is not available`)
 			}
 		} else if (this.hasObjectTypeDefinition) {
 			const OTD: IObjectTypeDefinition = await this.getObjectTypeDefinition()
@@ -62,9 +62,8 @@ export abstract class Patchable<T> {
 				if (isExtensibleObject(object)) {
 					localizedAttribute = object.custom.get(key)
 				} else {
-					throw `invalid property [${key}]`
+					throw new ServerError(400, `invalid property [${key}]`)
 				}
-
 			}
 			if (OAD) {
 				await localizableAttributeService.update(
@@ -74,7 +73,7 @@ export abstract class Patchable<T> {
 					action
 				)
 			} else {
-				throw `invalid property [${key}]`
+				throw new ServerError(400, `invalid property [${key}]`)
 			}
 		}
 	}

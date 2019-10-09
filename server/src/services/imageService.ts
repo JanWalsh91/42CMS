@@ -1,6 +1,9 @@
 import chalk from 'chalk'
 import * as path from 'path'
 import * as fs from 'fs'
+const isImage = require('is-image')
+const readChunk = require('read-chunk')
+const imageType = require('image-type')
 
 import { ResourceNotFoundError, NotImplementedError, ValidationError, Patchable, patchAction, patchRequest } from '../utils'
 import { IImage } from '../interfaces'
@@ -22,7 +25,7 @@ class ImageService extends Patchable<IImage> {
 		}
 	}
 
-	public async create(id: string, path: string): Promise<IImage> {
+	public async create(id: string, imgpath: string): Promise<IImage> {
 		console.log(chalk.blue('[imageService.create]'), id)
 		const existingImage: IImage = await this.getById(id)
 		
@@ -30,9 +33,14 @@ class ImageService extends Patchable<IImage> {
 			throw new ValidationError('Image already exists')
 		}
 		
+		const buffer = readChunk.sync(path.join(__dirname, imgpath), 0, 12);
+		if (!imageType(buffer)) {
+			throw new ValidationError('File is not an image')
+		}
+
 		const image: IImage = await new Image({
 			id,
-			path,
+			path: imgpath,
 		}).save()
 
 		return image
