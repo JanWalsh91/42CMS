@@ -4,16 +4,11 @@ const expect = require('chai').expect
 const chaiFiles = require('chai-files')
 chai.use(chaiFiles)
 const file = chaiFiles.file
-const dir = chaiFiles.dir
 import chalk from 'chalk'
-import * as path from 'path'
 import * as fs from 'fs'
 
 import app from '../src/app'
-import { Locale, Image, Product } from '../src/models'
-import { jsonLocale } from '../src/types'
-import { ILocale, IImage } from '../src/interfaces';
-import { clearDataBase, uploadImage, printret, createUser, userData, removeImages, deleteImage, placeholderImages, exportToXLM, getAllImpexFiles, getImpexFile, writeToFile, getFileName, downloadsPath, createCatalog, createProduct, updateCatalog, createSite, createCategory, productData, updateProduct, updateSite } from './common'
+import { clearDataBase, printret, createUser, userData, exportToXLM, getAllImpexFiles, getImpexFile, writeToFile, getFileName, downloadsPath, createCatalog, createProduct, updateCatalog, createSite, createCategory, updateProduct } from './common'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes
