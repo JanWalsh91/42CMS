@@ -9,12 +9,11 @@ import { Catalog } from '../models'
 export class CatalogController {
 	public async create(req: Request, res: Response, next: NextFunction): Promise<void> {
 		console.log(chalk.magenta('[CatalogController.create]'))
-		const { name, id, master }: { name: string, id: string, master: boolean } = req.body; // User acquired from authorization middleware
+		const { name, id, master }: { name: string, id: string, master: boolean } = req.body;
 
 		try {
-			const catalog: ICatalog = await catalogService.create({name, id, master});
-			
-			// console.log(chalk.magenta('[CatalogController] create END'), catalog);
+			const catalog: ICatalog = await catalogService.create({name, id, master})
+			console.log('end catalog service')
 			res.send(catalog)
 		} catch(e) {
 			next(e)

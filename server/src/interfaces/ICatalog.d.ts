@@ -1,4 +1,4 @@
-import { Document } from 'mongoose'
+import { Document, ClientSession } from 'mongoose'
 
 import { ICategory, IProduct, ISite } from './' 
 

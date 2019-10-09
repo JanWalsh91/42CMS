@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose'
+import { ClientSession } from 'mongoose'
 import * as express from "express"
 import { Request, Response, NextFunction } from "express"
 import * as bcrypt from "bcrypt"
@@ -8,18 +9,21 @@ import * as session from 'express-session'
 import chalk from 'chalk'
 
 import ResponseStatusTypes from "./utils/ResponseStatusTypes"
-const { SERVER_ERROR } = ResponseStatusTypes
+const { SERVER_ERROR, BAD_REQUEST } = ResponseStatusTypes
 
 import { globalSettingsService, objectTypeDefinitionService } from './services'
 
 import routes from './routes'
 import { ServerError } from './utils/Errors'
 import { localeService } from './services/localeservice'
+import { MongoClient } from 'mongodb';
 
 class App {
 
 	public app: express.Application
 	private static salt: string = "$2b$05$PD21LwJzPhCGI8XjSPcHzO"
+	private db: mongoose.Connection
+
 	public ready: Promise<void>
 	private _ready: boolean = false
 
@@ -74,9 +78,10 @@ class App {
 		mongoose.set('useFindAndModify', false)
 		mongoose.set('useCreateIndex', true)
 		mongoose.connect('mongodb://127.0.0.1:27017/MYDB', { useNewUrlParser: true })
-		let db = mongoose.connection
+		this.db = mongoose.connection
+
 		// mongoose.set('debug', true)
-		db.on('error', err => {
+		this.db.on('error', err => {
 			console.log('err: ', err)
 		})
 		// set up session
@@ -120,13 +125,25 @@ class App {
 	}
 
 	private errorHandler(err: Error | ServerError, req: Request, res: Response, next: NextFunction) {
+		console.log(chalk.red(err.stack))
+		console.log('name: ', err.name)
 		if ((<ServerError>err).httpCode) {
-			console.log(chalk.red(err.stack), '(0)')
-			console.log(err, '(0)')
+			console.log('[1]')
 			res.status((<ServerError>err).httpCode).send(err.message)
+		} else if (err.name == 'ValidationError') {
+			// Handle Mongoose validation errors
+			console.log('[2]')
+			res.status(BAD_REQUEST).send({message: err.message})
+		} else if (err.name == 'CastError') {
+			// Handle Mongoose cast errors
+			console.log('[2]')
+			res.status(BAD_REQUEST).send({message: err.message})
+		} else if (err.name == 'MongoError') {
+			// Handle Mongoose general errors (including { unique: true } )
+			console.log('[2]')
+			res.status(BAD_REQUEST).send({message: err.message})
 		} else {
-			console.log(chalk.red(err.stack), '(1)')
-			console.log(err, '(1)')
+			console.log('[3]')
 			res.status(SERVER_ERROR).send('Unexpected Error')
 		}
 	}

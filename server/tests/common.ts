@@ -2,7 +2,7 @@ import app from '../src/app'
 import * as chai from 'chai'
 import chaiHttp = require('chai-http')
 chai.use(chaiHttp)
-const agent = chai.request.agent(app.app)
+export const agent = chai.request.agent(app.app)
 import chalk, { ChalkOptions } from 'chalk'
 import { Model } from 'mongoose'
 import * as fs from 'fs'

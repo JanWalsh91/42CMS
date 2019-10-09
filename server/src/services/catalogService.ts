@@ -3,7 +3,7 @@ import chalk from 'chalk'
 import { ResourceNotFoundError, NotImplementedError, ValidationError, Patchable, patchAction, patchRequest } from '../utils'
 import { Catalog } from '../models'
 import { ICatalog, ICategory, IProduct, ISite } from '../interfaces'
-import { categoryService, siteService } from '.'
+import { categoryService, siteService, productService } from '.'
 
 
 class CatalogService extends Patchable<ICatalog> {
@@ -18,7 +18,6 @@ class CatalogService extends Patchable<ICatalog> {
 		},
 		name: {
 			$set: async (catalog: ICatalog, action: patchAction): Promise<void> => {
-				console.log(chalk.red('SET CATALOG NAME' + action.value))
 				this.checkRequiredProperties(action, ['value'])
 				await catalog.setName(action.value)
 			},
@@ -60,8 +59,9 @@ class CatalogService extends Patchable<ICatalog> {
 
 	public async delete(catalog: ICatalog): Promise<void> {
 		catalog = await catalog.populate([
-			{path: 'categories'},
-			{path: 'sites'},
+			{ path: 'categories' },
+			{ path: 'sites' },
+			{ path: 'products' },
 		]).execPopulate()
 		
 		// Delete all categories
@@ -73,9 +73,14 @@ class CatalogService extends Patchable<ICatalog> {
 			return site.save()
 		}), Promise.resolve())
 
-		// TODO: handle products:
-			// if master, delete products?
-			// else, unassign for catalog
+		// Handle products
+		if (catalog.master) {
+			// Delete products
+			await catalog.products.reduce((_, product: IProduct) => _.then(() => productService.delete(product)), Promise.resolve())
+		} else {
+			// Unassign products
+			await catalog.products.reduce((_, product: IProduct) => _.then(() => product.removeAssignedCatalog(catalog)), Promise.resolve())
+		}
 
 		await catalog.remove()
 	}

@@ -4,6 +4,8 @@ import { Category, Catalog } from '../models'
 import { ICategory, ICatalog, IProduct } from '../interfaces'
 import { ValidationError, ResourceNotFoundError, Patchable, patchAction, patchRequest } from '../utils'
 import { catalogService } from '.' 
+import app from '../app';
+import { ClientSession, startSession } from 'mongoose';
 
 class CategoryService extends Patchable<ICategory> {
 	hasObjectTypeDefinition = false
@@ -34,6 +36,10 @@ class CategoryService extends Patchable<ICategory> {
 	 */
 	public async create(options: Partial<ICategory>): Promise<ICategory> {
 		console.log(chalk.blue('[CategoryService.create]'), options)
+		
+		var category: ICategory;
+		
+		// Start transaction
 		const catalog: ICatalog = await catalogService.getById(options.catalog)
 		if (!catalog) {
 			throw new ResourceNotFoundError('Catalog', options.catalog)
@@ -45,30 +51,40 @@ class CategoryService extends Patchable<ICategory> {
 		}
 		
 		// Create new category
-		let category: ICategory = await new Category({
+		category = await new Category({
 			id: options.id,
 			name: options.name,
 			catalog
 		}).save()
 
-		// Add category to catalog
-		await catalogService.addCategory(catalog, category)
-
-		// Link to parent category
-		if (options.id != 'root') {
-			var parentCategory: ICategory = null
-			if (options.parent) {
-				parentCategory = await catalog.getCategory({id: options.parent})
-			} else {
-				parentCategory = await catalog.getCategory({id: 'root'});
+		var parentCategory: ICategory = null
+		try {
+			// Add category to catalog
+			await catalogService.addCategory(catalog, category)
+	
+			// Link to parent category
+			if (options.id != 'root') {
+				if (options.parent) {
+					parentCategory = await catalog.getCategory({id: options.parent})
+				} else {
+					parentCategory = await catalog.getCategory({id: 'root'});
+				}
+				if (!parentCategory) {
+					throw new ResourceNotFoundError('Category', options.parent || 'root')
+				}
+				await this.linkCategories(parentCategory, category)
+				await parentCategory.save()
+				await category.save()
 			}
-			if (!parentCategory) {
-				throw new ResourceNotFoundError('Category', options.parent || 'root')
+		} catch (e) {
+			if (parentCategory) {
+				await this.unlinkCategories(parentCategory, category)
 			}
-			await this.linkCategories(parentCategory, category)
-			await parentCategory.save()
+			await catalogService.delete(catalog)
+			throw e
 		}
-		return await category.save()
+
+		return category
 	}
 	
 	public async findAll(query: object): Promise<ICategory[]> {
@@ -124,7 +140,12 @@ class CategoryService extends Patchable<ICategory> {
 
 	public async delete(category: ICategory): Promise<void> {
 		console.log(chalk.magenta('[categoryService.delete]' +  category.id))
-		await category.populate([{path: 'catalog'}, {path: 'parent'}, {path: 'subCategories'}]).execPopulate()
+		await category.populate([
+			{ path: 'catalog' },
+			{ path: 'parent' },
+			{ path: 'subCategories' },
+			{ path: 'products' },
+		]).execPopulate()
 		
 		// Remove category from catalog
 		if (category.catalog) {
@@ -139,7 +160,7 @@ class CategoryService extends Patchable<ICategory> {
 		
 		// Unlink category from subCategories
 		if (category.subCategories) {
-			await category.subCategories.reduce(async(_: Promise<void>, subcat: ICategory) => {
+			await category.subCategories.reduce(async(_, subcat: ICategory) => {
 				return _.then(async () => {
 					await this.unlinkCategories(category, subcat)
 					await subcat.save()
@@ -148,6 +169,11 @@ class CategoryService extends Patchable<ICategory> {
 		}
 		
 		// TODO: remove product assignments
+		if (category.products) {
+			await category.products.reduce(async(_, product: IProduct) => 
+				_.then(() => product.removeAssignedCategoryByCatalog(category, category.catalog)),
+				Promise.resolve())
+		}
 
 		// Delete Category
 		await Category.findOneAndDelete({id: category.id})
@@ -157,6 +183,21 @@ class CategoryService extends Patchable<ICategory> {
 	// ! does not save
 	public async linkCategories(parent: ICategory, child: ICategory): Promise<{parent: ICategory, child: ICategory}> {
 		console.log(chalk.magenta(`[CategoryService.linkCategories] parent: ${parent.id}, child: ${child.id}`))
+
+		await child.populate('parent').execPopulate()
+
+		if (parent.id == child.id) {
+			throw new ValidationError('Invalid parent category (self)')
+		}
+
+		let p: ICategory = parent
+		while (p) {
+			if (p.id == child.id) {
+				throw new ValidationError('Invalid parent category (loop)')
+			}
+			await p.populate('parent').execPopulate()			
+			p = p.parent
+		}
 
 		await Promise.all([
 			parent.addSubCategory(child),

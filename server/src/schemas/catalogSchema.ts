@@ -1,4 +1,4 @@
-import { Schema } from 'mongoose'
+import { Schema, ClientSession } from 'mongoose'
 import chalk from 'chalk'
 
 import { ICatalog, ICategory, IProduct, ISite } from '../interfaces'
@@ -85,7 +85,7 @@ catalogSchema.methods = {
 		console.log(chalk.magenta(`[CatalogModel.addCategory] ${category.id} to ${this.id}`))
 		await this.populate('categories').execPopulate()
 		if (this.categories.every(x => x.id != category.id)) {
-			this.categories.push(category._id)
+			this.categories.push(category)
 			this.markModified('categories')
 		}
 		return this
