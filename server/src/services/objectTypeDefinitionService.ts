@@ -131,8 +131,6 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 	public async updateObjectAttributeType(OAD: IObjectAttributeDefinition) {
 		console.log(chalk.magenta('[ObjectTypeDefinitionService.updateObjectAttributeType]'))
 		await OAD.populate('objectTypeDefinition').execPopulate()
-		console.log('OAD: ', OAD)
-		console.log('OTD: ', OAD.objectTypeDefinition)
 		const docs: IExtensibleObject[] = <IExtensibleObject[]>(await model(OAD.objectTypeDefinition.objectName).find().exec())
 		await Promise.all(docs.map(async(doc: IExtensibleObject): Promise<void> => {
 			await doc.populate('custom').execPopulate()

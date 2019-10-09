@@ -218,7 +218,7 @@ class ProductService extends Patchable<IProduct> {
 	}
 
 	public async create(options: Partial<IProductVariant> | Partial<IProductMaster> | Partial<IProduct>): Promise<IProduct> {
-		console.log(chalk.blue('[productService.create]'), options)
+		console.log(chalk.blue('[productService.create]'))
 		const catalog: ICatalog = await catalogService.getById(options.masterCatalog)
 		if (!catalog) {
 			throw new ResourceNotFoundError('Catalog', options.masterCatalog)
@@ -309,7 +309,7 @@ class ProductService extends Patchable<IProduct> {
 	}
 
 	public async update(product: IProduct, patchRequest: patchRequest, resources: any): Promise<IProduct> {
-		console.log(chalk.magenta(`[ProductService.update]`), product)
+		console.log(chalk.magenta(`[ProductService.update]`))
 
 		await this.patch(product, patchRequest, resources)
 		return product.save()
@@ -401,7 +401,7 @@ class ProductService extends Patchable<IProduct> {
 			{ path: '' },
 		]).execPopulate()
 
-		let ret: any =  {
+		const ret: any =  {
 			'@product-id': product.id,
 			type: {
 				'#text': product.type
@@ -409,8 +409,6 @@ class ProductService extends Patchable<IProduct> {
 			...(await objectTypeDefinitionService.extensibleObjectToXMLJSON(product))
 		}
 	
-		console.log(JSON.stringify(ret, null, 4))
-
 		return ret
 	}
 }

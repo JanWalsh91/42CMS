@@ -146,21 +146,12 @@ class CatalogService extends Patchable<ICatalog> {
 	public async exportAllCatalogs(): Promise<any> {
 		console.log(chalk.magenta('[CatalogService.exportAllCatalogs]'))
 
-		let catalogs: ICatalog[] = await Catalog.find().exec()
+		const catalogs: ICatalog[] = await Catalog.find().exec()
 
-		
 		// Build JSON object to be converted to xml using xml-builder // https://www.npmjs.com/package/xmlbuilder
-		let jsonCatalogs: any = await Promise.all(catalogs.map(this.catalogToXMLJSON))
+		const jsonCatalogs: any = await Promise.all(catalogs.map(this.catalogToXMLJSON))
 
-		jsonCatalogs = {
-			catalog: jsonCatalogs
-		}
-
-		console.log(chalk.yellow('PRE XML:'))
-
-		console.log(JSON.stringify(jsonCatalogs, null, 4))
-
-		return jsonCatalogs
+		return { catalog: jsonCatalogs }
 	}
 
 	public async catalogToXMLJSON(catalog: ICatalog): Promise<any> {

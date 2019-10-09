@@ -202,8 +202,7 @@ class CategoryService extends Patchable<ICategory> {
 				product: await Promise.all(category.products.map(async (product: IProduct) => ({
 					'@product-id': product.id,
 					'@primary-category': await new Promise(async (resolve) => {
-						let primaryCat: ICategory = await product.getPrimaryCategoryByCatalog(category.catalog)
-						console.log('primqrycat:  ', primaryCat ? primaryCat.id : null)
+						const primaryCat: ICategory = await product.getPrimaryCategoryByCatalog(category.catalog)
 						resolve(!!primaryCat && (primaryCat.id == category.id))
 					})
 				})))

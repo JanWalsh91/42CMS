@@ -45,7 +45,7 @@ export abstract class Patchable<T> {
 	}
 
 	private async executeAction(object: T, key: string, action: patchAction) {
-		console.log('execute action', action)
+		// console.log('execute action', action)
 		if (this.patchMap.hasOwnProperty(key)) {
 			if (this.patchMap[key].hasOwnProperty(action.op)) {
 				await this.patchMap[key][action.op](object, action)

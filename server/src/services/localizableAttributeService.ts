@@ -11,10 +11,6 @@ class LocalizableAttributeService {
 	
 	public async update(attribute: ILocalizableAttribute, OAD: IObjectAttributeDefinition, key: string, patchAction: patchAction): Promise<void> {
 		console.log(chalk.magenta(`[LocalizableAttributeService.update]`))
-		console.log('attribute:', attribute)
-		console.log('OAD:', OAD)
-		console.log('patchAction:', patchAction)
-
 		let locale = patchAction.locale ? patchAction.locale : 'default'
 
 		await this.validateAction(OAD.type, patchAction.op)

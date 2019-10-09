@@ -38,9 +38,6 @@ class ImpexController {
 	// Uploads a file in impex
 	async upload(req: Request, res: Response, next: NextFunction) {
 		console.log(chalk.magenta('[ImpexController.upload]'))
-
-		
-		
 		res.end()
 	}
 	
@@ -77,15 +74,7 @@ class ImpexController {
 			root.products = products 
 		}
 
-		console.log('\n')
-
 		let xml = xlmbuilder.create(root)
-
-		console.log('\n')
-
-		console.log(chalk.yellow('POST XML CREATION: '))
-
-		console.log(xml.end({pretty: true}).toString())
 
 		fs.writeFileSync(path.join(impexRoute, filename), xml.end({pretty: true}))
 

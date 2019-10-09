@@ -7,6 +7,7 @@ const file = chaiFiles.file
 const dir = chaiFiles.dir
 import chalk from 'chalk'
 import * as path from 'path'
+import * as fs from 'fs'
 
 import app from '../src/app'
 import { Locale, Image, Product } from '../src/models'
@@ -39,6 +40,9 @@ describe('Export', () => {
 		console.log('START TEST')
 		// const filename: string = 'myexport.xml'
 		const filename: string = 'test.txt'
+
+		fs.writeFileSync(`./server/impex/${filename}`, 'test file contents')
+
 		ret = await getImpexFile(filename)
 		console.log('AFTER GET IMPEX FILE')
 		printret(ret)
@@ -48,9 +52,12 @@ describe('Export', () => {
 		expect(newFilename).eq(filename)
 		await writeToFile(ret)
 		expect(file(`${downloadsPath}/${newFilename}`)).to.exist
+
+		fs.unlinkSync(`${downloadsPath}/${filename}`)
+		fs.unlinkSync(`./server/impex/${filename}`)
 	})
 
-	it.only('Should export all catalogs, categories and download file', async() => {
+	it('Should export all catalogs, categories and download file', async() => {
 		let filename: string = 'myexport.xml'
 
 		ret = await createCatalog('catalog1', { master: true } )
@@ -97,14 +104,17 @@ describe('Export', () => {
 			sites: { op: '$add', value: 'site1' }
 		})
 
-		// ret = await exportToXLM(filename, ['Catalog'])
-		// printret(ret)
-		// ret.status.should.eq(OK)
+		ret = await exportToXLM(filename, ['Catalog'])
+		printret(ret)
+		ret.status.should.eq(OK)
 
-		// ret = await getImpexFile(filename)
-		// await writeToFile(ret)
+		ret = await getImpexFile(filename)
+		await writeToFile(ret)
 
-		// expect(file(`${downloadsPath}/${filename}`)).to.exist
+		expect(file(`${downloadsPath}/${filename}`)).to.exist
+
+		fs.unlinkSync(`${downloadsPath}/${filename}`)
+		fs.unlinkSync(`./server/impex/${filename}`)
 
 		filename = 'productexports.xml'
 
@@ -116,6 +126,9 @@ describe('Export', () => {
 		await writeToFile(ret)
 
 		expect(file(`${downloadsPath}/${filename}`)).to.exist
+
+		fs.unlinkSync(`${downloadsPath}/${filename}`)
+		fs.unlinkSync(`./server/impex/${filename}`)
 	})
 })
 
