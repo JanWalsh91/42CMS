@@ -24,15 +24,21 @@ class ImpexController {
 
 		const filename: string = req.params.filename
 		
-		if (!filename) {
-			throw new ValidationError('No filename provided')
-		}
-
-		res.download(path.join(impexRoute, filename), (err: Error) => {
-			if (err && !res.headersSent) {
-				throw err
+		try {
+			if (!filename) {
+				throw new ValidationError('No filename provided')
 			}
-		})
+			
+			if (!fs.existsSync(path.join(impexRoute, filename))) {
+				throw new ResourceNotFoundError('file', path.join(impexRoute, filename))
+			}
+
+			res.download(path.join(impexRoute, filename), (err: Error) => {
+				if (err && !res.headersSent) {
+					throw err
+				}
+			})
+		} catch (e) { next(e) }
 	}
 
 	// Uploads a file in impex
@@ -47,38 +53,39 @@ class ImpexController {
 		
 		let types: string[] = req.body.types
 		const filename: string = req.body.filename
-
-		if (!types) {
-			throw new ValidationError('types not provided')
-		}
-		if (!Array.isArray(types) || types.some(x => typeof x !== 'string')) {
-			throw new ValidationError('types must be an array of string')
-		}
-		if (!filename) {
-			throw new ValidationError('filename not provided')
-		}
-		if (typeof filename != 'string') {
-			throw new ValidationError('filename must be a string')
-		}
-
-		var root: { catalogs?: any, products?: any } = {}
-
-		// Get types
-		types = types.map(x => x.toLowerCase())
-		if (types.includes('catalog') || types.includes('catalogs')) {
-			var catalogs: any = await catalogService.exportAllCatalogs()
-			root.catalogs = catalogs
-		}
-		if (types.includes('product') || types.includes('products')) {
-			let products = await productService.exportAllProducts()
-			root.products = products 
-		}
-
-		let xml = xlmbuilder.create(root)
-
-		fs.writeFileSync(path.join(impexRoute, filename), xml.end({pretty: true}))
-
-		res.end()
+		try {
+			if (!types) {
+				throw new ValidationError('types not provided')
+			}
+			if (!Array.isArray(types) || types.some(x => typeof x !== 'string')) {
+				throw new ValidationError('types must be an array of string')
+			}
+			if (!filename) {
+				throw new ValidationError('filename not provided')
+			}
+			if (typeof filename != 'string') {
+				throw new ValidationError('filename must be a string')
+			}
+	
+			var root: { catalogs?: any, products?: any } = {}
+	
+			// Get types
+			types = types.map(x => x.toLowerCase())
+			if (types.includes('catalog') || types.includes('catalogs')) {
+				var catalogs: any = await catalogService.exportAllCatalogs()
+				root.catalogs = catalogs
+			}
+			if (types.includes('product') || types.includes('products')) {
+				let products = await productService.exportAllProducts()
+				root.products = products 
+			}
+	
+			let xml = xlmbuilder.create(root)
+	
+			fs.writeFileSync(path.join(impexRoute, filename), xml.end({pretty: true}))
+	
+			res.end()
+		} catch (e) { next(e) }
 	}
 
 	// Imports one or more Collections as XML into impex/

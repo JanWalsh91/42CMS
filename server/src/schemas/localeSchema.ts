@@ -22,11 +22,18 @@ const localeSchema = new Schema({
 })
 
 localeSchema.methods = {
+	// ==== to ====
 	toJsonForUser: async function(this: ILocale, user: IUser): Promise<any> {
 		await this.populate('fallback').execPopulate()
 		let res = (({id, language, country, fallback}) => (({id, language, country, fallback: fallback ? fallback.id : null })))(this)
 		return res
+	},
+
+	// ==== set ====
+	setFallback: function(this: ILocale, fallbackLocale: ILocale): void {
+		this.fallback = fallbackLocale
 	}
+
 }
 
 localeSchema.plugin(require('mongoose-autopopulate'))

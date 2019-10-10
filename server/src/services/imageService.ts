@@ -1,7 +1,6 @@
 import chalk from 'chalk'
 import * as path from 'path'
 import * as fs from 'fs'
-const isImage = require('is-image')
 const readChunk = require('read-chunk')
 const imageType = require('image-type')
 

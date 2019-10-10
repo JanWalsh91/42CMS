@@ -13,7 +13,6 @@ export class CatalogController {
 
 		try {
 			const catalog: ICatalog = await catalogService.create({name, id, master})
-			console.log('end catalog service')
 			res.send(catalog)
 		} catch(e) {
 			next(e)

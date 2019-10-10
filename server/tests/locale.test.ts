@@ -7,21 +7,18 @@ import { clearDataBase, createUser, printret, userData, createCatalog, getCatalo
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes 
 
-import { Locale, GlobalSettings } from '../src/models'
+import { Locale, GlobalSettings, User } from '../src/models'
 import app from '../src/app'
 import { ILocale } from '../src/interfaces'
 
 let ret: any
 
 describe('Locale', () => {
-	before(async () => {
-		await app.ready
-		await clearDataBase()
-		await createUser(userData)
-	})
-
 	beforeEach(async() => {
-		await clearDataBase(Locale, GlobalSettings)
+		await app.ready
+		await clearDataBase(Locale, GlobalSettings, User)
+		await app.ready
+		await createUser(userData)
 	})
 
 	describe('Get All', () => {
@@ -29,10 +26,18 @@ describe('Locale', () => {
 			ret = await getAllLocales()
 			ret.status.should.equal(OK)
 		})
+		describe('Should fail if ...', () => {
+			it('... user is not authenticated', async() => {
+				await logout()
+				ret = await getAllLocales()
+				ret.status.should.equal(UNAUTHORIZED)
+			})
+		})
 	})
 
 	describe('Update', () => {
 		const localeid: string = 'en_US'
+
 		it('Should $set fallback', async() => {
 			const newFallback: string = 'fr'
 
@@ -51,20 +56,38 @@ describe('Locale', () => {
 			let locale: ILocale = await Locale.findOne({id: localeid}).populate('fallback')
 			locale.fallback.id.should.equal('default')
 		})
+
 		describe('Should fail if ... ', () => {
 			it('... fallback locale id is invalid', async () => {
 				ret = await updateLocale(localeid, {
 					fallback: { op: '$set', value: 'invalidid' }
 				})
-				printret(ret)
 				ret.status.should.eq(NOT_FOUND)
 			})
 			it('... locale id is invalid', async () => {
 				ret = await updateLocale('invalidid', {
 					fallback: { op: '$set', value: 'fr' }
 				})
-				printret(ret)
 				ret.status.should.eq(NOT_FOUND)
+			})
+			it('... locale and fallback locale are the same', async () => {
+				ret = await updateLocale(localeid, {
+					fallback: { op: '$set', value: localeid }
+				})
+				ret.status.should.eq(BAD_REQUEST)
+			})
+			it('... fallback locale is invalid type', async () => {
+				ret = await updateLocale(localeid, {
+					fallback: { op: '$set', value: {localeid} }
+				})
+				ret.status.should.eq(BAD_REQUEST)
+			})
+			it('... user is not authenticated', async() => {
+				await logout()
+				ret = await updateLocale(localeid, {
+					fallback: { op: '$set', value: 'fr' }
+				})
+				ret.status.should.equal(UNAUTHORIZED)
 			})
 		})
 	})

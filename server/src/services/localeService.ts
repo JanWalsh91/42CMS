@@ -32,7 +32,10 @@ class LocaleService extends Patchable<ILocale> {
 		if (!fallbackLocale) {
 			throw new ResourceNotFoundError('Locale', `${id}`)
 		}
-		locale.fallback = fallbackLocale
+		if (fallbackLocale.id == locale.id) {
+			throw new ValidationError('Invalid fallback locale')
+		}
+		locale.setFallback(fallbackLocale)
 	}
 
 	public async init(): Promise<void> {
@@ -42,15 +45,13 @@ class LocaleService extends Patchable<ILocale> {
 		const localeConfigs = this.getAllLocaleConfigs()
 
 		// Create and save locales
-		const locales: ILocale[] = await Promise.all(localeConfigs.map(async (config: jsonLocale): Promise<ILocale> => {
-			let locale: ILocale = new Locale ({
+		const locales: ILocale[] = await Promise.all(localeConfigs.map(async (config: jsonLocale): Promise<ILocale> =>
+			new Locale ({
 				id: config.id,
 				language: config.language,
 				country: config.country
-			})
-			await locale.save()
-			return locale
-		}))
+			}).save()
+		))
 
 		// Set locale fallbacks
 		await Promise.all(localeConfigs.map(async(config: jsonLocale) => {

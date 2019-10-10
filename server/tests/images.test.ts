@@ -2,12 +2,10 @@ import * as chai from 'chai'
 chai.should()
 const expect = require('chai').expect
 import chalk from 'chalk'
-import * as path from 'path'
 
 import app from '../src/app'
-import { Locale, Image } from '../src/models'
-import { jsonLocale } from '../src/types'
-import { ILocale, IImage } from '../src/interfaces';
+import { Image } from '../src/models'
+import { IImage } from '../src/interfaces';
 import { clearDataBase, uploadImage, printret, createUser, userData, removeImages, deleteImage, placeholderImages, invalidImgs } from './common'
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
 
@@ -16,7 +14,7 @@ const { OK, BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } = ResponseStatusTypes
 let ret: any;
 let imageId = 'img1'
 
-describe.only('Image', () => {
+describe('Image', () => {
 	before(async () => {
 		// wait for server to init async tasks
 		await app.ready
