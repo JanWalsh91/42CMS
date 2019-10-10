@@ -8,6 +8,8 @@ import { objectAttributeDefinitionService } from '.'
 
 // const defaultObjectTypeDefinitions: Record<string, jsonDefaultObjectTypeDefinition> = require('../src/resources/defaultObjectTypeDefinitions')
 
+const hasOnlyLetters = new RegExp('^[a-zA-Z0-9]+$')
+
 class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 	hasObjectTypeDefinition = false
 	protected async getObjectTypeDefinition() { return null }
@@ -177,6 +179,10 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 
 	private async addNewObjectAttributeDefinition(OTD: IObjectTypeDefinition, path: string, type: IObjectAttributeDefinition['type'], localizable: boolean): Promise<void> {
 		console.log(chalk.magenta(`[ObjectTypeDefinitionService.addObjectAttributeDefinition]`), path)
+		console.log('typeof: ', typeof path, ' regex: ', hasOnlyLetters.test(path))
+		if (typeof path != 'string' || !hasOnlyLetters.test(path)) {
+			throw new ValidationError(`Invalid path name [${path}]`)
+		}
 		if (OTD.objectAttributeDefinitions.find(x => x.path == path)) {
 			throw new ValidationError(`Path ${path} already exists for object ${OTD.objectName}`)
 		}
@@ -196,6 +202,9 @@ class ObjectTypeDefinitionService extends Patchable<IObjectTypeDefinition> {
 		let OAD: IObjectAttributeDefinition = OTD.objectAttributeDefinitions.find(x => x.path == path)
 		if (!OAD) {		
 			throw new ValidationError(`Path ${path} does not exist for object ${OTD.objectName}`)
+		}
+		if (OAD.system) {
+			throw new ValidationError(`Cannot remove a system attribute`)
 		}
 		await this.deleteObjectAttribute(OTD, OAD)
 		await OTD.removeObjectAttributeDefinition(OAD)

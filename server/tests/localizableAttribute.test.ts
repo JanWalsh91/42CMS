@@ -21,7 +21,7 @@ let product: any = {}
 const newPath: string = 'test'
 const newValue: string = 'my value'
 
-describe('Localizable Attribute', function() {
+describe.only('Localizable Attribute', function() {
 	before(async () => {
 		// wait for server to init async tasks
 		await app.ready
@@ -39,8 +39,9 @@ describe('Localizable Attribute', function() {
 	})
 	
 	beforeEach(async function() {
+		await app.ready
 		await clearDataBase(Product, ObjectTypeDefinition, LocalizableAttribute)
-		// Set locale as available
+		// Set locales as available
 		ret = await updateGlobalSettings({
 			locale: [
 				{ op: '$add', value: 'fr_FR' },
@@ -61,9 +62,9 @@ describe('Localizable Attribute', function() {
 			ret.status.should.eq(OK)
 			ret = await createProduct(catalogData.id, productData.id)
 			ret.status.should.eq(OK)
-			let product: IProduct = await Product.findOne({id: productData.id}).exec()
+			
 			// New attribute should exist on product
-			console.log(product)
+			const product: IProduct = await Product.findOne({id: productData.id}).exec()
 			product.custom.get(newPath).should.exist
 		})
 		it('Should create a custom attribute on an existing product', async() => {
@@ -74,9 +75,138 @@ describe('Localizable Attribute', function() {
 				}
 			})
 			ret.status.should.eq(OK)
-			let product: IProduct = await Product.findOne({id: productData.id}).exec()
 			// New attribute should exist on product
+			const product: IProduct = await Product.findOne({id: productData.id}).exec()
 			product.custom.get(newPath).should.exist
+		})
+		describe('Should fail if ...', () => {
+			it('... path is already used / attribute already exists', async() => {
+				ret = await createProduct(catalogData.id, productData.id)
+				ret = await updateObjectTypeDefinition('Product', {
+					objectAttributeDefinitions: {
+						op: '$add', type: 'string', path: newPath
+					}
+				})
+				ret = await updateObjectTypeDefinition('Product', {
+					objectAttributeDefinitions: {
+						op: '$add', type: 'string', path: newPath
+					}
+				})
+				ret.status.should.eq(BAD_REQUEST)
+				// New attribute should exist on product
+				const product: IProduct = await Product.findOne({id: productData.id}).exec()
+				product.custom.get(newPath).should.exist
+			})
+			it('... type not available', async() => {
+				ret = await createProduct(catalogData.id, productData.id)
+				ret = await updateObjectTypeDefinition('Product', {
+					objectAttributeDefinitions: {
+						op: '$add', type: 'stringy', path: newPath
+					}
+				})
+				ret.status.should.eq(BAD_REQUEST)
+			})
+			it('... type is invalid', async() => {
+				ret = await createProduct(catalogData.id, productData.id)
+				ret = await updateObjectTypeDefinition('Product', {
+					objectAttributeDefinitions: {
+						op: '$add', type: {type: 'type'}, path: newPath
+					}
+				})
+				ret.status.should.eq(BAD_REQUEST)
+			})
+			describe('... path is invalid', () => {
+				it('... as object ', async() => {
+					ret = await createProduct(catalogData.id, productData.id)
+					ret = await updateObjectTypeDefinition('Product', {
+						objectAttributeDefinitions: {
+							op: '$add', type: 'string', path: {text: 'i am path'}
+						}
+					})
+					ret.status.should.eq(BAD_REQUEST)
+				})
+				
+				it('... contains dot', async() => {
+					ret = await createProduct(catalogData.id, productData.id)
+					ret = await updateObjectTypeDefinition('Product', {
+						objectAttributeDefinitions: {
+							op: '$add', type: 'string', path: 'invalid.path'
+						}
+					})
+					ret.status.should.eq(BAD_REQUEST)
+				})
+				
+				it('... contains slash', async() => {
+					ret = await createProduct(catalogData.id, productData.id)
+					ret = await updateObjectTypeDefinition('Product', {
+						objectAttributeDefinitions: {
+							op: '$add', type: 'string', path: 'invalid/path'
+						}
+					})
+					ret.status.should.eq(BAD_REQUEST)
+				})
+				
+				it('... contains space', async() => {
+					ret = await createProduct(catalogData.id, productData.id)
+					ret = await updateObjectTypeDefinition('Product', {
+						objectAttributeDefinitions: {
+							op: '$add', type: 'string', path: 'invalid path'
+						}
+					})
+					ret.status.should.eq(BAD_REQUEST)
+				})
+			})
+		})
+	})
+
+	describe('Delete Custom attribute', () => {
+		it('Should delete a custom attribute', async() => {
+			ret = await updateObjectTypeDefinition('Product', {
+				objectAttributeDefinitions: {
+					op: '$add', type: 'string', path: newPath
+				}
+			})
+			ret = await createProduct(catalogData.id, productData.id)
+			ret = await updateProduct(productData.id, {
+				[newPath]: { op: '$set', value: 'my string' }
+			})
+			ret = await updateObjectTypeDefinition('Product', {
+				objectAttributeDefinitions: {
+					op: '$remove', path: newPath
+				}
+			})
+			ret.status.should.eq(OK)
+
+			// New attribute should not exist on product
+			const product: IProduct = await Product.findOne({id: productData.id}).exec()
+			expect(product.custom.get(newPath)).to.not.exist
+
+		})
+		describe('Should fail if ...', () => {
+			it('... attribute is a system attribute', async() => {
+				ret = await updateObjectTypeDefinition('Product', {
+					objectAttributeDefinitions: {
+						op: '$remove', path: 'name'
+					}
+				})
+				ret.status.should.eq(BAD_REQUEST)
+			})
+			it('... attribute does not exist', async() => {
+				ret = await updateObjectTypeDefinition('Product', {
+					objectAttributeDefinitions: {
+						op: '$remove', path: newPath
+					}
+				})
+				ret.status.should.eq(BAD_REQUEST)
+			})
+			it('... attribute is invalid', async() => {
+				ret = await updateObjectTypeDefinition('Product', {
+					objectAttributeDefinitions: {
+						op: '$remove', path: ['thisIsPath']
+					}
+				})
+				ret.status.should.eq(BAD_REQUEST)
+			})
 		})
 	})
 
@@ -165,6 +295,32 @@ describe('Localizable Attribute', function() {
 			product.custom.get(newPath).should.exist
 			product.custom.get(newPath).value.get('default').should.eq(newValue)					
 		})
+		describe('Should fail if ...', () => {
+			it('... is invalid value', async() => {
+				ret = await createProduct(catalogData.id, productData.id)
+				ret = await updateObjectTypeDefinition('Product', {
+					objectAttributeDefinitions: {
+						op: '$add', type: 'string', path: newPath
+					}
+				})
+				ret = await updateProduct(productData.id, {
+					[newPath]: { op: '$set', value: 500 }
+				})
+				ret.status.should.eq(BAD_REQUEST)
+			})
+			it('... is invalid operation', async() => {
+				ret = await createProduct(catalogData.id, productData.id)
+				ret = await updateObjectTypeDefinition('Product', {
+					objectAttributeDefinitions: {
+						op: '$add', type: 'string', path: newPath
+					}
+				})
+				ret = await updateProduct(productData.id, {
+					[newPath]: { op: '$add', value: '500' }
+				})
+				ret.status.should.eq(BAD_REQUEST)
+			})
+		})
 	})
 	describe('Change Custom Attribute Type', () => {
 		it('Should change attribute type and reset values', async() => {
@@ -190,26 +346,6 @@ describe('Localizable Attribute', function() {
 			
 			product = await Product.findOne({id: productData.id}).exec()
 			product.custom.get(newPath).value.get('default').should.eq(newNum)					
-		})
-	})
-	describe('Delete Custom Attribute Type', () => {
-		it('Should remove the attribute', async() => {
-			ret = await createProduct(catalogData.id, productData.id)
-			ret = await updateObjectTypeDefinition('Product', {
-				objectAttributeDefinitions: {
-					op: '$add', type: 'string', path: newPath
-				}
-			})
-			ret = await updateProduct(productData.id, {
-				[newPath]: { op: '$set', value: newValue }
-			})
-			ret = await updateObjectTypeDefinition('Product', {
-				objectAttributeDefinitions: {
-					op: '$remove', path: newPath
-				}
-			})
-			let product: IProduct = await Product.findOne({id: productData.id}).exec()
-			expect(product.custom.get(newPath)).eq(undefined)
 		})
 	})
 	describe('Delete Extensible Object', () => {
