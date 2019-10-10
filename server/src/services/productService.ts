@@ -231,7 +231,11 @@ class ProductService extends Patchable<IProduct> {
 			throw new ValidationError('Product already exists in this catalog')
 		}
 		if (!options.type) {
-			options.type = 'basic'
+			if (options.hasOwnProperty('masterProduct')) {
+				options.type = 'variant'
+			} else {
+				options.type = 'basic'
+			}
 		}
 
 		// Create new Product
@@ -253,7 +257,6 @@ class ProductService extends Patchable<IProduct> {
 				let variantOptions: Partial<IProductVariant> = options as Partial<IProductVariant>
 				let masterProduct: IProduct;
 				// Get master product
-				console.log('masterProduct:', variantOptions.masterProduct)
 				if (variantOptions.masterProduct) {
 					masterProduct = await Product.findOne({id: variantOptions.masterProduct}).populate('variationAttributes')
 				}
@@ -262,6 +265,11 @@ class ProductService extends Patchable<IProduct> {
 				}
 				if (isMasterProduct(masterProduct)) {
 					const variationAttributes: IObjectAttributeDefinition[] = masterProduct.variationAttributes
+					// Check that variation attribtues exist
+					if (variationAttributes.length == 0) {
+						throw new ValidationError(`Master product must have at least one variation attribute`)
+					}
+					// Check that variation attributes are provided
 					if (variationAttributes.some(x => options[x.path] == undefined)) {
 						throw new ValidationError(`Must provide all variation attributes`)
 					}
@@ -271,6 +279,7 @@ class ProductService extends Patchable<IProduct> {
 						masterProduct,
 					}).save();
 					product = await Product.findById(product._id)
+					// Set attributes passed on in options
 					await Promise.all(variationAttributes.map(async (OAD: IObjectAttributeDefinition) => {
 						if (OAD.system) {
 							return localizableAttributeService.update(product[OAD.path], OAD, OAD.path, {
@@ -282,6 +291,7 @@ class ProductService extends Patchable<IProduct> {
 							})
 						}
 					}))
+					// Add Variant to master
 					await masterProduct.addVariant(product as IProductVariant)
 					await masterProduct.save()
 				} else {

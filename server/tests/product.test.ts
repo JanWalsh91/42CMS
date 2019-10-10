@@ -24,7 +24,7 @@ const masterId = 'tshirt'
 const variantId1 = 'tshirt1'
 const variantId2 = 'tshirt2'
 
-describe('Product', function() {
+describe.only('Product', function() {
 	before(async () => {
 		// wait for server to init async tasks
 		await app.ready
@@ -88,7 +88,7 @@ describe('Product', function() {
 				ret.status.should.equal(NOT_FOUND)
 			})
 			it('the catalog is not a master catalog', async() => {
-				await createCatalog(catalogData.id + '2', {master: false})
+				await createCatalog(catalogData.id + '2', { master: false })
 				ret = await createProduct(catalogData.id + '2', productData.id)
 				ret.status.should.equal(BAD_REQUEST)	
 			})
@@ -97,56 +97,62 @@ describe('Product', function() {
 
 	describe('Master Product', () => {
 
-		it('Should create a master product', async() => {
-			ret = await createProduct(catalogData.id, productData.id, {type : 'master'})
-			ret.status.should.equal(OK)
-
-			const product: IProduct = await Product.findOne({id: productData.id}).exec()
-			// Product type should be 'master'
-			expect(product.type).to.eq('master')
+		describe('Create', () => {
+			it('Should create a master product', async() => {
+				ret = await createProduct(catalogData.id, productData.id, {type : 'master'})
+				ret.status.should.equal(OK)
+	
+				const product: IProduct = await Product.findOne({id: productData.id}).exec()
+				// Product type should be 'master'
+				expect(product.type).to.eq('master')
+			})
 		})
-		it('Should add a variant attribute', async() => {
-			ret = await createProduct(catalogData.id, productData.id, {type : 'master'})
-			ret = await updateObjectTypeDefinition('Product', {
-				objectAttributeDefinitions: {
-					op: '$add', path: variationAttributePath, type: variationAttributeType
-				}
+		describe('Add Variant Attribute', () => {
+			it('Should add a variant attribute', async() => {
+				ret = await createProduct(catalogData.id, productData.id, {type : 'master'})
+				ret = await updateObjectTypeDefinition('Product', {
+					objectAttributeDefinitions: {
+						op: '$add', path: variationAttributePath, type: variationAttributeType
+					}
+				})
+				ret = await updateProduct(productData.id, {
+					variationAttributes: {
+						op: '$add', value: variationAttributePath
+					}
+				})
+				expect(ret.status).eq(OK)
+				const product: IProductMaster = (await Product.findOne({id: productData.id}).populate('variationAttributes').exec()) as IProductMaster
+				expect(product.variationAttributes.find(x => x.path == variationAttributePath))
 			})
-			ret = await updateProduct(productData.id, {
-				variationAttributes: {
-					op: '$add', value: variationAttributePath
-				}
-			})
-			expect(ret.status).eq(OK)
-			const product: IProductMaster = (await Product.findOne({id: productData.id}).populate('variationAttributes').exec()) as IProductMaster
-			expect(product.variationAttributes.find(x => x.path == variationAttributePath))
 		})
-		it('Should remove a variant attribute', async() => {
-			ret = await createProduct(catalogData.id, productData.id, {type : 'master'})
-			ret = await updateObjectTypeDefinition('Product', {
-				objectAttributeDefinitions: {
-					op: '$add', path: variationAttributePath, type: variationAttributeType
-				}
+		describe('Remove Variant Attribute', () => {
+			it('Should remove a variant attribute', async() => {
+				ret = await createProduct(catalogData.id, productData.id, {type : 'master'})
+				ret = await updateObjectTypeDefinition('Product', {
+					objectAttributeDefinitions: {
+						op: '$add', path: variationAttributePath, type: variationAttributeType
+					}
+				})
+				ret = await updateProduct(productData.id, {
+					variationAttributes: {
+						op: '$add', value: variationAttributePath
+					}
+				})
+				ret = await updateProduct(productData.id, {
+					variationAttributes: {
+						op: '$remove', value: variationAttributePath
+					}
+				})
+				expect(ret.status).eq(OK)
+				const product: IProductMaster = (await Product.findOne({id: productData.id}).populate('variationAttributes').exec()) as IProductMaster
+				expect(product.variationAttributes.find(x => x.path == variationAttributePath)).to.not.exist
 			})
-			ret = await updateProduct(productData.id, {
-				variationAttributes: {
-					op: '$add', value: variationAttributePath
-				}
-			})
-			ret = await updateProduct(productData.id, {
-				variationAttributes: {
-					op: '$remove', value: variationAttributePath
-				}
-			})
-			expect(ret.status).eq(OK)
-			const product: IProductMaster = (await Product.findOne({id: productData.id}).populate('variationAttributes').exec()) as IProductMaster
-			expect(product.variationAttributes.find(x => x.path == variationAttributePath)).to.not.exist
 		})
 	})
 
 	describe('Variant Product', () => {
 		it('Should create a variant product', async() => {
-			ret = await createProduct(catalogData.id, masterId, {type : 'master'})
+			ret = await createProduct(catalogData.id, masterId, { type : 'master' })
 			ret = await updateObjectTypeDefinition('Product', {
 				objectAttributeDefinitions: {
 					op: '$add', path: variationAttributePath, type: variationAttributeType
@@ -175,9 +181,38 @@ describe('Product', function() {
 				expect(master.variantProducts.find(x => x.id == variantId1)).to.exist
 			}
 		})
-		describe('Should fail if ...', () => {
-			it('... variant attributes were not defined')
-			it('... variant attributes were not provided')
+		describe.only('Should fail if ...', () => {
+			it('... variant attributes were not defined', async() => {
+				// Create master
+				ret = await createProduct(catalogData.id, masterId, { type : 'master' })
+				// Create variant
+				ret = await createProduct(catalogData.id, variantId1, {
+					type : 'variant',
+					masterProduct: masterId,
+				})
+				ret.status.should.eq(BAD_REQUEST)
+			})
+			it('... variant attributes were not provided', async() => {
+				// Create master
+				ret = await createProduct(catalogData.id, masterId, { type : 'master' })
+				// Create and add variationAttribute
+				ret = await updateObjectTypeDefinition('Product', {
+					objectAttributeDefinitions: {
+						op: '$add', path: variationAttributePath, type: variationAttributeType
+					}
+				})
+				ret = await updateProduct(masterId, {
+					variationAttributes: {
+						op: '$add', value: variationAttributePath
+					}
+				})
+				// Create variant
+				ret = await createProduct(catalogData.id, variantId1, {
+					type : 'variant',
+					masterProduct: masterId,
+				})
+				ret.status.should.eq(BAD_REQUEST)
+			})
 		})
 	})
 	
