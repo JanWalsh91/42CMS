@@ -4,8 +4,7 @@ const expect = require('chai').expect
 import chalk from 'chalk'
 
 import app from '../src/app'
-
-import { clearDataBase, createUser, printret, userData, createCatalog, createSite, getSite, updateSite, deleteSite, updateCatalog  } from './common'
+import { clearDataBase, createUser, printret, userData, createCatalog, createSite, getSite, updateSite, deleteSite, updateCatalog, agent, logout  } from './common'
 import { User, Category, Catalog, Site } from '../src/models'
 
 import ResponseStatusTypes from '../src/utils/ResponseStatusTypes'
@@ -19,18 +18,12 @@ const defaultLocaleID: string = 'en'
 const catid: string = 'meow'
 
 describe('Site', function() {
-	before(async () => {
-		// wait for server to init async tasks
-		await app.ready
-		// Clear database
-		await clearDataBase()
-		// Create user
-		await createUser(userData)
-		await app.ready
-	})
 
 	beforeEach(async function() {
-		await clearDataBase(Site, Catalog, Category)
+		await app.ready
+		await clearDataBase()
+		await app.ready
+		await createUser(userData)
 		await app.ready
 	})
 
@@ -41,6 +34,22 @@ describe('Site', function() {
 
 			const site: ISite = await Site.findOne({id: siteId}).exec()
 			expect(site.id).eq(siteId)
+		})
+		describe('Should fail if ... ', () => {
+			it('... siteid already used', async() => {
+				ret = await createSite(siteId)
+				ret = await createSite(siteId)
+				ret.status.should.eq(BAD_REQUEST)			
+			})
+			it('... siteid is invalid', async() => {
+				ret = await agent.post(`/sites`).send({id: {siteId}})
+				ret.status.should.eq(BAD_REQUEST)
+			})
+			it('... user is not authenticated', async() => {
+				await logout()
+				ret = await createSite(siteId)
+				ret.status.should.eq(UNAUTHORIZED)
+			})
 		})
 	})
 
@@ -109,6 +118,23 @@ describe('Site', function() {
 
 			const site: ISite = await Site.findOne({id: siteId}).populate([{path: 'allowedLocales'}]).exec()
 			expect(site.allowedLocales.find(x => x.id == defaultLocaleID)).to.not.exist
+		})
+
+		describe('Should fail if ...', () => {
+			it('Locale is not available', async() => {
+				ret = await createSite(siteId)
+				ret = await updateSite(siteId, {
+					allowedLocales: { op: '$add', value: 'fr_FR'}
+				})
+				ret.status.should.eq(BAD_REQUEST)
+			})
+			it('Locale does not exist', async() => {
+				ret = await createSite(siteId)
+				ret = await updateSite(siteId, {
+					allowedLocales: { op: '$add', value: 'zh'}
+				})
+				ret.status.should.eq(NOT_FOUND)
+			})	
 		})
 	})
 

@@ -15,7 +15,6 @@ const localeSettingsSchema = new Schema({
 
 localeSettingsSchema.methods = {
 	reset: async function (this: ILocaleSettings): Promise<void> {
-		// console.log(chalk.red('[localSettingsSchema.reset]'))
 		const locales: ILocale[] = await Promise.all(
 			localeService
 				.getDefaultLocaleConfigs()
@@ -26,15 +25,12 @@ localeSettingsSchema.methods = {
 		this.markModified('availableLocales')
 	},
 	localeIsAvailable: function (this: ILocaleSettings, id: string): boolean {
-		// console.log(chalk.magenta(`[localeSettingsSchema.localeIsAvailable] ` + id))
 		return this.availableLocales.some(x => x.id == id)
 	},
 	addAvailableLocale: async function (this: ILocaleSettings, locale: ILocale): Promise<void> {
-		// console.log(chalk.magenta(`[localeSettingsSchema.addLocale] ${locale.id}`))
 		this.availableLocales.push(locale)
 	},
 	removeAvailableLocale: async function (this: ILocaleSettings, locale: ILocale): Promise<void> {
-		// console.log(chalk.magenta(`[localeSettingsSchema.removeLocale] ${locale.id}`))
 		if (this.availableLocales.some(x => x.fallback && x.fallback.id == locale.id )) {
 			throw new ValidationError('Cannot remove locale it is being used as a fallback')
 		}

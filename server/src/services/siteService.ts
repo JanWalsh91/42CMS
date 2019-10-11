@@ -1,8 +1,8 @@
 import chalk from 'chalk'
 
 import { Patchable, patchAction, ValidationError, ResourceNotFoundError, patchRequest } from '../utils'
-import { ISite, ILocale, ICatalog } from '../interfaces'
-import { objectTypeDefinitionService, localeService, catalogService } from '.'
+import { ISite, ILocale, ICatalog, IGlobalSettings } from '../interfaces'
+import { objectTypeDefinitionService, localeService, catalogService, globalSettingsService } from '.'
 import { Site } from '../models'
 
 class SiteService extends Patchable<ISite> {
@@ -83,7 +83,10 @@ class SiteService extends Patchable<ISite> {
 		if (!locale) {
 			throw new ResourceNotFoundError('Locale', localeId)
 		}
-
+		const globalSettings: IGlobalSettings = await globalSettingsService.get()
+		if (!globalSettings.locale.localeIsAvailable(localeId)) {
+			throw new ValidationError(`Locale [${localeId}] is not available`)
+		}
 		await site.addAllowedLocale(locale)
 		await site.save()
 		return site

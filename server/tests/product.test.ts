@@ -3,7 +3,7 @@ chai.should()
 const expect = require('chai').expect
 import chalk from 'chalk'
 
-import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct, getProduct, logout, login, getAllProducts, deleteProduct, updateObjectAttributeDefinition, updateObjectTypeDefinition, agent  } from './common'
+import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct, getProduct, logout, login, getAllProducts, deleteProduct, updateObjectTypeDefinition, agent  } from './common'
 
 import { User, Category, Catalog, Product, ObjectTypeDefinition } from '../src/models'
 import { IUser, IProduct, ICatalog, ICategory, IProductMaster } from '../src/interfaces'
@@ -22,9 +22,8 @@ const variationAttributePath: string = 'size'
 const variationAttributeType: string = 'number'
 const masterId = 'tshirt'
 const variantId1 = 'tshirt1'
-const variantId2 = 'tshirt2'
 
-describe.only('Product', function() {
+describe('Product', function() {
 	before(async () => {
 		await app.ready
 		// Clear database
