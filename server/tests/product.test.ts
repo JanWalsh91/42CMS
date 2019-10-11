@@ -3,7 +3,7 @@ chai.should()
 const expect = require('chai').expect
 import chalk from 'chalk'
 
-import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct, getProduct, logout, login, getAllProducts, deleteProduct, updateObjectAttributeDefinition, updateObjectTypeDefinition  } from './common'
+import { clearDataBase, createUser, printret, userData, createCatalog, catalogData, createCategory, categoryData, createProduct, productData, updateProduct, getProduct, logout, login, getAllProducts, deleteProduct, updateObjectAttributeDefinition, updateObjectTypeDefinition, agent  } from './common'
 
 import { User, Category, Catalog, Product, ObjectTypeDefinition } from '../src/models'
 import { IUser, IProduct, ICatalog, ICategory, IProductMaster } from '../src/interfaces'
@@ -26,24 +26,27 @@ const variantId2 = 'tshirt2'
 
 describe.only('Product', function() {
 	before(async () => {
-		// wait for server to init async tasks
 		await app.ready
 		// Clear database
 		await clearDataBase()
-		// Create user
-		await createUser(userData)
+		// Wait for server to init async tasks
 		await app.ready
 	})
 
 	beforeEach(async function() {
-		await clearDataBase(Category, Catalog, Product, ObjectTypeDefinition)
+		await app.ready
+		await clearDataBase(Category, Catalog, Product, ObjectTypeDefinition, User)
+		await app.ready
+
+		// Create User
+		ret = await createUser(userData)
+		ret.status.should.eq(OK)
 		// Create catalog
-		ret = await createCatalog(catalogData.id, {master: true})
+		ret = await createCatalog(catalogData.id, { master: true })
 		catalog = ret.body
-		// Create catalog
+		// Create category
 		ret = await createCategory(catalogData.id, categoryData.id)
 		category = ret.body
-		// wait for server to init async tasks
 		await app.ready
 	})
 
@@ -78,19 +81,31 @@ describe.only('Product', function() {
 		})
 		
 		describe('Should fail to create a product if ...', () => {
-			it('the product id is not unique', async() => {
+			it('... the product id is not unique', async() => {
 				await createProduct(catalogData.id, productData.id)
 				ret = await createProduct(catalogData.id, productData.id)
 				ret.status.should.equal(BAD_REQUEST)
 			})
-			it('the catalog does not exist', async() => {
+			it('... the catalog does not exist', async() => {
 				ret = await createProduct('mysupercatalog', productData.id)
 				ret.status.should.equal(NOT_FOUND)
 			})
-			it('the catalog is not a master catalog', async() => {
+			it('... the catalog is not a master catalog', async() => {
 				await createCatalog(catalogData.id + '2', { master: false })
 				ret = await createProduct(catalogData.id + '2', productData.id)
 				ret.status.should.equal(BAD_REQUEST)	
+			})
+			it('... id is invalid', async() => {
+				ret = await agent.post(`/products`).send({
+					id: { id: 'invalidid' },
+					mastercatalogid: catalogData.id,
+				})
+				ret.status.should.eq(BAD_REQUEST)
+			})
+			it('.. user is not authenticated', async() => {
+				await logout()
+				ret = await createProduct(catalogData.id, productData.id)
+				ret.status.should.equal(UNAUTHORIZED)
 			})
 		})
 	})
@@ -99,7 +114,7 @@ describe.only('Product', function() {
 
 		describe('Create', () => {
 			it('Should create a master product', async() => {
-				ret = await createProduct(catalogData.id, productData.id, {type : 'master'})
+				ret = await createProduct(catalogData.id, productData.id, { type : 'master' })
 				ret.status.should.equal(OK)
 	
 				const product: IProduct = await Product.findOne({id: productData.id}).exec()
@@ -124,6 +139,49 @@ describe.only('Product', function() {
 				const product: IProductMaster = (await Product.findOne({id: productData.id}).populate('variationAttributes').exec()) as IProductMaster
 				expect(product.variationAttributes.find(x => x.path == variationAttributePath))
 			})
+			describe('Should fail if ...', () => {
+				it('... attribute is already a variant attribute', async() => {
+					ret = await createProduct(catalogData.id, productData.id, {type : 'master'})
+					ret = await updateObjectTypeDefinition('Product', {
+						objectAttributeDefinitions: {
+							op: '$add', path: variationAttributePath, type: variationAttributeType
+						}
+					})
+					ret = await updateProduct(productData.id, {
+						variationAttributes: {
+							op: '$add', value: variationAttributePath
+						}
+					})
+					ret = await updateProduct(productData.id, {
+						variationAttributes: {
+							op: '$add', value: variationAttributePath
+						}
+					})
+					ret.status.should.eq(BAD_REQUEST)
+				})
+				it('... attribute is not a product attribute', async() => {
+					ret = await createProduct(catalogData.id, productData.id, {type : 'master'})
+					ret = await updateProduct(productData.id, {
+						variationAttributes: {
+							op: '$add', value: variationAttributePath
+						}
+					})
+					ret.status.should.eq(BAD_REQUEST)
+				})
+				it.skip(`... editing a variant attribute on master`, async() => {
+					ret = await createProduct(catalogData.id, productData.id, {type : 'master'})
+					ret = await updateObjectTypeDefinition('Product', {
+						objectAttributeDefinitions: {
+							op: '$add', path: variationAttributePath, type: variationAttributeType
+						}
+					})
+					ret = await updateProduct(productData.id, {
+						[variationAttributePath]: { op: '$set', value: 50 }
+					})
+					printret(ret)
+					ret.status.should.eq(BAD_REQUEST)
+				})
+			})
 		})
 		describe('Remove Variant Attribute', () => {
 			it('Should remove a variant attribute', async() => {
@@ -143,9 +201,48 @@ describe.only('Product', function() {
 						op: '$remove', value: variationAttributePath
 					}
 				})
-				expect(ret.status).eq(OK)
+				ret.status.should.eq(OK)
 				const product: IProductMaster = (await Product.findOne({id: productData.id}).populate('variationAttributes').exec()) as IProductMaster
 				expect(product.variationAttributes.find(x => x.path == variationAttributePath)).to.not.exist
+			})
+			describe('Should fail if ...', () => {
+				it('... attribute is not variant', async() => {
+					ret = await createProduct(catalogData.id, productData.id, {type : 'master'})
+					ret = await updateObjectTypeDefinition('Product', {
+						objectAttributeDefinitions: {
+							op: '$add', path: variationAttributePath, type: variationAttributeType
+						}
+					})
+					ret = await updateProduct(productData.id, {
+						variationAttributes: {
+							op: '$remove', value: variationAttributePath
+						}
+					})
+					ret.status.should.eq(BAD_REQUEST)
+				})
+				it('... attribute is a system attribute', async() => {
+					ret = await createProduct(catalogData.id, productData.id, {type : 'master'})
+					ret = await updateProduct(productData.id, {
+						variationAttributes: {
+							op: '$remove', value: 'description'
+						}
+					})
+					ret.status.should.eq(BAD_REQUEST)
+				})
+				it('... attribute path is invalid', async() => {
+					ret = await createProduct(catalogData.id, productData.id, {type : 'master'})
+					ret = await updateObjectTypeDefinition('Product', {
+						objectAttributeDefinitions: {
+							op: '$add', path: variationAttributePath, type: variationAttributeType
+						}
+					})
+					ret = await updateProduct(productData.id, {
+						variationAttributes: {
+							op: '$remove', value: null
+						}
+					})
+					ret.status.should.eq(BAD_REQUEST)
+				})	
 			})
 		})
 	})
@@ -181,7 +278,7 @@ describe.only('Product', function() {
 				expect(master.variantProducts.find(x => x.id == variantId1)).to.exist
 			}
 		})
-		describe.only('Should fail if ...', () => {
+		describe('Should fail if ...', () => {
 			it('... variant attributes were not defined', async() => {
 				// Create master
 				ret = await createProduct(catalogData.id, masterId, { type : 'master' })
@@ -213,6 +310,20 @@ describe.only('Product', function() {
 				})
 				ret.status.should.eq(BAD_REQUEST)
 			})
+			it('... master product does not exist', async() => {
+				ret = await createProduct(catalogData.id, variantId1, {
+					type : 'variant',
+					[variationAttributePath]: 30,
+					masterProduct: masterId + '2',
+				})
+			})
+			it('... master id is invalid', async() => {
+				ret = await createProduct(catalogData.id, variantId1, {
+					type : 'variant',
+					[variationAttributePath]: 30,
+					masterProduct: [masterId],
+				})
+			})
 		})
 	})
 	
@@ -243,7 +354,7 @@ describe.only('Product', function() {
 		it('Should get all Products', async() => {
 			await createProduct(catalogData.id, 'id1', { name: 'name1' })
 			await createProduct(catalogData.id, 'id2', { name: 'name2' })
-			await createProduct(catalogData.id, 'id3', { name: 'name3' })
+			await createProduct(catalogData.id, 'id3', { name: 'name3', type: 'master' })
 			ret = await getAllProducts()
 			ret.body.length.should.equal(3)
 			ret.should.have.status(OK)
@@ -314,9 +425,30 @@ describe.only('Product', function() {
 				expect(catalog.products.find(x => x.id == productData.id)).to.not.exist
 			})
 			describe('Should fail if ...', () => {
-				it('Catalog does not exist')
-				it('Catalog is a master Catalog')
-				it('User is not authenticated')
+				it('Catalog does not exist', async() => {
+					await createProduct(catalogData.id + '2', productData.id)
+					ret = await updateProduct(productData.id, {
+						assignedCatalogs: { op: '$add', value: 'unknowncatalog' }
+					})
+					ret.status.should.eq(NOT_FOUND)
+				})
+				it('Catalog is a master Catalog', async() => {
+					await createProduct(catalogData.id, productData.id)
+					await createCatalog(catId1, { master: true })
+					ret = await updateProduct(productData.id, {
+						assignedCatalogs: { op: '$add', value: catId1 }
+					})
+					ret.status.should.eq(BAD_REQUEST)
+				})
+				it('User is not authenticated', async() => {
+					await createProduct(catalogData.id, productData.id)
+					await createCatalog(catId1)
+					await logout()
+					ret = await updateProduct(productData.id, {
+						assignedCatalogs: { op: '$add', value: catId1 }
+					})
+					ret.status.should.eq(UNAUTHORIZED)
+				})
 			})
 		})
 
@@ -374,6 +506,69 @@ describe.only('Product', function() {
 				const category: ICategory = await Category.findOne({id: categoryData.id}).populate('products')
 				expect(category.products.find(x => x.id == product.id)).to.not.exist
 			})
+			describe('Should fail if ...', () => {
+				it('... category does not exist', async() => {
+					await createProduct(catalogData.id, productData.id)
+					ret = await updateProduct(productData.id, {
+						assignedCategoriesByCatalog: {
+							op: '$add',
+							value: 'invalidcategory',
+							catalog: catalogData.id,
+						}
+					})
+					ret.status.should.eq(NOT_FOUND)
+				})
+				it('... category does not exist in catalog', async() => {
+					const category2: string = 'category2'
+					const catalog2: string = catalogData.id + '2'
+					await createProduct(catalogData.id, productData.id)
+					await createCatalog(catalog2)
+					await createCategory(catalog2, category2)
+					ret = await updateProduct(productData.id, {
+						assignedCategoriesByCatalog: {
+							op: '$add',
+							value: category2,
+							catalog: catalog2,
+						}
+					})
+					ret.status.should.eq(NOT_FOUND)
+				})
+				it('... categoryid is invalid', async() => {
+					await createProduct(catalogData.id, productData.id)
+					ret = await updateProduct(productData.id, {
+						assignedCategoriesByCatalog: {
+							op: '$add',
+							value: ['invalidcategory'],
+							catalog: catalogData.id,
+						}
+					})
+					ret.status.should.eq(NOT_FOUND)
+				})
+				it('... product is not assigned to catalog', async() => {
+					await createProduct(catalogData.id, productData.id)
+					await createCatalog('cata2')
+					await createCategory('cata2', 'category2')
+					ret = await updateProduct(productData.id, {
+						assignedCategoriesByCatalog: {
+							op: '$add',
+							value: 'category2',
+							catalog: 'cata2',
+						}
+					})
+					ret.status.should.eq(NOT_FOUND)
+				})
+				it('... catalog does not exist', async() => {
+					await createProduct(catalogData.id, productData.id)
+					ret = await updateProduct(productData.id, {
+						assignedCategoriesByCatalog: {
+							op: '$add',
+							value: categoryData.id + '2',
+							catalog: catalogData.id,
+						}
+					})
+					ret.status.should.eq(NOT_FOUND)
+				})
+			})
 		})
 
 		describe('Set Primary Category by Catalog', () => {
@@ -397,31 +592,8 @@ describe.only('Product', function() {
 			})
 		})
 
-		// done in order sent
-		describe.skip('Check order of udpates', () => {
-			it('==', async() => {
-				await createProduct(catalogData.id, productData.id)
-				ret = await updateProduct(productData.id, {
-					name: {
-						op: '$set',
-						value: 'newName'
-					},
-					id: {
-						op: '$set',
-						value: 'newId'
-					},
-					primaryCategoryByCatalog: {
-						op: '$set',
-						value: categoryData.id,
-						catalog: catalogData.id,
-					}
-				})
-			})
-		})
-
 		describe('Update description', () => {
 			it('Should $set description when you pass a locale', async() => {
-				console.log('start test')
 				const locale: localeCode = 'en'
 				const newDescription: string = 'This product is amazing'
 				await createProduct(catalogData.id, productData.id)
@@ -433,12 +605,10 @@ describe.only('Product', function() {
 
 				// Product description should be updated
 				const product: IProduct = await Product.findOne({id: productData.id})
-				console.log('description: ', product.description)
 				product.description.value.get(locale).should.eq(newDescription)
 			})
 
 			it('Should $set description on default when you pass no locale', async() => {
-				console.log('start test')
 				const newDescription: string = 'This product is amazing'
 				await createProduct(catalogData.id, productData.id)
 				
@@ -452,8 +622,6 @@ describe.only('Product', function() {
 				product.description.value.get('default').should.eq(newDescription)
 			})
 		})
-
-		
 	})
 
 	describe('Delete product', () => {
@@ -476,7 +644,6 @@ describe.only('Product', function() {
 					catalog: catalogData.id
 				}
 			})
-
 
 			ret = await deleteProduct(productData.id)
 			ret.should.have.status(OK)

@@ -27,10 +27,11 @@ productMasterSchema.methods = {
 		console.log(x)
 		await this.populate('variationAttributes').execPopulate()
 		if (this.variationAttributes.find(x => x.path == OAD.path)) {
-			console.log(chalk.yellow(`${OAD.path} is already a variation attribute`))
-			return 
+			throw new ValidationError(`${OAD.path} is already a variation attribute`)
+		} else {
+			this.variationAttributes.push(OAD)
+			this.markModified('variationAttributes')
 		}
-		this.variationAttributes.push(OAD)
 	},
 	removeVariationAttribute: async function (this: IProductMaster, OAD: IObjectAttributeDefinition): Promise<void> {
 		console.log(chalk.magenta(`[MasterProductModel.removeVariationAttribute]`))
@@ -38,7 +39,6 @@ productMasterSchema.methods = {
 		if (this.variationAttributes.find(x => x.path == OAD.path)) {
 			this.variationAttributes = this.variationAttributes.filter(x => x.path != OAD.path)
 			this.markModified('variationAttributes')
-			return 
 		} else {
 			throw new ValidationError(`Attribute ${OAD.path} does not exist on this product`)
 		}

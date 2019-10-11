@@ -27,14 +27,15 @@ class ProductService extends Patchable<IProduct> {
 				if (!catalog) {
 					throw new ResourceNotFoundError('Catalog', action.value)
 				}
-				
+				if (catalog.master) {
+					throw new ValidationError('Cannot assign product to master catalog')
+				}
 				await Promise.all([
 					product.addAssignedCatalog(catalog),
 					catalog.addProduct(product),
 				])
 
 				// TODO: validate all before saving
-				// let error = product.validateSync()
 
 				await Promise.all([
 					product.save(),
@@ -369,7 +370,6 @@ class ProductService extends Patchable<IProduct> {
 				...product.assignedCatalogs
 			].map(x => x.save()),
 		])
-
 
 		// Delete Product
 		await Product.findOneAndDelete({id: product.id})
