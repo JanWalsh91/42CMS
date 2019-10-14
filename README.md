@@ -3,7 +3,8 @@
 Requires:
 - node
 - mongo
-- ts-node installed globally
+- nodemon
+- ts-node
 
 Clone repository 
 ```
