@@ -10,13 +10,11 @@ export interface IObjectAttributeDefinition extends Document {
 	// property name
 	path: string
 	type: attributeType
-	// always false for now
 	system: boolean
 	localizable: boolean
-	// objectTypeDefinition: IObjectTypeDefinition['_id']
 	objectTypeDefinition: IObjectTypeDefinition
 
-	// set methods
+	// ==== set ====
 	setType?: (type: attributeType) => void
 	setLocalizable?: (localizable: boolean) => void
 }

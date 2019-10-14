@@ -1,4 +1,5 @@
 import { Document } from 'mongoose'
+
 import { IObjectAttributeDefinition } from '.'
 
 /**
@@ -9,7 +10,12 @@ export interface IObjectTypeDefinition extends Document {
 	objectAttributeDefinitions: IObjectAttributeDefinition[]	
 	objectName: string
 
-	addObjectAttributeDefinition: (OAD: IObjectAttributeDefinition) => Promise<void>
-	removeObjectAttributeDefinition: (OAD: IObjectAttributeDefinition) => Promise<void>
+	// ==== get ====
 	getAttribute: (path: string) => IObjectAttributeDefinition
+	
+	// ==== add ====
+	addObjectAttributeDefinition: (OAD: IObjectAttributeDefinition) => Promise<void>
+
+	// ==== remove ====
+	removeObjectAttributeDefinition: (OAD: IObjectAttributeDefinition) => Promise<void>
 }

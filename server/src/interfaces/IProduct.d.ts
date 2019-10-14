@@ -22,27 +22,27 @@ export interface IProduct extends IExtensibleObject {
 		categories: (ICategory['_id'] | ICategory)[]
 	}[]
 	
-	// get methods
+	// ==== get ====
 	getObjectTypeDefinition: () => Promise<IObjectTypeDefinition>
 	getPrimaryCategoryByCatalog: (catalog: ICatalog) => Promise<ICategory>
 
-	// set methods
+	// ==== set ====
 	setId: (id: string) => void
 	setPrimaryCategoryByCatalog: (categoryId: ICategory | null, catalogId: ICatalog) => Promise<void>
 
-	// add methods
+	// ==== add ====
 	addAssignedCatalog: (catalogId: ICatalog) => Promise<void>
 	addAssignedCategoryByCatalog: (categoryId: ICategory, catalogId: ICatalog) => Promise<void>
 	
-	// remove methods
+	// ==== remove ====
 	removeAssignedCatalog: (catalogId: ICatalog) => Promise<void>
 	removeAssignedCategoryByCatalog: (categoryId: ICategory, catalogId: ICatalog) => Promise<void>
 
-	// is methods
+	// ==== is ====
 	isMaster: () => boolean
 	isVariant: () => boolean
 	isBasic: () => boolean
 
-	// internal attributes
+	// internal
 	wasNew: boolean
 }

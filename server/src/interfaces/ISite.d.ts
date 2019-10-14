@@ -3,8 +3,8 @@ import { Document } from 'mongoose'
 import { ICatalog, ILocale, IExtensibleObject, IObjectTypeDefinition } from '../interfaces'
 
 export interface ISite extends IExtensibleObject {
-	id: string,
-	hostName: string,
+	id: string
+	hostName: string
 
 	allowedLocales: (ILocale['_id'] | ILocale)[]
 	defaultLocale: ILocale['_id'] | ILocale

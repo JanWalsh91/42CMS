@@ -1,11 +1,12 @@
 import { Document, Schema } from 'mongoose'
-import { IUser } from '.';
+
+import { IUser } from '.'
 
 export interface ILocale extends Document {
-	id: string,
-	language: string,
-	country: string,
-	fallback: ILocale['_id'] | ILocale,
+	id: string
+	language: string
+	country: string
+	fallback: ILocale['_id'] | ILocale
 
 	// ==== to ====
 	toJsonForUser: (user: IUser) => Promise<any>
