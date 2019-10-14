@@ -1,6 +1,6 @@
 import { User } from '../models'
 import { IUser } from '../interfaces'
-import { ValidationError, ResourceNotFoundError, ServerError, UnauthorizedError } from '../utils/Errors'
+import { ValidationError, ResourceNotFoundError, UnauthorizedError } from '../utils/Errors'
 import { uuid } from '../utils/uuid'
 
 class UserService {
@@ -37,7 +37,6 @@ class UserService {
 	}
 
 	public async getAll(): Promise<IUser[]> {
-		// TODO: format user object for non Database use
 		return User.find({}).exec()
 	}
 

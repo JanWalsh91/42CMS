@@ -1,5 +1,3 @@
-import chalk from 'chalk'
-
 import { Patchable, patchAction, patchRequest, ValidationError, ResourceNotFoundError } from '../utils'
 import { ILocale } from '../interfaces'
 import { Locale } from '../models'
@@ -27,8 +25,7 @@ class LocaleService extends Patchable<ILocale> {
 	}
 
 	private async setFallback(locale: ILocale, id: string) {
-		console.log(chalk.magenta(`[LocaleService.setFallback] ${id}`))
-		let fallbackLocale: ILocale = await this.getById(id)
+		const fallbackLocale: ILocale = await this.getById(id)
 		if (!fallbackLocale) {
 			throw new ResourceNotFoundError('Locale', `${id}`)
 		}
@@ -39,8 +36,6 @@ class LocaleService extends Patchable<ILocale> {
 	}
 
 	public async init(): Promise<void> {
-		console.log(chalk.magenta('[LocaleService.init]'))
-
 		await Locale.deleteMany({})
 		const localeConfigs = this.getAllLocaleConfigs()
 
@@ -73,10 +68,7 @@ class LocaleService extends Patchable<ILocale> {
 	}
 
 	public async update(locale: ILocale, patchRequest: patchRequest, resources: any): Promise<ILocale> {
-		console.log(chalk.magenta(`[LocaleService.update]`))
-
 		await this.patch(locale, patchRequest, resources)
-
 		return locale.save()
 	}
 

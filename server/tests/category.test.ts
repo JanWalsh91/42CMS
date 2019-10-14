@@ -38,7 +38,6 @@ describe('Category', () => {
 		it('Should create category', async() => {
 			// Create Category
 			ret = await createCategory(catalog.id, categoryData.id)
-			printret(ret)
 			ret.should.have.status(OK)
 			// Should return category
 			ret.body.id.should.equal(categoryData.id)
@@ -87,27 +86,26 @@ describe('Category', () => {
 		})
 
 		describe('Should fail to create if ...', () => {
-			it('User is not authorized', async() => {
+			it('... user is not authorized', async() => {
 				await logout()
 				ret = await createCategory(catalog.id, categoryData.id)
 				ret.should.have.status(UNAUTHORIZED)
 				await login(userData)
 			})
-			it('Catalog does not exist', async() => {
+			it('... catalog does not exist', async() => {
 				ret = await createCategory('notarealcatalogid', categoryData.id)
 				ret.status.should.eq(NOT_FOUND)
 			})
-			it('Category already exists in Catalog', async() => {
+			it('... category already exists in Catalog', async() => {
 				ret = await createCategory(catalog.id, categoryData.id)
 				ret = await createCategory(catalog.id, categoryData.id)
 				ret.status.should.eq(BAD_REQUEST)
 			})
-			it('Parent category does not exist', async() => {
+			it('... parent category does not exist', async() => {
 				ret = await createCategory(catalog.id, categoryData.id, { parent: 'doesntexist' })
-				printret(ret)
 				ret.status.should.eq(NOT_FOUND)
 			})
-			it('Parent is self', async() => {
+			it('... parent is self', async() => {
 				ret = await createCategory(catalog.id, categoryData.id, { parent: categoryData.id })
 				ret.status.should.eq(BAD_REQUEST)
 
@@ -126,18 +124,18 @@ describe('Category', () => {
 			ret.body.id.should.eq(categoryData.id)
 		})
 		describe('Should fail to get category if ...', () => {
-			it('user is not authorized', async() => {
+			it('... user is not authorized', async() => {
 				await logout()
 				ret = await createCategory(catalog.id, categoryData.id)
 				ret = await getCategory(catalog.id, categoryData.id)
 				ret.status.should.eq(UNAUTHORIZED)
 				await login(userData)
 			})
-			it('Category does not exist', async() => {
+			it('... category does not exist', async() => {
 				ret = await getCategory(catalog.id, categoryData.id)
 				ret.status.should.eq(NOT_FOUND)
 			})
-			it('Catalog does not exist', async() => {
+			it('... catalog does not exist', async() => {
 				ret = await createCategory(catalog.id, categoryData.id)
 				ret = await getCategory(catalog.id + '2', categoryData.id)
 				ret.status.should.eq(NOT_FOUND)
@@ -154,7 +152,7 @@ describe('Category', () => {
 			ret.body.length.should.equal(3)
 		})
 		describe('Should fail if ...', () => {
-			it('User is not authorized', async() => {
+			it('... user is not authorized', async() => {
 				await logout()
 				ret = await createCategory(catalog.id, categoryData.id)
 				ret = await createCategory(catalog.id, 'secondcat')
@@ -162,7 +160,7 @@ describe('Category', () => {
 				ret.status.should.eq(UNAUTHORIZED)
 				await login(userData)
 			})
-			it('Catalog does not exist', async() => {
+			it('... catalog does not exist', async() => {
 				ret = await createCategory(catalog.id, categoryData.id)
 				ret = await createCategory(catalog.id, 'secondcat')
 				ret = await getAllCategories(catalog.id + '2')
@@ -218,11 +216,11 @@ describe('Category', () => {
 			expect(x.categories.find(x => x.id == categoryData.id)).to.not.exist
 		})
 		describe('Should fail if ...', () => {
-			it('Category does not exist', async() => {
+			it('... category does not exist', async() => {
 				ret = await deleteCategory(catalogData.id, catid1)
 				ret.should.have.status(NOT_FOUND)
 			})
-			it('User is not authenticated', async() => {
+			it('... user is not authenticated', async() => {
 				await createCategory(catalogData.id, catid1)
 				await logout()
 				ret = await deleteCategory(catalogData.id, catid1)
@@ -303,7 +301,7 @@ describe('Category', () => {
 		})
 
 		describe('Should fail if ...', () => {
-			it('User is not authorized', async() => {
+			it('... user is not authorized', async() => {
 				await createCategory(catalogData.id, categoryData.id)
 				await logout()
 				ret = await updateCategory(catalogData.id, categoryData.id, {
@@ -312,14 +310,14 @@ describe('Category', () => {
 				})
 				ret.status.should.eq(UNAUTHORIZED)
 			})
-			it('Name is invalid', async() => {
+			it('... name is invalid', async() => {
 				await createCategory(catalogData.id, categoryData.id)
 				ret = await updateCategory(catalogData.id, categoryData.id, {
 					name: { op: '$set', value: [newName] },
 				})
 				ret.status.should.eq(BAD_REQUEST)
 			})
-			it('Id is not unique in category', async() => {
+			it('... id is not unique in category', async() => {
 				await createCategory(catalogData.id, categoryData.id)
 				await createCategory(catalogData.id, newId)
 
@@ -328,14 +326,14 @@ describe('Category', () => {
 				})
 				ret.status.should.eq(BAD_REQUEST)
 			})
-			it('Parent does not exist', async() => {
+			it('... parent does not exist', async() => {
 				await createCategory(catalogData.id, categoryData.id)
 				ret = await updateCategory(catalogData.id, categoryData.id, {
 					parent: { op: '$set', value: 'invalidParentId' },
 				})
 				ret.status.should.eq(NOT_FOUND)
 			})
-			it('Parent is self', async() => {
+			it('... parent is self', async() => {
 				await createCategory(catalogData.id, catid1)
 				await createCategory(catalogData.id, catid2)
 				ret = await updateCategory(catalogData.id, catid1, {
@@ -347,7 +345,7 @@ describe('Category', () => {
 				})
 				ret.status.should.eq(BAD_REQUEST)
 			})
-			it('Parent\`s parent is self', async() => {
+			it('... parent\`s parent is self', async() => {
 				await createCategory(catalogData.id, catid1)
 				await createCategory(catalogData.id, catid2)
 				await createCategory(catalogData.id, catid3)

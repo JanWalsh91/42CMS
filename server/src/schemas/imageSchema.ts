@@ -28,9 +28,16 @@ const imageSchema = new Schema({
 	path: String
 })
 imageSchema.methods = {
+	
+	// ==== get ====
 	getObjectTypeDefinition(this: IImage): Promise<IObjectTypeDefinition> {
 		return objectTypeDefinitionService.getById('Image')
 	},
+
+	// ==== set ==== 
+	setId(this: IImage, id: string): void {
+		this.id = id
+	}
 }
 
 imageSchema.plugin(require('mongoose-autopopulate'))

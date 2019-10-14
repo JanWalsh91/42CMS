@@ -46,7 +46,7 @@ export const invalidImgs: string[] = [
 ].map(img => `${folderPath}/${img}`)
 
 export const clearDataBase = async (...models: Model<any>[]) => {
-	console.log(chalk.red('[clearDatabase]: ' + (models.length ? models.map(model => model.modelName).join(', ') : 'all models')))
+	// console.log(chalk.red('[clearDatabase]: ' + (models.length ? models.map(model => model.modelName).join(', ') : 'all models')))
 	if (!models.length) {
 		models = [
 			User,
@@ -69,12 +69,9 @@ export const clearDataBase = async (...models: Model<any>[]) => {
 }
 
 const imgFolder: string = path.join(__dirname, '../images/')
-// const tmpImgFolder: string = path.join(__dirname, '../tmp_uploads/')
 
 export const removeImages = async () => {
-	console.log('Remove images')
 	for (let file of fs.readdirSync(imgFolder)) {
-		console.log(`delete image [${file}]`)
 		fs.unlinkSync(path.join(imgFolder, file))
 	}
 }

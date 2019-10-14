@@ -1,14 +1,13 @@
 import * as mongoose from 'mongoose'
-import { ClientSession } from 'mongoose'
-import * as express from "express"
-import { Request, Response, NextFunction } from "express"
-import * as bcrypt from "bcrypt"
-import * as bodyParser from "body-parser"
+import * as express from 'express'
+import { Request, Response, NextFunction } from 'express'
+import * as bcrypt from 'bcrypt'
+import * as bodyParser from 'body-parser'
 import * as cors from 'cors'
 import * as session from 'express-session'
 import chalk from 'chalk'
 
-import ResponseStatusTypes from "./utils/ResponseStatusTypes"
+import ResponseStatusTypes from './utils/ResponseStatusTypes'
 const { SERVER_ERROR, BAD_REQUEST } = ResponseStatusTypes
 
 import { globalSettingsService, objectTypeDefinitionService } from './services'
@@ -21,7 +20,7 @@ import { MongoClient } from 'mongodb';
 class App {
 
 	public app: express.Application
-	private static salt: string = "$2b$05$PD21LwJzPhCGI8XjSPcHzO"
+	private static salt: string = '$2b$05$PD21LwJzPhCGI8XjSPcHzO'
 	private db: mongoose.Connection
 
 	public ready: Promise<void>
@@ -35,13 +34,14 @@ class App {
 			next()
 		})
 		this.config()
-		this.app.use(this.printQuery)
+		// Uncomment to print query
+		// this.app.use(this.printQuery)
 		this.app.use('/', routes)
 		this.app.use(this.errorHandler)
     }
 
 	public async init(): Promise<void> {
-		console.log(chalk.yellow('[app.init]'))
+		// console.log(chalk.yellow('[app.init] ...'))
 		this._ready = false
 		
 		this.ready = (async(): Promise<void> => {
@@ -49,13 +49,10 @@ class App {
 			await localeService.init()
 			await globalSettingsService.init()
 
-			// for testing
-			// await objectTypeDefinitionService.reset()
-
 			await objectTypeDefinitionService.init()
 
 			this._ready = true
-			console.log(chalk.green('[app.init] READY'))
+			// console.log(chalk.green('[app.init] READY !'))
 		})()
 		return this.ready
 	}
@@ -69,9 +66,10 @@ class App {
 		this.app.use(express.static('public'))
         this.app.use(bodyParser.json())
 		this.app.use(bodyParser.urlencoded({ extended: true }))
-		// allow client delivered by webpack server to access this server
+
+		// Allow client delivered by webpack server to access this server:
 		this.app.use(cors({
-			origin: ['http://localhost:8080'], // TODO: centralize configs
+			origin: ['http://localhost:8080'],
 			credentials: true
 		}))
 
@@ -80,7 +78,9 @@ class App {
 		mongoose.connect('mongodb://127.0.0.1:27017/MYDB', { useNewUrlParser: true })
 		this.db = mongoose.connection
 
+		// Uncomment to debug mongoose
 		// mongoose.set('debug', true)
+
 		this.db.on('error', err => {
 			console.log('err: ', err)
 		})
@@ -99,7 +99,7 @@ class App {
 			}
 		}
 		this.app.use(session(sessionParams))
-		// hash passwords
+		// Use password hashing middleware
 		this.app.use(this.hashPassword)
 	}
 	
@@ -125,25 +125,19 @@ class App {
 	}
 
 	private errorHandler(err: Error | ServerError, req: Request, res: Response, next: NextFunction) {
-		console.log(chalk.red(err.stack))
-		console.log('name: ', err.name)
+		// console.log(chalk.red(err.stack))
 		if ((<ServerError>err).httpCode) {
-			console.log('[1]')
 			res.status((<ServerError>err).httpCode).send(err.message)
 		} else if (err.name == 'ValidationError') {
 			// Handle Mongoose validation errors
-			console.log('[2]')
 			res.status(BAD_REQUEST).send({message: err.message})
 		} else if (err.name == 'CastError') {
 			// Handle Mongoose cast errors
-			console.log('[2]')
 			res.status(BAD_REQUEST).send({message: err.message})
 		} else if (err.name == 'MongoError') {
 			// Handle Mongoose general errors (including { unique: true } )
-			console.log('[2]')
 			res.status(BAD_REQUEST).send({message: err.message})
 		} else {
-			console.log('[3]')
 			res.status(SERVER_ERROR).send('Unexpected Error')
 		}
 	}

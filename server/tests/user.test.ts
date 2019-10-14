@@ -36,12 +36,12 @@ describe('User', () => {
 			ret.should.have.status(OK)
 		})
 		describe('Should fail if ...', () => {
-			it('User already exists', async () => {
+			it('... user already exists', async () => {
 				ret = await createUser(userData)
 				ret = await createUser(userData)
 				ret.status.should.eq(BAD_REQUEST)
 			})
-			it('Password is invalid', async () => {
+			it('... password is invalid', async () => {
 				ret = await createUser({username: 'test', password: '1'})
 				ret.status.should.eq(BAD_REQUEST)
 			})
@@ -58,7 +58,7 @@ describe('User', () => {
 			ret.should.have.status(OK)
 		})
 		describe('Should fail if', () => {
-			it('There is no session ID', async() => {
+			it('... there is no session ID', async() => {
 				// Auth
 				ret = await authUser()
 				ret.should.have.status(UNAUTHORIZED)
@@ -94,11 +94,11 @@ describe('User', () => {
 			ret.should.have.status(OK)
 		})
 		describe('Should fail if ...', () => {
-			it('User does not exist', async() => {
+			it('... user does not exist', async() => {
 				ret = await login({...userData})
 				ret.should.have.status(UNAUTHORIZED)
 			})
-			it('Password is invalid', async() => {
+			it('... password is invalid', async() => {
 				// Create user
 				ret = await createUser(userData)
 				ret.should.have.status(OK)
@@ -120,13 +120,13 @@ describe('User', () => {
 			ret.body.username.should.eq(userData.username)
 		})
 		describe('Should fail if ...', () => {
-			it('user is unauthorized', async() => {
+			it('... user is unauthorized', async() => {
 				ret = await createUser(userData)
 				await logout()
 				ret = await getUser(userData.username)
 				ret.status.should.eq(UNAUTHORIZED)
 			})
-			it('user does not exist', async() => {
+			it('... user does not exist', async() => {
 				ret = await getUser(userData.username)
 				ret.status.should.eq(UNAUTHORIZED)
 			})
@@ -143,7 +143,7 @@ describe('User', () => {
 		})
 
 		describe('Should fail if ...', () => {
-			it('user is unauthorized', async () => {
+			it('... user is unauthorized', async () => {
 				ret = await createUser(userData)				
 				await logout()
 				ret = await getAllUsers()
@@ -160,10 +160,8 @@ describe('User', () => {
 		it('Should delete a non-admin user (self)', async() => {
 			ret = await createUser(userData)				
 			await logout()
-			console.log('creating user with ', secondUser)
 			ret = await createUser(secondUser)
 			ret = await deleteUser()
-			printret(ret)
 			ret.status.should.eq(OK)
 
 			const user: IUser = await User.findOne({username: secondUser.username}).exec()
@@ -181,12 +179,12 @@ describe('User', () => {
 			expect(user).to.not.exist
 		})
 		describe('Should fail to delete user if ...', () => {
-			it('user is admin (self)', async() => {
+			it('... user is admin (self)', async() => {
 				ret = await createUser(userData)
 				ret = await deleteUser()
 				ret.status.should.eq(UNAUTHORIZED)
 			})
-			it('non admin user tries to delete other user', async() => {
+			it('... non admin user tries to delete other user', async() => {
 				ret = await createUser(userData)			
 				await logout()
 				ret = await createUser(secondUser)				

@@ -1,17 +1,13 @@
-import chalk from 'chalk'
-
 import { IObjectTypeDefinition, IGlobalSettings, IObjectAttributeDefinition, ILocalizableAttribute, IExtensibleObject, IImage } from '../interfaces'
-import { patchRequest, ValidationError, patchAction, InternalError, ResourceNotFoundError } from '../utils'
+import { ValidationError, patchAction, InternalError, ResourceNotFoundError } from '../utils'
 import { globalSettingsService, objectTypeDefinitionService } from '.'
 import { localeCode, attributeType } from '../types'
-import attributeTypes from '../resources/attributeTypes'
-import { imageService } from './imageService';
+import { imageService } from './imageService'
 
 class LocalizableAttributeService {
 	
 	public async update(attribute: ILocalizableAttribute, OAD: IObjectAttributeDefinition, key: string, patchAction: patchAction): Promise<void> {
-		console.log(chalk.magenta(`[LocalizableAttributeService.update]`))
-		let locale = patchAction.locale ? patchAction.locale : 'default'
+		const locale = patchAction.locale ? patchAction.locale : 'default'
 
 		await this.validateAction(OAD.type, patchAction.op)
 		await this.validateLocale(locale)
@@ -23,7 +19,6 @@ class LocalizableAttributeService {
 	}
 
 	public async deleteAttributesFromExtensibleObject(obj: IExtensibleObject) : Promise<void> {
-		// console.log(chalk.magenta(`[LocalizableAttributeService.deleteAttributesFromExtensibleObject]`))
 		const OTD: IObjectTypeDefinition = await objectTypeDefinitionService.getByDocument(obj)
 		if (!OTD) {
 			throw new InternalError('Invalid Object')

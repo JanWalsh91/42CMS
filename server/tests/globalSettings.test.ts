@@ -27,7 +27,6 @@ describe('Global Setting', function() {
 
 	it('Should get global settings', async () => {
 		ret = await getGlobalSettings()
-		printret(ret)
 		ret.status.should.equal(OK)
 	})
 
@@ -47,7 +46,7 @@ describe('Global Setting', function() {
 				localeSettings.availableLocales.find(x => x.id == 'fr_FR').should.exist
 			})
 			describe('Should fail if ...', () => {
-				it('Locale is invalid', async() => {
+				it('... locale is invalid', async() => {
 					ret = await updateGlobalSettings({
 						locale: { op: '$add', value: 'invalid' }
 					})
@@ -60,7 +59,7 @@ describe('Global Setting', function() {
 					})).locale
 					expect(localeSettings.availableLocales.find(x => x.id == 'fr_FR')).to.not.exist
 				})
-				it('Patch operator is invalid', async() => {
+				it('... patch operator is invalid', async() => {
 					ret = await updateGlobalSettings({
 						locale: { op: '$set', value: 'fr_FR' }
 					})
@@ -86,7 +85,7 @@ describe('Global Setting', function() {
 				expect(localeSettings.availableLocales.find(x => x.id == 'fr_FR')).to.not.exist
 			})
 			describe('Should fail if ...', () => {
-				it('Locale is invalid', async() => {
+				it('... locale is invalid', async() => {
 					ret = await updateGlobalSettings({
 						locale: { op: '$add', value: 'fr_FR' }
 					})
@@ -95,7 +94,7 @@ describe('Global Setting', function() {
 					})
 					ret.status.should.eq(BAD_REQUEST)
 				})
-				it('Locale is no available', async() => {
+				it('... locale is no available', async() => {
 					ret = await updateGlobalSettings({
 						locale: { op: '$add', value: 'fr_FR' }
 					})

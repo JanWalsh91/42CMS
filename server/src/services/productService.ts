@@ -1,9 +1,7 @@
-import chalk from 'chalk'
-
-import { Product, Catalog, Category, ProductMaster, ProductVariant } from '../models'
-import { IProduct, ICatalog, ICategory, IGlobalSettings, IProductVariant, IObjectTypeDefinition, IObjectAttributeDefinition, IProductMaster } from '../interfaces'
-import { ResourceNotFoundError, ValidationError, patchRequest, Patchable, patchAction, NotImplementedError } from '../utils'
-import { catalogService, categoryService, globalSettingsService, objectTypeDefinitionService, localizableAttributeService } from '.'
+import { Product, Catalog, ProductMaster, ProductVariant } from '../models'
+import { IProduct, ICatalog, ICategory, IProductVariant, IObjectTypeDefinition, IObjectAttributeDefinition, IProductMaster } from '../interfaces'
+import { ResourceNotFoundError, ValidationError, patchRequest, Patchable, patchAction } from '../utils'
+import { catalogService, objectTypeDefinitionService, localizableAttributeService } from '.'
 import { isMasterProduct, isVariantProduct } from '../typeguards'
 
 class ProductService extends Patchable<IProduct> {
@@ -20,7 +18,6 @@ class ProductService extends Patchable<IProduct> {
 		},
 		assignedCatalogs: {
 			$add: async(product: IProduct, action: patchAction): Promise<void> => {
-				console.log(chalk.keyword('goldenrod')('[ProductService.assignedCatalogs.$add]'))
 				this.checkRequiredProperties(action, ['value'])
 				
 				const catalog: ICatalog = await Catalog.findOne({id: action.value})
@@ -35,15 +32,12 @@ class ProductService extends Patchable<IProduct> {
 					catalog.addProduct(product),
 				])
 
-				// TODO: validate all before saving
-
 				await Promise.all([
 					product.save(),
 					catalog.save(),
 				])
 			},
 			$remove: async(product: IProduct, action: patchAction): Promise<void> => {
-				console.log(chalk.keyword('goldenrod')('[ProductService.assignedCatalogs.$remove]'))
 				this.checkRequiredProperties(action, ['value'])
 				const catalog: ICatalog = await Catalog.findOne({id: action.value})
 				if (!catalog) {
@@ -55,8 +49,6 @@ class ProductService extends Patchable<IProduct> {
 					catalog.removeProduct(product),
 				])
 
-				// TODO: validate all before saving
-				
 				await Promise.all([
 					product.save(),
 					catalog.save(),
@@ -65,7 +57,6 @@ class ProductService extends Patchable<IProduct> {
 		},
 		primaryCategoryByCatalog: {
 			$set: async(product: IProduct, action: patchAction): Promise<void> => {
-				console.log(chalk.keyword('goldenrod')('[ProductService.primaryCategoryByCatalog.$set]'))
 				this.checkRequiredProperties(action, ['value', 'catalog'])
 				
 				const catalog: ICatalog = await Catalog.findOne({id: action.catalog}).populate('products').exec()
@@ -81,7 +72,6 @@ class ProductService extends Patchable<IProduct> {
 
 				// Assign product to Catalog if not in Catalog
 				if (!catalog.products.find(x => x.id == product.id)) {
-					console.log(chalk.green('[ProductService.primaryCategoryByCatalog.$set]NOT IN CATALOG'))
 					await Promise.all([
 						catalog.addProduct(product),
 						product.addAssignedCatalog(catalog)
@@ -89,7 +79,6 @@ class ProductService extends Patchable<IProduct> {
 				}
 				// Assign product to Category if not in Category
 				if (!category.products.find(x => x.id == product.id)) {
-					console.log(chalk.green('[ProductService.primaryCategoryByCatalog.$set]NOT IN CATEGORY'))
 					await Promise.all([
 						category.addProduct(product),
 						product.addAssignedCategoryByCatalog(category, catalog)
@@ -98,8 +87,6 @@ class ProductService extends Patchable<IProduct> {
 
 				await product.setPrimaryCategoryByCatalog(category, catalog)
 
-				// TODO: Validate
-
 				await Promise.all([
 					product.save(),
 					catalog.save(),
@@ -107,7 +94,6 @@ class ProductService extends Patchable<IProduct> {
 				])
 			},
 			$unset: async(product: IProduct, action: patchAction): Promise<void> => {
-				console.log(chalk.keyword('goldenrod')('[ProductService.primaryCategoryByCatalog.$unset]'))
 				this.checkRequiredProperties(action, ['catalog'])
 				const catalog: ICatalog = await Catalog.findOne({id: action.catalog})
 				if (!catalog) {
@@ -120,9 +106,7 @@ class ProductService extends Patchable<IProduct> {
 		},
 		assignedCategoriesByCatalog: {
 			$add: async(product: IProduct, action: patchAction): Promise<void> => {
-				console.log(chalk.keyword('goldenrod')('[ProductService.assignedCategoriesByCatalog.$add]'))
 				this.checkRequiredProperties(action, ['value', 'catalog'])
-	
 	
 				const catalog: ICatalog = await Catalog.findOne({id: action.catalog}).populate('products').exec()
 	
@@ -136,7 +120,6 @@ class ProductService extends Patchable<IProduct> {
 
 				// Assign product to Catalog if not in Catalog
 				if (!catalog.products.find(x => x.id == product.id)) {
-					console.log(chalk.green('[ProductService.assignedCategoriesByCatalog.$add] NOT IN CATALOG'))
 					await Promise.all([
 						catalog.addProduct(product),
 						product.addAssignedCatalog(catalog),
@@ -148,8 +131,6 @@ class ProductService extends Patchable<IProduct> {
 					category.addProduct(product),
 				])
 
-				// TODO: validate
-
 				await Promise.all([
 					product.save(),
 					category.save(),
@@ -157,7 +138,6 @@ class ProductService extends Patchable<IProduct> {
 				])
 			},
 			$remove: async(product: IProduct, action: patchAction): Promise<void> => {
-				console.log(chalk.keyword('goldenrod')('[ProductService.assignedCategoriesByCatalog.$remove]'))
 				this.checkRequiredProperties(action, ['value', 'catalog'])
 				const catalog: ICatalog = await Catalog.findOne({id: action.catalog}).populate('products')
 				if (!catalog) {
@@ -178,8 +158,6 @@ class ProductService extends Patchable<IProduct> {
 					product.removeAssignedCategoryByCatalog(category, catalog),
 				])
 
-				// TODO: validate
-
 				await Promise.all([
 					category.save(),
 					product.save(),
@@ -188,7 +166,6 @@ class ProductService extends Patchable<IProduct> {
 		},
 		variationAttributes: {
 			$add: async(product: IProduct, action: patchAction): Promise<void> => {
-				console.log(chalk.keyword('goldenrod')('[ProductService.variationAttributes.$add]'))
 				this.checkRequiredProperties(action, ['value'])
 				if (isMasterProduct(product)) {
 					const OTD: IObjectTypeDefinition = await product.getObjectTypeDefinition()
@@ -202,7 +179,6 @@ class ProductService extends Patchable<IProduct> {
 				}
 			},
 			$remove: async(product: IProduct, action: patchAction): Promise<void> => {
-				console.log(chalk.keyword('goldenrod')('[ProductService.variationAttributes.$remove]'))
 				this.checkRequiredProperties(action, ['value'])
 				if (isMasterProduct(product)) {
 					const OTD: IObjectTypeDefinition = await product.getObjectTypeDefinition()
@@ -219,7 +195,6 @@ class ProductService extends Patchable<IProduct> {
 	}
 
 	public async create(options: Partial<IProductVariant> | Partial<IProductMaster> | Partial<IProduct>): Promise<IProduct> {
-		console.log(chalk.blue('[productService.create]'))
 		const catalog: ICatalog = await catalogService.getById(options.masterCatalog)
 		if (!catalog) {
 			throw new ResourceNotFoundError('Catalog', options.masterCatalog)
@@ -309,8 +284,6 @@ class ProductService extends Patchable<IProduct> {
 			product.addAssignedCatalog(catalog),
 		])
 
-		// TODO: validation
-
 		await Promise.all([
 			product.save(),
 			catalog.save(),
@@ -320,14 +293,11 @@ class ProductService extends Patchable<IProduct> {
 	}
 
 	public async update(product: IProduct, patchRequest: patchRequest, resources: any): Promise<IProduct> {
-		console.log(chalk.magenta(`[ProductService.update]`))
-
 		await this.patch(product, patchRequest, resources)
 		return product.save()
 	}
 
 	public async delete(product: IProduct): Promise<void> {
-		console.log(chalk.magenta('[productService.delete] ' +  product.id))
 		await product.populate([
 			{path: 'assignedCatalogs'},
 			{path: 'assignedCategoriesByCatalog.catalog'},
@@ -385,14 +355,11 @@ class ProductService extends Patchable<IProduct> {
 
 	// ==== set ====
 	private async setId(product: IProduct, id: string): Promise<IProduct> {
-		console.log(chalk.magenta(`[ProductService.setId] ${id}`))
-		product.id = id
+		product.setId(id)
 		return product
 	}
 
 	public async exportAllProducts(): Promise<any> {
-		console.log(chalk.magenta('[ProductService.exportAllProducts]'))
-
 		let products: IProduct[] = await Product.find().exec()
 
 		let jsonProducts: any = await Promise.all(products.map(this.productToXMLJSON))
@@ -406,7 +373,6 @@ class ProductService extends Patchable<IProduct> {
 
 
 	public async productToXMLJSON(product: IProduct): Promise<any> {
-		console.log(chalk.magenta(`[ProductService.productToXMLJSON ${product.id}`))
 		await product.populate([
 			{ path: '' },
 		]).execPopulate()
@@ -418,7 +384,6 @@ class ProductService extends Patchable<IProduct> {
 			},
 			...(await objectTypeDefinitionService.extensibleObjectToXMLJSON(product))
 		}
-	
 		return ret
 	}
 }

@@ -101,7 +101,7 @@ describe('Product', function() {
 				})
 				ret.status.should.eq(BAD_REQUEST)
 			})
-			it('.. user is not authenticated', async() => {
+			it('... user is not authenticated', async() => {
 				await logout()
 				ret = await createProduct(catalogData.id, productData.id)
 				ret.status.should.equal(UNAUTHORIZED)
@@ -177,7 +177,6 @@ describe('Product', function() {
 					ret = await updateProduct(productData.id, {
 						[variationAttributePath]: { op: '$set', value: 50 }
 					})
-					printret(ret)
 					ret.status.should.eq(BAD_REQUEST)
 				})
 			})
@@ -336,11 +335,11 @@ describe('Product', function() {
 			ret.body.id.should.equal(productData.id)
 		})
 		describe('Should fail if ...', () => {
-			it('Product does not exist', async () => {
+			it('... product does not exist', async () => {
 				ret = await getProduct(productData.id)
 				ret.should.have.status(NOT_FOUND)				
 			})
-			it('User is not authenticated', async() => {
+			it('... user is not authenticated', async() => {
 				await logout()
 				ret = await getProduct(productData.id)
 				ret.should.have.status(UNAUTHORIZED)
@@ -359,7 +358,7 @@ describe('Product', function() {
 			ret.should.have.status(OK)
 		})
 		describe('Should fail if ...', () => {
-			it('User is not authenticated', async() => {
+			it('... user is not authenticated', async() => {
 				await logout()
 				ret = await getAllProducts()
 				ret.should.have.status(UNAUTHORIZED)
@@ -424,14 +423,14 @@ describe('Product', function() {
 				expect(catalog.products.find(x => x.id == productData.id)).to.not.exist
 			})
 			describe('Should fail if ...', () => {
-				it('Catalog does not exist', async() => {
+				it('... catalog does not exist', async() => {
 					await createProduct(catalogData.id + '2', productData.id)
 					ret = await updateProduct(productData.id, {
 						assignedCatalogs: { op: '$add', value: 'unknowncatalog' }
 					})
 					ret.status.should.eq(NOT_FOUND)
 				})
-				it('Catalog is a master Catalog', async() => {
+				it('... catalog is a master Catalog', async() => {
 					await createProduct(catalogData.id, productData.id)
 					await createCatalog(catId1, { master: true })
 					ret = await updateProduct(productData.id, {
@@ -439,7 +438,7 @@ describe('Product', function() {
 					})
 					ret.status.should.eq(BAD_REQUEST)
 				})
-				it('User is not authenticated', async() => {
+				it('... user is not authenticated', async() => {
 					await createProduct(catalogData.id, productData.id)
 					await createCatalog(catId1)
 					await logout()

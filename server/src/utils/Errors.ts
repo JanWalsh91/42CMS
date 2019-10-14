@@ -1,5 +1,6 @@
+import chalk from 'chalk'
+
 import ResponseStatusTypes from './ResponseStatusTypes'
-import chalk from 'chalk';
 const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR, UNAUTHORIZED, NOT_IMPLEMENTED } = ResponseStatusTypes
 
 export class ServerError extends Error {
@@ -9,7 +10,7 @@ export class ServerError extends Error {
 		super(message)
 		this.httpCode = httpCode
 		
-		console.log(chalk.red(`ServerError[${httpCode}]: ${message}`))
+		// console.log(chalk.red(`ServerError[${httpCode}]: ${message}`))
 
 		Error.captureStackTrace(this, this.constructor);
 	}

@@ -1,5 +1,3 @@
-import chalk from 'chalk'
-
 import { Patchable, patchAction, ValidationError, ResourceNotFoundError, patchRequest } from '../utils'
 import { ISite, ILocale, ICatalog, IGlobalSettings } from '../interfaces'
 import { objectTypeDefinitionService, localeService, catalogService, globalSettingsService } from '.'
@@ -43,8 +41,6 @@ class SiteService extends Patchable<ISite> {
 	}
 
 	public async create(id: string): Promise<ISite> {
-		console.log(chalk.blue('[siteService.create]'), id)
-
 		const existingSite: ISite = await this.getById(id)
 		if (existingSite) {
 			throw new ValidationError('Site already exists')
@@ -57,15 +53,11 @@ class SiteService extends Patchable<ISite> {
 	}
 
 	public async update(site: ISite, patchRequest: patchRequest, resources: any): Promise<ISite> {
-		console.log(chalk.magenta(`[SiteService.update]`), site)
-
 		await this.patch(site, patchRequest, resources)
 		return site.save()
 	}
 
 	private async setDefaultLocale(site: ISite, localeId: string): Promise<ISite> {
-		console.log(chalk.magenta(`[SiteService.setDefaultLocale] ${localeId}`))
-	
 		const locale: ILocale = await localeService.getById(localeId)
 		if (!locale) {
 			throw new ResourceNotFoundError('Locale', localeId)
@@ -77,8 +69,6 @@ class SiteService extends Patchable<ISite> {
 	}
 
 	private async addAllowedLocale(site: ISite, localeId: string): Promise<ISite> {
-		console.log(chalk.magenta(`[SiteService.addAllowedLocale] ${localeId}`))
-
 		const locale: ILocale = await localeService.getById(localeId)
 		if (!locale) {
 			throw new ResourceNotFoundError('Locale', localeId)
@@ -93,8 +83,6 @@ class SiteService extends Patchable<ISite> {
 	}
 
 	private async removeAllowedLocale(site: ISite, localeId: string): Promise<ISite> {
-		console.log(chalk.magenta(`[SiteService.addAllowedLocale] ${localeId}`))
-
 		const locale: ILocale = await localeService.getById(localeId)
 		if (!locale) {
 			throw new ResourceNotFoundError('Locale', localeId)
@@ -106,13 +94,10 @@ class SiteService extends Patchable<ISite> {
 	}
 
 	public async getById(id: string): Promise<ISite> {
-		console.log(chalk.magenta(`[SiteService.getById] ${id}`))
 		return Site.findOne({id}).exec()
 	}
 
 	public async delete(site: ISite): Promise<void> {
-		console.log(chalk.magenta('[siteService.delete] ' +  site.id))
-		
 		await site.populate('catalogs').execPopulate()
 		
 		// Unassign catalogs from site

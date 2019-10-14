@@ -121,14 +121,14 @@ describe('Site', function() {
 		})
 
 		describe('Should fail if ...', () => {
-			it('Locale is not available', async() => {
+			it('... locale is not available', async() => {
 				ret = await createSite(siteId)
 				ret = await updateSite(siteId, {
 					allowedLocales: { op: '$add', value: 'fr_FR'}
 				})
 				ret.status.should.eq(BAD_REQUEST)
 			})
-			it('Locale does not exist', async() => {
+			it('... locale does not exist', async() => {
 				ret = await createSite(siteId)
 				ret = await updateSite(siteId, {
 					allowedLocales: { op: '$add', value: 'zh'}
@@ -155,11 +155,11 @@ describe('Site', function() {
 			expect(catalog.sites.find(x => x.id == siteId)).to.not.exist
 		})
 		describe('Should fail if ...', () => {
-			it('Site does not exist', async() => {
+			it('... site does not exist', async() => {
 				ret = await deleteSite(siteId)
 				ret.status.should.eq(NOT_FOUND)
 			})
-			it('User is not authorized', async() => {
+			it('... user is not authorized', async() => {
 				ret = await createSite(siteId)
 				ret = await createCatalog(catid)
 				// Assign catalog to site

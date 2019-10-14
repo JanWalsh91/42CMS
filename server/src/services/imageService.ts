@@ -1,10 +1,9 @@
-import chalk from 'chalk'
 import * as path from 'path'
 import * as fs from 'fs'
 const readChunk = require('read-chunk')
 const imageType = require('image-type')
 
-import { ResourceNotFoundError, NotImplementedError, ValidationError, Patchable, patchAction, patchRequest } from '../utils'
+import { ValidationError, Patchable, patchAction } from '../utils'
 import { IImage } from '../interfaces'
 import { Image } from '../models'
 import { objectTypeDefinitionService } from '.'
@@ -25,14 +24,13 @@ class ImageService extends Patchable<IImage> {
 	}
 
 	public async create(id: string, imgpath: string): Promise<IImage> {
-		console.log(chalk.blue('[imageService.create]'), id)
 		const existingImage: IImage = await this.getById(id)
 		
 		if (existingImage) {
 			throw new ValidationError('Image already exists')
 		}
 		
-		const buffer = readChunk.sync(path.join(__dirname, imgpath), 0, 12);
+		const buffer = readChunk.sync(path.join(__dirname, imgpath), 0, 12)
 		if (!imageType(buffer)) {
 			throw new ValidationError('File is not an image')
 		}
@@ -46,14 +44,16 @@ class ImageService extends Patchable<IImage> {
 	}
 
 	public async delete(image: IImage): Promise<void> {
-		console.log(chalk.blue('[imageService.delete]'))
 		fs.unlinkSync(path.join(__dirname, image.path))
 		await image.remove()
 	}
 	
 	private async setId(image: IImage, id: string): Promise<IImage> {
-		console.log(chalk.magenta(`[ImageService.setId] ${id}`))
-		image.id = id
+		const images: IImage[] = await Image.find({id})
+		if (images.length > 0) {
+			throw new ValidationError(`Image with id ${id} already exists`)
+		}
+		image.setId(id)
 		return image
 	}
 
@@ -62,4 +62,4 @@ class ImageService extends Patchable<IImage> {
 	}
 }
 
-export const imageService: ImageService = new ImageService();
+export const imageService: ImageService = new ImageService()

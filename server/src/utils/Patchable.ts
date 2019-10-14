@@ -1,9 +1,6 @@
-import chalk from 'chalk'
-import { Document } from 'mongoose'
-
 import { ValidationError, ServerError } from '.'
 import { localizableAttributeService } from '../services'
-import { IObjectAttributeDefinition, IObjectTypeDefinition, IExtensibleObject, ILocalizableAttribute } from '../interfaces'
+import { IObjectAttributeDefinition, IObjectTypeDefinition, ILocalizableAttribute } from '../interfaces'
 import { isExtensibleObject } from '../typeguards';
 
 export type patchOperation = '$add' | '$remove' | '$set' | '$unset'
@@ -32,20 +29,17 @@ export abstract class Patchable<T> {
 	protected async patch(object: T, patch: patchRequest, resources: any): Promise<void> {
 		// Parses the patchRequest and calls on update functions for each patch action
 		for (let [key, value] of Object.entries(patch)) {
-			console.log(chalk.keyword('salmon')(`\n========== PATCH: ${key} ==========\n`), value)
-			console.log(chalk.keyword('salmon')('=============================='))
 			if (isPatchAction(value)) {
 				await this.executeAction(object, key, {...value, resources})
 			} else if (isArrayOfPatchActions(value)) {
 				await value.reduce((_, patchAction: patchAction) => _.then(() => this.executeAction(object, key, {...patchAction, resources})), Promise.resolve())
 			} else {
-				console.log(chalk.red('Bad value: '), value)
+				throw new ValidationError('Bad value: ' + JSON.stringify(value))
 			}
 		}
 	}
 
 	private async executeAction(object: T, key: string, action: patchAction) {
-		// console.log('execute action', action)
 		if (this.patchMap.hasOwnProperty(key)) {
 			if (this.patchMap[key].hasOwnProperty(action.op)) {
 				await this.patchMap[key][action.op](object, action)

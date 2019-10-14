@@ -36,16 +36,16 @@ describe('Image', () => {
 			expect(image.id).to.eq(imageId)
 		})
 		describe('Should fail if ...', () => {
-			it('id is already in use', async() => {
+			it('... id is already in use', async() => {
 				ret = await uploadImage(placeholderImages[0], imageId)
 				ret = await uploadImage(placeholderImages[0], imageId)
 				ret.status.should.eq(BAD_REQUEST)
 			})
-			it('Is not an image (bad png file)', async () => {
+			it('... is not an image (bad png file)', async () => {
 				ret = await uploadImage(invalidImgs[0], imageId)
 				ret.status.should.eq(BAD_REQUEST)
 			})
-			it('Is not an image (txt file)', async () => {
+			it('... is not an image (txt file)', async () => {
 				ret = await uploadImage(invalidImgs[1], imageId)
 				ret.status.should.eq(BAD_REQUEST)
 			})

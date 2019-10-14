@@ -201,12 +201,12 @@ describe('Catalog', () => {
 		})
 
 		describe('Should fail if ...', () => {
-			it('Catalog does not exist', async() => {
+			it('... catalog does not exist', async() => {
 				await createCatalog(catalogData.id)
 				ret = await deleteCatalog(catalogData.id + '2')
 				ret.should.have.status(NOT_FOUND)
 			})
-			it('User is not authenticated', async() => {
+			it('... user is not authenticated', async() => {
 				await createCatalog(catalogData.id)
 				await logout()
 				ret = await deleteCatalog(catalogData.id)
@@ -280,7 +280,7 @@ describe('Catalog', () => {
 		})
 
 		describe('Should fail if ...', () => {
-			it('User is not authorized', async() => {
+			it('... user is not authorized', async() => {
 				await createCatalog(catalogData.id)
 				await logout()
 				ret = await updateCatalog(catalogData.id, {
@@ -292,7 +292,7 @@ describe('Catalog', () => {
 				const catalog: ICatalog = await Catalog.findOne({id: newId})
 				expect(catalog).to.not.exist
 			})
-			it('Name is invalid', async() => {
+			it('... name is invalid', async() => {
 				const name: string = 'catname'
 				await createCatalog(catalogData.id, { name })
 				ret = await updateCatalog(catalogData.id, {
@@ -304,20 +304,19 @@ describe('Catalog', () => {
 				const catalog: ICatalog = await Catalog.findOne({id: catalogData.id})
 				catalog.name.should.eq(name)
 			})
-			it('Id is not unique', async() => {
+			it('... id is not unique', async() => {
 				await createCatalog(catalogData.id)
 				await createCatalog(catalogData.id + '2')
 				ret = await updateCatalog(catalogData.id, {
 					id: { op: '$set', value: catalogData.id + '2' }
 				})
-				printret(ret)
 				ret.status.should.eq(BAD_REQUEST)				
 
 				// Catalog's id should not bd updated
 				const catalog: ICatalog = await Catalog.findOne({id: catalogData.id + '2'})
 				expect(catalog).to.exist
 			})
-			it('Site does not exist', async() => {
+			it('... site does not exist', async() => {
 				ret = await createCatalog(catalogData.id)
 				ret = await updateCatalog(catalogData.id, {
 					sites: { op: '$add', value: siteId }

@@ -1,10 +1,7 @@
-import chalk from 'chalk'
-
-import { ResourceNotFoundError, NotImplementedError, ValidationError, Patchable, patchAction, patchRequest } from '../utils'
+import { ResourceNotFoundError, ValidationError, Patchable, patchAction, patchRequest } from '../utils'
 import { Catalog } from '../models'
 import { ICatalog, ICategory, IProduct, ISite } from '../interfaces'
 import { categoryService, siteService, productService } from '.'
-
 
 class CatalogService extends Patchable<ICatalog> {
 	hasObjectTypeDefinition = false
@@ -35,9 +32,8 @@ class CatalogService extends Patchable<ICatalog> {
 	}
 
 	public async create(options: Partial<ICatalog>): Promise<ICatalog> {
-		console.log(chalk.magenta('[CatalogService.create]'), options)
 		// Check if catalog exists
-		let existingCatalogs: ICatalog[] = await Catalog.find({id: options.id})
+		const existingCatalogs: ICatalog[] = await Catalog.find({id: options.id})
 		if (existingCatalogs.length > 0) {
 			throw new ValidationError('Catalog already exists')
 		}
@@ -50,10 +46,7 @@ class CatalogService extends Patchable<ICatalog> {
 	}
 
 	public async update(catalog: ICatalog, patchRequest: patchRequest, resources: any): Promise<ICatalog> {
-		console.log(chalk.magenta(`[CatalogService.update]`))
-
 		await this.patch(catalog, patchRequest, resources)
-		
 		return catalog.save()
 	}
 
@@ -99,17 +92,14 @@ class CatalogService extends Patchable<ICatalog> {
 	// ==== add ====
 	public async addCategory(catalog: ICatalog, category: ICategory): Promise<void> {
 		await catalog.addCategory(category)
-
 		await catalog.save()
 	}
 	public async addProduct(catalog: ICatalog, product: IProduct): Promise<void> {
-		console.log(chalk.magenta(`[CatalogService.addProduct] ${product.id} to ${catalog.id}`))
 		await catalog.addProduct(product)
 		
 		await catalog.save()
 	}
 	public async addSite(catalog: ICatalog, siteid: string): Promise<void> {
-		console.log(chalk.magenta(`[CatalogService.addSite] ${siteid} to ${catalog.id}`))
 		const site: ISite = await siteService.getById(siteid)
 		if (!site) {
 			throw new ResourceNotFoundError('Site', siteid)
@@ -123,20 +113,14 @@ class CatalogService extends Patchable<ICatalog> {
 
 	// ==== remove ====
 	public async removeCategory(catalog: ICatalog, category: ICategory): Promise<void> {
-		console.log(chalk.magenta(`[CatalogModel.removeCategory] ${category.id} from ${category.id}`))
 		await catalog.removeCategory(category)
-		
 		await catalog.save()
 	}
 	public async removeProduct(catalog: ICatalog, product: IProduct): Promise<void> {
-		console.log(chalk.magenta(`[CatalogService.removeProduct] ${product.id} to ${catalog.id}`))
-		
 		await catalog.removeProduct(product)
-		
 		await catalog.save()
 	}
 	public async removeSite(catalog: ICatalog, siteid: string): Promise<void> {
-		console.log(chalk.magenta(`[CatalogService.removeSite] ${siteid} to ${catalog.id}`))
 		const site: ISite = await siteService.getById(siteid)
 		if (!site) {
 			throw new ResourceNotFoundError('Site', siteid)
@@ -149,8 +133,6 @@ class CatalogService extends Patchable<ICatalog> {
 	}
 
 	public async exportAllCatalogs(): Promise<any> {
-		console.log(chalk.magenta('[CatalogService.exportAllCatalogs]'))
-
 		const catalogs: ICatalog[] = await Catalog.find().exec()
 
 		// Build JSON object to be converted to xml using xml-builder // https://www.npmjs.com/package/xmlbuilder
@@ -160,7 +142,6 @@ class CatalogService extends Patchable<ICatalog> {
 	}
 
 	public async catalogToXMLJSON(catalog: ICatalog): Promise<any> {
-		console.log(chalk.magenta(`[CatalogService.catalogToXMLJSON] ${catalog.id}`))
 		await catalog.populate([
 			{ path: 'sites' },
 			{ path: 'categories' },

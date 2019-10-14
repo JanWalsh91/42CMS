@@ -1,10 +1,7 @@
 import { IGlobalSettings, ILocaleSettings, ILocale } from '../interfaces'
-
 import { GlobalSettings } from '../models'
-import chalk from 'chalk'
-import { Patchable, patchAction, ValidationError, patchRequest, ResourceNotFoundError } from '../utils';
-import { async } from 'q';
-import { localeService } from '.';
+import { Patchable, patchAction, ValidationError, patchRequest, ResourceNotFoundError } from '../utils'
+import { localeService } from '.'
 
 class GlobalSettingsService extends Patchable<IGlobalSettings> {
 	hasObjectTypeDefinition = false
@@ -12,12 +9,10 @@ class GlobalSettingsService extends Patchable<IGlobalSettings> {
 	patchMap = {
 		locale: {
 			$add: async(globalSettings: IGlobalSettings, action: patchAction): Promise<void> => {
-				console.log(chalk.keyword('goldenrod')('[GlobalSettingsService.locale.$add]'))
 				this.checkRequiredProperties(action, ['value'])
 				await this.addLocale(globalSettings, action.value)
 			},
 			$remove: async(globalSettings: IGlobalSettings, action: patchAction): Promise<void> => {
-				console.log(chalk.keyword('goldenrod')('[GlobalSettingsService.locale.$remove]'))
 				this.checkRequiredProperties(action, ['value'])
 				await this.removeLocale(globalSettings, action.value)
 			}
@@ -34,8 +29,6 @@ class GlobalSettingsService extends Patchable<IGlobalSettings> {
 	}
 
 	public async reset(): Promise<void> {
-		console.log(chalk.magenta('[GlobalSettingsService.reset]'))
-		
 		let globalSettings: IGlobalSettings = await this.get()
 		if (!globalSettings) {
 			globalSettings = await new GlobalSettings()
@@ -43,7 +36,6 @@ class GlobalSettingsService extends Patchable<IGlobalSettings> {
 		}
 		await globalSettings.locale.reset()
 		await globalSettings.save()
-		console.log(chalk.magenta('[GlobalSettingsService.reset] -- end'))
 	}
 
 	/**
@@ -51,20 +43,15 @@ class GlobalSettingsService extends Patchable<IGlobalSettings> {
 	 * @param force Forces the reset
 	 */
 	public async init(force?: boolean): Promise<void> {
-		console.log(chalk.magenta('[GlobalSettingsService.init]'))
 		await this.reset()
 	}
 
 	public async update(globalSettings: IGlobalSettings, patchRequest: patchRequest, resources: any): Promise<void> {
-		console.log(chalk.magenta(`[GlobalSettingsService.update]`))
-
 		await this.patch(globalSettings, patchRequest, resources)
-
 		await globalSettings.save()
 	}
 
 	private async addLocale(globalSettings: IGlobalSettings, value: string): Promise<void> {
-		console.log(chalk.magenta(`[GlobalSettingsService.addLocale]`))
 		const localeSettings: ILocaleSettings = globalSettings.locale
 		if (!localeSettings.localeIsAvailable(value)) {
 			const locale: ILocale = await localeService.getById(value)
@@ -76,7 +63,6 @@ class GlobalSettingsService extends Patchable<IGlobalSettings> {
 	}
 
 	private async removeLocale(globalSettings: IGlobalSettings, value: string): Promise<void> {
-		console.log(chalk.magenta(`[GlobalSettingsService.removeLocale]`))
 		const localeSettings: ILocaleSettings = globalSettings.locale
 		if (localeSettings.localeIsAvailable(value)) {
 			const locale: ILocale = await localeService.getById(value)
