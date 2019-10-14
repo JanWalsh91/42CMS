@@ -8,6 +8,8 @@ import { IImage } from '../interfaces'
 import { Image } from '../models'
 import { objectTypeDefinitionService } from '.'
 
+export const imgRoute: string = path.join(__dirname, '../../images')
+
 class ImageService extends Patchable<IImage> {
 	hasObjectTypeDefinition = true
 	protected async getObjectTypeDefinition() {
@@ -20,6 +22,12 @@ class ImageService extends Patchable<IImage> {
 				this.checkRequiredProperties(action, ['value'])
 				await this.setId(image, action.value)
 			},
+		}
+	}
+
+	public async init(): Promise<void> {
+		if (!fs.existsSync(imgRoute)) {
+			fs.mkdirSync(imgRoute)
 		}
 	}
 

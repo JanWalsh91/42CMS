@@ -10,11 +10,10 @@ import chalk from 'chalk'
 import ResponseStatusTypes from './utils/ResponseStatusTypes'
 const { SERVER_ERROR, BAD_REQUEST } = ResponseStatusTypes
 
-import { globalSettingsService, objectTypeDefinitionService } from './services'
+import { globalSettingsService, objectTypeDefinitionService, impexService, localeService, imageService } from './services'
 
 import routes from './routes'
 import { ServerError } from './utils/Errors'
-import { localeService } from './services/localeservice'
 
 class App {
 
@@ -45,6 +44,8 @@ class App {
 		
 		this.ready = (async(): Promise<void> => {
 			
+			await imageService.init()
+			await impexService.init()
 			await localeService.init()
 			await globalSettingsService.init()
 
