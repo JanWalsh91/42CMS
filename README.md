@@ -1,16 +1,24 @@
 # Installation
 
-- clone repository 
-- install dependencies
-```bash
+Requires:
+- node
+- mongo
+- ts-node installed globally
+
+Clone repository 
+```
+git clone https://github.com/JanWalsh91/42CMS.git
+```
+Install dependencies
+```
 npm i
 ```
-- start react app in dev mode
-```bash
-npm run dev:client
+Start server in dev mode
 ```
-- start server in dev mode
-```bash
 npm run db-start
 npm run dev:server
+```
+Run unit tests
+```
+npm test
 ```

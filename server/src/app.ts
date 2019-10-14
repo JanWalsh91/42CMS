@@ -15,7 +15,6 @@ import { globalSettingsService, objectTypeDefinitionService } from './services'
 import routes from './routes'
 import { ServerError } from './utils/Errors'
 import { localeService } from './services/localeservice'
-import { MongoClient } from 'mongodb';
 
 class App {
 
@@ -67,7 +66,7 @@ class App {
         this.app.use(bodyParser.json())
 		this.app.use(bodyParser.urlencoded({ extended: true }))
 
-		// Allow client delivered by webpack server to access this server:
+		// Allow client to access this server:
 		this.app.use(cors({
 			origin: ['http://localhost:8080'],
 			credentials: true
