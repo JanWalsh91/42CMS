@@ -15,24 +15,24 @@ export interface ICatalog extends Document {
 	 */
 	master: boolean
 
-	// to methods
+	// ==== to ====
 	toJSONForClient: () => Promise<object>
 
-	// set methods
+	// ==== set ====
 	setId: (id: string) => Promise<ICatalog>
 	setName: (id: string) => Promise<ICatalog>
 
-	// get methods
+	// ==== get ====
 	getRootCategory: () => Promise<ICategory>
 	getCategory: (query: object) => Promise<ICategory>
 	getProduct: (query: object) => Promise<IProduct>
 	
-	// add methods
+	// ==== add ====
 	addCategory: (category: ICategory) => Promise<ICatalog>
 	addProduct: (product: IProduct) => Promise<ICatalog>
 	addSite: (site: ISite) => Promise<ICatalog>
 
-	// remove methods
+	// ==== remove ====
 	removeCategory: (category: ICategory) => Promise<ICatalog>
 	removeProduct: (product: IProduct) => Promise<ICatalog>
 	removeSite: (site: ISite) => Promise<ICatalog>

@@ -2,12 +2,10 @@ import { Request, Response, NextFunction } from 'express'
 import * as multer from 'multer'
 import * as fs from 'fs'
 import * as path from 'path'
-import chalk from 'chalk'
 
 import { ServerError, ValidationError, NotImplementedError, ResourceNotFoundError } from '../utils'
 import { imageService } from '../services/imageService'
-import { IImage } from '../interfaces';
-
+import { IImage } from '../interfaces'
 
 const imageFieldName: string = 'image'
 const imageDirectoryPath: string = '../../images/'
@@ -33,7 +31,6 @@ const uploadImage = multer({
 export const imageController = {	
 	
 	async create(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[ImageController] create'))
 		const id: string = req.body.id
 		const finalPath: string = imageDirectoryPath + req.file.filename
 		const tmpPath: string = req.file ? req.file.path : undefined;
@@ -42,7 +39,6 @@ export const imageController = {
 			await new Promise(resolve => {
 				fs.rename(tmpPath, path.join(__dirname, finalPath), (err) => {
 					if (err) {
-						console.log(chalk.red(err.message))
 						throw new ServerError(500, 'Failed to upload image')
 					}
 					resolve()
@@ -59,17 +55,14 @@ export const imageController = {
 	},
 
 	async get(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[ImageController] get'))
 		throw new NotImplementedError()
 	},
 
 	async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[ImageController] getAll'))
 		throw new NotImplementedError()
 	},
 
 	async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[ImageController] delete'))
 		try {
 			await imageService.delete(res.locals.image)
 			res.end()
@@ -77,13 +70,10 @@ export const imageController = {
 	},
 
 	async uploadImage(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[ImageController] upload image'))
 		await uploadImage(req, res, next)
-		console.log(chalk.magenta('[ImageController] upload image __END'))
 	},
 
 	async setImageFromParams(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[ImageController.setImageFromParams]'))
 		if (!req.params.imageid) {
 			return next(new ValidationError('Image id not provided'))
 		}

@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express'
-import chalk from 'chalk'
 
 import { productService, objectTypeDefinitionService } from '../services'
 import { IProduct } from '../interfaces'
@@ -7,7 +6,6 @@ import { ValidationError, ResourceNotFoundError } from '../utils/Errors'
 
 export const productController = {
 	async create(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[ProductController] create'))
 		const { mastercatalogid: masterCatalog } = req.body
 
 		try {
@@ -20,23 +18,17 @@ export const productController = {
 	},
 
 	async get(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[ProductController.get]'))
-		
-		// TODO: output for front end user
 		res.send(res.locals.product);
 	},
 
 	async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[ProductController.getAll]'))
-		const products: IProduct[] = await productService.getAll()
-
-		// TODO: output for front end user
-		res.send(products);
+		try {
+			const products: IProduct[] = await productService.getAll()
+			res.send(products);
+		} catch (e) { next(e) }
 	},	
 
 	async update(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[ProductController.update]'))
-
 		try {
 			await productService.update(res.locals.product, req.body, {
 				objectTypeDefinition: await objectTypeDefinitionService.getByDocument(res.locals.product)
@@ -46,7 +38,6 @@ export const productController = {
 	},
 
 	async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[ProductController.delete]'))
 		try {
 			await productService.delete(res.locals.product)
 			res.end()
@@ -54,7 +45,6 @@ export const productController = {
 	},
 
 	async setProductFromParams(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[ProductController.setProductFromParams]'))
 		if (!req.params.productid) {
 			return next(new ValidationError('Product id not provided'))
 		}

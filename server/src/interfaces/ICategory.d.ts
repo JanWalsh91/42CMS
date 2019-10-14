@@ -10,27 +10,27 @@ export interface ICategory extends Document {
 	subCategories: (ICategory['_id'] | ICategory)[]
 	products: IProduct['_id'][]
 
-	// set methods
+	// ==== set ====
 	setId: (id: string) => Promise<ICategory>
 	setName: (name: string) => Promise<ICategory>
 
-	// get methods
+	// ==== get ====
 	getParent: () => Promise<ICategory>
 	getCatalog: () => Promise<ICatalog>
 	getSubCategory: (query: object) => Promise<ICategory>
 	// getProduct: (query: object) => Promise<IProduct>
 
-	// add methods
+	// ==== add ====
 	addSubCategory: (category: ICategory) => Promise<ICategory>
 	addProduct: (productId: IProduct) => Promise<ICategory>
 
-	// set methods
+	// ==== set ====
 	setParent: (category: ICategory | null) => Promise<void>
 
-	// remove methods
+	// ==== remove ====
 	removeSubCategory: (category: ICategory) => Promise<ICategory>
 	removeProduct: (product: IProduct) => Promise<ICategory>
 
-	// internal
+	// internal use
 	wasNew: boolean
 }

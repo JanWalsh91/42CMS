@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import chalk from 'chalk'
+
 import { ValidationError, ResourceNotFoundError } from '../utils'
 import { ILocale } from '../interfaces'
 import { localeService } from '../services'
@@ -7,7 +7,6 @@ import { localeService } from '../services'
 export const localeController = {
 	
 	async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[localeController.getAll]'))
 		try {
 			const locales: ILocale[] = await localeService.getAll()
 		
@@ -20,7 +19,6 @@ export const localeController = {
 	},
 
 	async update(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[localeController.update]'))
 		try {
 			await localeService.update(res.locals.locale, req.body, {})
 			res.end()
@@ -28,7 +26,6 @@ export const localeController = {
 	},
 	
 	async setLocaleFromParams(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[localeController.setLocaleFromParams]'))
 		if (!req.params.localeid) {
 			return next(new ValidationError('Locale id not provided'))
 		}

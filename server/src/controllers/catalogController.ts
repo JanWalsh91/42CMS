@@ -1,14 +1,11 @@
 import { Request, Response, NextFunction } from 'express'
-import chalk from 'chalk'
 
 import { catalogService } from '../services/catalogService'
 import { ICatalog } from '../interfaces'
 import { ResourceNotFoundError, ValidationError } from '../utils/Errors'
-import { Catalog } from '../models'
 
 export class CatalogController {
 	public async create(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[CatalogController.create]'))
 		const { name, id, master }: { name: string, id: string, master: boolean } = req.body;
 
 		try {
@@ -20,24 +17,17 @@ export class CatalogController {
 	}
 
 	public async get(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[CatalogController.get]'))
-
-		// TODO: output for front end user
 		res.send(res.locals.catalog);
 	}
 
 	public async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[CatalogController.getAll]'))
-
-		const catalogs: ICatalog[] = await catalogService.getAll()
-
-		// TODO: output for front end user
-		res.send(catalogs);
+		try {
+			const catalogs: ICatalog[] = await catalogService.getAll()
+			res.send(catalogs);
+		} catch (e) { next(e) }		
 	}
 
 	public async update(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[CatalogController.update]'))
-
 		try {
 			await catalogService.update(res.locals.catalog, req.body, {})
 			res.end()
@@ -45,13 +35,13 @@ export class CatalogController {
 	}
 	
 	public async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[CatalogController.delete]'))
-		await catalogService.delete(res.locals.catalog)
-		res.end()
+		try {
+			await catalogService.delete(res.locals.catalog)
+			res.end()
+		} catch (e) { next(e) }
 	}
 
 	public async setCatalogFromParams(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[CatalogController.setCatalogFromParams]'))
 		if (!req.params.catalogid) {
 			return next(new ValidationError('Catalog id not provided'))
 		}

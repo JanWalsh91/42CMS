@@ -1,17 +1,12 @@
-import { Request, Response, NextFunction } from 'express';
-import chalk from 'chalk';
+import { Request, Response, NextFunction } from 'express'
 
 import { ICategory } from '../interfaces'
-import { categoryService } from '../services';
-import ResponseStatusTypes from '../utils/ResponseStatusTypes';
-import { ValidationError, ResourceNotFoundError, NotImplementedError } from '../utils/Errors';
-
-const { BAD_REQUEST } = ResponseStatusTypes; 
+import { categoryService } from '../services'
+import { ValidationError, ResourceNotFoundError } from '../utils/Errors'
 
 export class CategoryController {
 	
 	public async create(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[CategoryController.create]'));
 		const { name, id, parent } : { name: string, id: string, parent: string } = req.body
 
 		try {
@@ -26,33 +21,31 @@ export class CategoryController {
 	}
 
 	public async get(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[CategoryController.get]'), req.params);
 		res.send(res.locals.category)
 	}
 
 	public async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
-		await res.locals.catalog.populate('categories').execPopulate()
-		res.send(res.locals.catalog.categories)
+		try {
+			await res.locals.catalog.populate('categories').execPopulate()
+			res.send(res.locals.catalog.categories)
+		} catch (e) { next(e) }
 	}
 
 	public async update(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[CategoryController.update]'))
-		
 		try {
 			await categoryService.update(res.locals.category, req.body, {})
 			res.end()
 		} catch (e) { next(e) }
-	
 	}
 
 	public async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[CategoryController.delete]'), req.params);
-		await categoryService.delete(res.locals.category)
-		res.end()
+		try {
+			await categoryService.delete(res.locals.category)
+			res.end()
+		} catch (e) { next(e) }
 	}
 
 	public async setCategoryFromParams(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log(chalk.magenta('[categoryController.setCategoryFromParams]'))
 		if (!req.params.categoryid) {
 			return next(new ValidationError('Category id not provided'))
 		}
