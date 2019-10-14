@@ -2,7 +2,7 @@ import { Document } from 'mongoose'
 
 import { ICatalog, ICategory, IExtensibleObject, IObjectAttributeDefinition, IObjectTypeDefinition } from '../interfaces'
 import { ILocalizableAttribute } from './ILocalizableAttribute'
-import { productType } from '../types';
+import { productType } from '../types'
 
 export interface IProduct extends IExtensibleObject {
 	id: string
@@ -27,7 +27,7 @@ export interface IProduct extends IExtensibleObject {
 	getPrimaryCategoryByCatalog: (catalog: ICatalog) => Promise<ICategory>
 
 	// set methods
-	setId: (id: string): void
+	setId: (id: string) => void
 	setPrimaryCategoryByCatalog: (categoryId: ICategory | null, catalogId: ICatalog) => Promise<void>
 
 	// add methods

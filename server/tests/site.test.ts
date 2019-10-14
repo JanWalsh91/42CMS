@@ -154,5 +154,22 @@ describe('Site', function() {
 			const catalog: ICatalog = await Catalog.findOne({id: catid}).populate('sites').exec()
 			expect(catalog.sites.find(x => x.id == siteId)).to.not.exist
 		})
+		describe('Should fail if ...', () => {
+			it('Site does not exist', async() => {
+				ret = await deleteSite(siteId)
+				ret.status.should.eq(NOT_FOUND)
+			})
+			it('User is not authorized', async() => {
+				ret = await createSite(siteId)
+				ret = await createCatalog(catid)
+				// Assign catalog to site
+				ret = await updateCatalog(catid, { sites: { op: '$add', value: siteId } })
+				
+				await logout()
+
+				ret = await deleteSite(siteId)
+				ret.status.should.eq(UNAUTHORIZED)
+			})
+		})
 	})
 })
