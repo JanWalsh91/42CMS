@@ -2,8 +2,7 @@ import { Patchable, patchAction, patchRequest, ValidationError, ResourceNotFound
 import { ILocale } from '../interfaces'
 import { Locale } from '../models'
 import { jsonLocale } from '../types'
-
-const locales: { default: jsonLocale[], all: jsonLocale[] } = require('../resources/locales.json')
+import * as locales from '../resources/locales.json'
 
 class LocaleService extends Patchable<ILocale> {
 	hasObjectTypeDefinition = false

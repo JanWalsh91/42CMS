@@ -1,18 +1,17 @@
 {
-    "compilerOptions": {
-        // "module": "commonjs",
-        // "moduleResolution": "node",
-        // "pretty": true,
-        // "sourceMap": true,
-        // "target": "es6",
-        // "outDir": "./dist",
-		// "removeComments": true,
-		// "incremental": true,
-    },
-    "include": [
+	"compilerOptions": {
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"target": "es3",
+		"outDir": "./dist",
+		"removeComments": true,
+		"incremental": true,
+		"resolveJsonModule": true
+	},
+	"include": [
 		"./src/**/*"
-    ],
-    "exclude": [
-        "node_modules"
-    ]
+	],
+	"exclude": [
+		"node_modules"
+	]
 }

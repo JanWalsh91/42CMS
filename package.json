@@ -4,12 +4,11 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"build": "tsc --config ./server/tsconfig.json",
-		"start": "nodemon ./dist/server.ts --config ./server/tsconfig.json",
+		"build": "tsc -p ./server",
+		"start": "node ./server/dist/server",
 		"dev:server": "NODE_ENV=development nodemon ./server/src/server.ts",
 		"prod": "npm run build && npm run start",
 		"test": "TS_NODE_PROJECT=./server/tsconfig.json mocha -r ts-node/register ./**/tests/*.test.ts --exit --timeout 2000",
-		"test-simple": "mocha -r ts-node/register ./**/tests/*.test.ts --config ./server/tsconfig.json --exit --timeout 2000",
 		"db-start": "mkdir -p ./db && mongod --dbpath ./db"
 	},
 	"proxy": "http://localhost:3001",
