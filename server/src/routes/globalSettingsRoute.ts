@@ -1,4 +1,5 @@
 import { Router } from 'express'
+
 import { globalSettingsController } from '../controllers/'
 
 const router: Router = Router({ mergeParams: true })

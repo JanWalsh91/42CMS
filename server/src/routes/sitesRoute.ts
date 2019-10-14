@@ -1,4 +1,5 @@
 import { Router } from 'express'
+
 import { siteController } from '../controllers/siteController'
 
 const router: Router = Router({ mergeParams: true })
