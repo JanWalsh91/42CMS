@@ -1,5 +1,4 @@
 import { Schema } from 'mongoose'
-import { IProductVariant, IObjectAttributeDefinition, IObjectTypeDefinition } from '../interfaces';
 
 const productVariantSchema = new Schema({
 	masterProduct: {

@@ -1,8 +1,7 @@
 import { Schema } from 'mongoose'
-import chalk from 'chalk'
 
 import { localeSettingsSchema } from './'
-import { IGlobalSettings } from '../interfaces';
+import { IGlobalSettings } from '../interfaces'
 
 const globalSettingsSchema = new Schema({
 	locale: {

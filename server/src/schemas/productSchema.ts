@@ -1,5 +1,4 @@
 import { Schema } from 'mongoose'
-import chalk from 'chalk'
 
 import { ICatalog, ICategory, IProduct, IObjectTypeDefinition } from '../interfaces'
 import { InternalError } from '../utils'
@@ -27,7 +26,6 @@ const productSchema = new Schema({
 	masterCatalog: {
 		type: Schema.Types.ObjectId,
 		ref: 'Catalog',
-		// required: true,
 	},
 	assignedCatalogs: {
 		type: [{
@@ -90,7 +88,6 @@ productSchema.methods = {
 		this.id = id
 	},
 	async setPrimaryCategoryByCatalog(this: IProduct, category: ICategory | null, catalog: ICatalog): Promise<void> {
-		console.log(chalk.magenta(`[ProductModel.setPrimaryCategoryByCatalog] category; ${category.id}, catalog: ${catalog.id}, product: ${this.id}`))
 		await this.populate([
 			{path: 'assignedCatalogs'},
 			{path: 'primaryCategoryByCatalog.catalog'},
@@ -99,16 +96,11 @@ productSchema.methods = {
 
 		let currentPrimaryCategoryByCatalog = this.primaryCategoryByCatalog.find(x => x.catalog.id == catalog.id)
 		if (!currentPrimaryCategoryByCatalog) {
-			console.log('new entry')
 			currentPrimaryCategoryByCatalog = { catalog, category }
 			this.primaryCategoryByCatalog.push(currentPrimaryCategoryByCatalog)
 		} else {
-			console.log('update entry')
 			currentPrimaryCategoryByCatalog.category = category
 		}
-		this.primaryCategoryByCatalog.forEach(x => {
-			console.log(x.catalog.id + ' => ' + x.category.id)
-		})
 		this.markModified('primaryCategoryByCatalog')
 	},
 
@@ -137,14 +129,12 @@ productSchema.methods = {
 
 	// ==== add ==== 
 	async addAssignedCatalog(this: IProduct, catalog: ICatalog): Promise<void> {
-		console.log(chalk.magenta(`[ProductModel.addAssignedCatalog] catalog: ${catalog.id}, product: ${this.id}`))
 		await this.populate([
 			{path: 'assignedCatalogs'},
 			{path: 'assignedCategoriesByCatalog.catalog'},
 			{path: 'assignedCategoriesByCatalog.categories'},
 		]).execPopulate()
 		if (this.assignedCatalogs.find(x => x.id == catalog.id)) {
-			console.log(chalk.yellow(`Product ${this.id} already assigned to Catalog ${catalog.id}`))
 			return 
 		}
 		this.assignedCatalogs.push(catalog)
@@ -153,10 +143,8 @@ productSchema.methods = {
 		this.markModified('assignedCatalogs')
 		this.markModified('primaryCategoryByCatalog')
 		this.markModified('assignedCategoriesByCatalog')
-		// console.log(chalk.magenta(`[ProductModel.addAssignedCatalog] catalog: ${catalog.id}, product: ${this.id}`))
 	},
 	async addAssignedCategoryByCatalog(this: IProduct, category: ICategory, catalog: ICatalog): Promise<void> {
-		console.log(chalk.magenta(`[ProductModel.addAssignedCategoryByCatalog] category: ${category.id}, catalog: ${catalog.id}, product: ${this.id}`))
 		await this.populate([
 			{path: 'assignedCatalogs'},
 			{path: 'assignedCategoriesByCatalog.catalog'},
@@ -170,12 +158,10 @@ productSchema.methods = {
 			categoriesForCatalog.categories.push(category)
 			this.markModified('assignedCategoriesByCatalog')
 		}
-		// console.log(chalk.magenta(`[ProductModel.addAssignedCategoryByCatalog] category: ${category.id}, catalog: ${catalog.id}, product: ${this.id} END`))
 	},
 
 	// ==== remove ==== 
 	async removeAssignedCatalog(this: IProduct, catalog: ICatalog): Promise<void> {
-		console.log(chalk.magenta(`[ProductModel.removeAssignedCatalog] catalog: ${catalog.id}, product: ${this.id}`))
 		await this.populate([
 			{path: 'assignedCatalogs'},
 			{path: 'assignedCategoriesByCatalog.catalog'},
@@ -187,17 +173,14 @@ productSchema.methods = {
 		this.markModified('assignedCatalogs')
 		this.markModified('primaryCategoryByCatalog')
 		this.markModified('assignedCategoriesByCatalog')
-		// console.log(chalk.magenta(`[ProductModel.removeAssignedCatalog] catalog: ${catalog.id}, product: ${this.id} END`))
 	},
 	async removeAssignedCategoryByCatalog(this: IProduct, category: ICategory, catalog: ICatalog): Promise<void> {
-		console.log(chalk.magenta(`[ProductModel.removeAssignedCategoryByCatalog] catalog: ${catalog.id}, category: ${category.id}, product: ${this.id}`))
 		await this.populate([
 			{path: 'assignedCatalogs'},
 			{path: 'assignedCategoriesByCatalog.catalog'},
 			{path: 'assignedCategoriesByCatalog.categories'},
 		]).execPopulate()
 		if (!this.assignedCatalogs.find(x => x.id == catalog.id)) {
-			console.log(`Catalog ${catalog.id} not found`)
 			return
 		}
 		let categoriesForCatalog = this.assignedCategoriesByCatalog.find(x => x.catalog.id == catalog.id)		
@@ -205,7 +188,6 @@ productSchema.methods = {
 			categoriesForCatalog.categories = categoriesForCatalog.categories.filter(x => x.id != category.id)
 			this.markModified('assignedCategoriesByCatalog')
 		}
-		// console.log(chalk.magenta(`[ProductModel.removeAssignedCategoryByCatalog] catalog: ${catalog.id}, category: ${category.id}, product: ${this.id} END`))
 	},
 }
 

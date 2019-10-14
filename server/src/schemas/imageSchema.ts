@@ -1,5 +1,5 @@
 import { Schema } from 'mongoose'
-import chalk from 'chalk'
+
 import { IImage, IObjectTypeDefinition } from '../interfaces'
 import { LocalizableAttribute } from '../models'
 import { objectTypeDefinitionService } from '../services'

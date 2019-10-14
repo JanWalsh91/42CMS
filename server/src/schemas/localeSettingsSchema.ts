@@ -1,9 +1,8 @@
 import { Schema } from 'mongoose'
-import chalk from 'chalk'
 
 import { ILocale, ILocaleSettings } from '../interfaces'
-import { ValidationError } from '../utils';
-import { localeService } from '../services';
+import { ValidationError } from '../utils'
+import { localeService } from '../services'
 
 const localeSettingsSchema = new Schema({
 	availableLocales: [{

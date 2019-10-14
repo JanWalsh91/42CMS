@@ -31,9 +31,9 @@ const userSchema = new Schema({
 	}
 })
 
-userSchema.methods = {
+// userSchema.methods = {
 
-}
+// }
 
 userSchema.plugin(require('mongoose-autopopulate'))
 

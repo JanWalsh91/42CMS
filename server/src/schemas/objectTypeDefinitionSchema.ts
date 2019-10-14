@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
+
 import { IObjectTypeDefinition, IObjectAttributeDefinition } from '../interfaces'
-import chalk from 'chalk';
 
 const objectTypeDefinitionSchema = new Schema({
 	objectName: {
@@ -23,8 +23,6 @@ objectTypeDefinitionSchema.methods = {
 		if (this.objectAttributeDefinitions.every(x => x.path != OAD.path)) {
 			this.objectAttributeDefinitions.push(OAD)
 			this.markModified('objectAttributeDefinitions')
-		} else {
-			console.log(chalk.red(`${OAD.path} already in ${this.objectName} OTD`))
 		}
 	},
 	removeObjectAttributeDefinition: async function (this: IObjectTypeDefinition, OAD: IObjectAttributeDefinition) : Promise<void> {

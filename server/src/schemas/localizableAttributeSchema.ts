@@ -1,8 +1,6 @@
 import { Schema } from 'mongoose'
+
 import { localeCode } from '../types'
-import { globalSettingsService } from '../services'
-import { ValidationError } from '../utils';
-import { IGlobalSettings } from '../interfaces';
 import { ILocalizableAttribute } from '../interfaces';
 
 const localizableAttributeSchema = new Schema({
@@ -25,7 +23,6 @@ localizableAttributeSchema.methods = {
 		this.markModified('value')
 	},
 	$add: async function(this: ILocalizableAttribute, value: any, code: localeCode = 'default'): Promise<void> {
-		console.log('add to value [' + value + '] at locale', code)
 		if (!Array.isArray(this.value.get(code))) {
 			this.value.set(code, [value])
 		} else {
@@ -34,7 +31,6 @@ localizableAttributeSchema.methods = {
 		this.markModified('value')
 	},
 	$remove: async function(this: ILocalizableAttribute, value: any, code: localeCode = 'default'): Promise<void> {
-		console.log('remove from value [' + value + '] at locale', code)
 		if (!Array.isArray(this.value.get(code))) {
 			this.value.set(code, [])
 		} else {

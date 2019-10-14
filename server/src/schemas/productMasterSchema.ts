@@ -1,7 +1,7 @@
 import { Schema } from 'mongoose'
-import { IProductMaster, IObjectAttributeDefinition, IProductVariant } from '../interfaces';
-import chalk from 'chalk';
-import { ValidationError } from '../utils';
+
+import { IProductMaster, IObjectAttributeDefinition, IProductVariant } from '../interfaces'
+import { ValidationError } from '../utils'
 
 const productMasterSchema = new Schema({
 	type: {
@@ -22,9 +22,6 @@ const productMasterSchema = new Schema({
 
 productMasterSchema.methods = {
 	addVariationAttribute: async function (this: IProductMaster, OAD: IObjectAttributeDefinition): Promise<void> {
-		console.log(chalk.magenta(`[MasterProductModel.addVariationAttribute]`))
-		let x = await this.getObjectTypeDefinition()
-		console.log(x)
 		await this.populate('variationAttributes').execPopulate()
 		if (this.variationAttributes.find(x => x.path == OAD.path)) {
 			throw new ValidationError(`${OAD.path} is already a variation attribute`)
@@ -34,7 +31,6 @@ productMasterSchema.methods = {
 		}
 	},
 	removeVariationAttribute: async function (this: IProductMaster, OAD: IObjectAttributeDefinition): Promise<void> {
-		console.log(chalk.magenta(`[MasterProductModel.removeVariationAttribute]`))
 		await this.populate('variationAttributes').execPopulate()
 		if (this.variationAttributes.find(x => x.path == OAD.path)) {
 			this.variationAttributes = this.variationAttributes.filter(x => x.path != OAD.path)
@@ -44,7 +40,6 @@ productMasterSchema.methods = {
 		}
 	},
 	addVariant: async function(this: IProductMaster, variant: IProductVariant): Promise<void> {
-		console.log(chalk.magenta(`[MasterProductModel.addVariant]`))
 		await this.populate('variantProducts').execPopulate()
 		if (this.variantProducts.find(x => x.id == variant.id)) {
 			throw new ValidationError(`Variant ${variant.id} already in master product variant list`)
@@ -54,7 +49,6 @@ productMasterSchema.methods = {
 		}
 	},
 	removeVariant: async function(this: IProductMaster, variant: IProductVariant): Promise<void> {
-		console.log(chalk.magenta(`[MasterProductModel.removeVariant]`))
 		await this.populate('variantProducts').execPopulate()
 		if (this.variantProducts.find(x => x.id == variant.id)) {
 			this.variantProducts = this.variantProducts.filter(x => x.id != variant.id)

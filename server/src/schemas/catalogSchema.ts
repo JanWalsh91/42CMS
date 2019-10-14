@@ -1,5 +1,4 @@
-import { Schema, ClientSession } from 'mongoose'
-import chalk from 'chalk'
+import { Schema } from 'mongoose'
 
 import { ICatalog, ICategory, IProduct, ISite } from '../interfaces'
 import { Category, Product } from '../models'
@@ -82,7 +81,6 @@ catalogSchema.methods = {
 
 	// ==== add ====
 	async addCategory(this: ICatalog, category: ICategory): Promise<ICatalog> {
-		console.log(chalk.magenta(`[CatalogModel.addCategory] ${category.id} to ${this.id}`))
 		await this.populate('categories').execPopulate()
 		if (this.categories.every(x => x.id != category.id)) {
 			this.categories.push(category)
@@ -91,7 +89,6 @@ catalogSchema.methods = {
 		return this
 	},
 	async addProduct(this: ICatalog, product: IProduct): Promise<ICatalog> {
-		console.log(chalk.magenta(`[CatalogModel.addProduct] ${product.id} to ${this.id}`))
 		await this.populate('products').execPopulate()
 		if (this.products.every(x => x.id != product.id)) {
 			this.products.push(product._id)
@@ -100,7 +97,6 @@ catalogSchema.methods = {
 		return this
 	},
 	async addSite(this: ICatalog, site: ISite): Promise<ICatalog> {
-		console.log(chalk.magenta(`[CatalogModel.addSite] ${site.id} to ${this.id}`))
 		await this.populate('sites').execPopulate()
 		if (this.sites.every(x => x.id != site.id)) {
 			this.sites.push(site._id)
@@ -111,7 +107,6 @@ catalogSchema.methods = {
 
 	// ==== remove ====
 	async removeCategory(this: ICatalog, category: ICategory): Promise<ICatalog> {
-		console.log(chalk.magenta(`[CatalogModel.removeCategory] ${category.id} from ${this.id}`))
 		await this.populate('categories').execPopulate()
 		if (this.categories.some(x => x.id == category.id)) {
 			this.categories = this.categories.filter(x => !x._id.equals(category._id))
@@ -120,7 +115,6 @@ catalogSchema.methods = {
 		return this
 	},
 	async removeProduct(this: ICatalog, product: IProduct): Promise<ICatalog> {
-		console.log(chalk.magenta(`[CatalogModel.removeProduct] ${product.id} to ${this.id}`))
 		await this.populate('products').execPopulate()
 		if (this.products.some(x => x.id == product.id)) {
 			this.products = this.products.filter(x => !x._id.equals(product._id))
@@ -129,7 +123,6 @@ catalogSchema.methods = {
 		return this
 	},
 	async removeSite(this: ICatalog, site: ISite): Promise<ICatalog> {
-		console.log(chalk.magenta(`[CatalogModel.removeSite] ${site.id} to ${this.id}`))
 		await this.populate('sites').execPopulate()
 		if (this.sites.some(x => x.id == site.id)) {
 			this.sites = this.sites.filter(x => !x._id.equals(site._id))
@@ -153,8 +146,6 @@ catalogSchema.post('save', async function(this: ICatalog, doc: ICatalog, next: a
 	if (this.wasNew) {
 		this.wasNew = false
 		// Create 'root' category
-
-		// TODO: use service ? Or move to service
 		const rootCategory: ICategory = await new Category({id: 'root', catalog: this._id})
 		await rootCategory.save()
 

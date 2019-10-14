@@ -1,5 +1,6 @@
 import { Schema } from 'mongoose'
-import { IUser, ILocale } from '../interfaces';
+
+import { IUser, ILocale } from '../interfaces'
 
 const localeSchema = new Schema({
 	id: {

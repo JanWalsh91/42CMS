@@ -1,7 +1,7 @@
 import { Schema } from 'mongoose'
-import { ISite, ILocale, ICatalog, IObjectTypeDefinition } from '../interfaces';
-import { objectTypeDefinitionService } from '../services';
-import { LocalizableAttribute } from '../models';
+
+import { ISite, ILocale, ICatalog, IObjectTypeDefinition } from '../interfaces'
+import { objectTypeDefinitionService } from '../services'
 
 const siteSchema = new Schema({
 	id: {
@@ -115,7 +115,6 @@ siteSchema.plugin(require('mongoose-autopopulate'))
 
 siteSchema.pre('save', async function(this: ISite) {
 	if (this.isNew) {
-		console.log('pre save site')
 		await objectTypeDefinitionService.initExtensibleObject(this)
 	}
 })
