@@ -19,7 +19,7 @@ const router: Router = Router({ mergeParams: true })
 
 router.get('/', (req: Request, res: Response) => {
 	res.status(200).send({
-		message: 'GET request successfulll!!!!'
+		message: 'GET request successful!!!!'
 	})
 })
 

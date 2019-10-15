@@ -2,23 +2,56 @@
 
 Check the following functionalities: 
 
-### Product Management
+### General Project Overview
 
-I can: 
-- Create a basic product
-- Create a master product and assign one or more variation attributes to it
-- Create a variant product for a master product
-- Set a catalog to be online from 2030.10.30
-- Add a custom attribute "gender" to products, an enum of strings 
-- Assign a product to a Catalog
-- Assign a product to a Category in a Catalog
-- Add an image to a Catalog
+- There is a back-end API
+- There is a back-end web interface for managing the e-commerce database
+- Storefront sites are can be generated
 
+### User Management	__/10
 
-### Import Export
+An admin user should exist by default, and should be able to create other users. Admins should be able to control user permissions. 
 
-I can:
-- export a catalog in xml format
-- export all products in xml format
-- import a catalog
-- import a product
+### Product Management __/30
+
+User should be able to create Basic, Master and Variant products as defined in the subject with all required system attributes.
+
+Products can be assigned to Catalogs and Categories in those Catalogs.
+
+Products visibility can be controlled through the 'online', 'onlineFrom' and 'onlineTo' attributes.
+
+Products can have many images and can have a primary image.
+
+### Attributes __/20
+
+Object Type Definitions for Products, Catalogs, Categories and Sites be viewed and edited.
+
+All required types are available.
+
+Each attribute can be set to localizable or site-specific. This can be visible on the storefront when a customer changes locale or site.
+
+### Sites __/10
+
+Sites can be assigned Locales, Catalogs, and Price Books. This is reflected on the storefront.
+
+### Storefront __/30
+
+The storefront has the following pages populated with the backend:
+- home page
+- category page
+- product page
+- checkout page
+- cart page
+  
+
+## Bonuses
+
+### Templating System __/10
+
+Templates can be selected on the backend to render product pages. This is a localizable feature.
+
+### Import Export __/10
+
+Products, Catalogs and Object Type Definitions can be exported and imported in XML format.
+
+### Other Bonuses __/5
