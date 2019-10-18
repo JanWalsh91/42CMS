@@ -12,7 +12,7 @@ A business group wants to expand their brick and mortar retail stores online, bu
 The objective of this project is to respond to **general** and **specific** needs of business users. Your project should respond to the following requirements:
 
 - **CMS**:
-  - **Web API**: An api to access and update our e-commerce database. This web API is used by the back-office website. With this api, we should be able to create business accounts, create products and sort them in catalogs, customize business object types, and export and import catalogs.
+  - **Web API**: An api to access and update our e-commerce database. This web API is used by the back-office website. With this api, we should be able to create business accounts, create products and sort them into catalogs, customize business object types, and export and import catalogs.
   - **Back Office Website**: A front-end web application for us to manage the e-commerce database. This uses the aforementioned web API.
 - **Storefront(s)**: Drawing from the database and back-end configurations, the CMS should dynamically create front-end e-commerce websites.
 
@@ -28,7 +28,7 @@ You are free to use whatever tech and languages you wish. You cannot use librari
 We want to be able to:
 - create and edit at least three types of products: basic products, master products and variant products:
   - **Master Product**: This is an abstract product meant to represent a group of products that differ by one or more **variation attributes**. For example, a T-Shirt with two variation attributes, size and color, can be considered a Master Product.
-  - **Variation Product**: This product are concrete products which vary according to a Master Product's variation attributes. For example, a perfume can come in different bottle sizes, such as 30ml and 60ml; each one of those is a variant. A Variant Product must have its Master Product's variation attributes defined. A Variant Product cannot exist without a Master Product. Variation Product's attributes can override its Master Product's attributes, but otherwise inherits them.
+  - **Variation Product**: This product is a concrete product which varies according to a Master Product's variation attributes. For example, a perfume can come in different bottle sizes, such as 30ml and 60ml (each one of those is a variant). A Variant Product must have its Master Product's variation attributes defined. A Variant Product cannot exist without a Master Product. A Variation Product's attributes can override its Master Product's attributes, but otherwise inherits them.
   - **Basic Product**: This is a simple, standalone, concrete product with no relation to a Master or Variant Product.
 - have at least the following product attributes: (see *Object Type Definitions*)
   - ID or [SKU](https://en.wikipedia.org/wiki/Stock_keeping_unit) (string)
@@ -151,7 +151,7 @@ Prepare to run unit tests to demonstrate the features you implemented.
 ### Bonus Functionalities:
 
 ### Import and Export System
-We want a simple system to export and import data in an xml format.
+We want a simple system to import and export data to and from the data-base in an xml format.
 We want to be able to:
 - import and export Products
 - import and export Catalogs and Categories
@@ -163,7 +163,7 @@ We want to assign an html template as an attribute to a product in order to disp
 ### Bonus Product Types
 We want to be able to create additional product types:
 - **Product Bundles**: A group of products that can only be sold together for a single fixed price.
-- **Product Sets**: A group of products that appear together and can be purchased together or separately. A set does not have its own price. The price of the set is simply the sum of the set's products.
+- **Product Sets**: A group of products that appear together on the storefront and can be purchased together or separately. A set does not have its own price; its price is simply the sum of the set's products.
 
 ### Other Bonus Ideas:
 - Inventory and sales management system
