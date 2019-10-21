@@ -37,6 +37,7 @@ Sites can be assigned Locales, Catalogs, and Price Books. This is reflected on t
 ### Storefront __/30
 
 The storefront has the following pages populated with the backend:
+
 - home page
 - category page
 - product page
