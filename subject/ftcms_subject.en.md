@@ -1,7 +1,5 @@
 # 42CMS
 
-## Contents
-
 ## Introduction
 
 A business group wants to expand their brick and mortar retail stores online, but the company's business users have no dev skills! They want you to create a Content Management System to easily handle their e-commerce needs and to generate their storefront e-commerce websites.
