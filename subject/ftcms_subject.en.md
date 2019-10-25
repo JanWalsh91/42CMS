@@ -133,7 +133,7 @@ We want to be able to:
 - set a primary image to a product
 
 ### Price Books
-**Price Books** contain information about a set of products in a currency
+**Price Books** contain information about the price of a set of products in a currency
 
 We want to be able to:
 
@@ -149,8 +149,8 @@ We want the following pages:
 - home page
 - category page
 - product page
-- checkout page
 - cart page
+- checkout page
 
 ## Defense Session
 
